@@ -1,0 +1,19 @@
+name: template
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+jobs:
+  template:
+    name: Check template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: |
+          set -uveo pipefail
+          mkdir templated; cd templated
+          nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#default
+          nix flake update
+          nix build .#vm
