@@ -1,30 +1,32 @@
-# den - Dendritic nix host configurations.
+# den - Dendritic Nix host configurations.
 
 <p align="right">
-  <a href="https://nixos.org/"> <img src="https://img.shields.io/badge/Nix-Flake-informational?logo=nixos&logoColor=white" alt="Nix Flake"/> </a>
+  <a href="https://vic.github.io/dendrix/Dendritic.html"> <img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/> </a>
   <a href="https://github.com/vic/den/actions">
-  <img src="https://github.com/vic/den/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
+  <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
 </p>
 
-**Try it now! launch our example VM:**
+A minimalistic approach to declaring Dendritic Nix host configurations.
+
+<table>
+<tr>
+<td width="50%">
+<img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" /> 
+
+**Try it now! launch our template VM:**
 
 ```console
 nix run "github:vic/den?dir=templates/default#vm" --no-write-lock-file
 ```
 
-<table>
-<tr>
-<td>
-<img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" /> 
-
 </td>  
 <td>
 
-Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
+> Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
 
 ```nix
-# hosts.nix
+# modules/hosts.nix
 {
   den.hosts.my-laptop = {
     system = "x86_64-linux";
@@ -33,14 +35,22 @@ Concise host definitions ([example](templates/default/modules/_example/hosts.nix
 }
 ```
 
-[`flake-aspect`](https://github.com/vic/flake-aspect) powered [dendritic](https://vic.github.io/dendrix/Dendritic.html) modules ([example](templates/default/modules/_example/aspects.nix))
+> [aspect-oriented](https://github.com/vic/flake-aspects) modules ([example](templates/default/modules/_example/aspects.nix))
 
 ```nix
-# aspects.nix
+# modules/my-laptop.nix
 {
-  flake.aspects = {
-    my-laptop.nixos = ...;
-    vic.homeManager = ...;
+  flake.aspects.my-laptop = {
+    nixos.system.stateVersion = "25.11";
+    darwin.system.stateVersion = 6;
+  };
+}
+
+# modules/vic.nix
+{
+  flake.aspects.vic = {
+    darwin.system.principalUser = "vic";
+    nixos.users.users.vic.isNormalUser = true;
   };
 }
 ```
@@ -48,3 +58,7 @@ Concise host definitions ([example](templates/default/modules/_example/hosts.nix
 </td>
 </tr>  
 </table>
+
+## Core concepts
+
+## Getting Started.
