@@ -10,13 +10,15 @@
 
       # parametric host configs. see aspects-config.nix
       default.host.includes = [ aspects.example.provides.host ];
-      # host defaults. 
+      # host defaults.
       default.host.darwin.system.stateVersion = 6;
       # for demo, we make all our nixos hosts vm bootable.
-      default.host.nixos = { modulesPath, ... }: {
-        system.stateVersion = "25.11";
-        imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
-      };
+      default.host.nixos =
+        { modulesPath, ... }:
+        {
+          system.stateVersion = "25.11";
+          imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
+        };
 
       # users
       # alice.homeManager = { }; # config for alice
@@ -26,9 +28,12 @@
 
       # parametric providers.
       example.provides = {
-        host = host: {class, ...}: {
-          ${class}.networking.hostName = host.hostName;
-        };
+        host =
+          host:
+          { class, ... }:
+          {
+            ${class}.networking.hostName = host.hostName;
+          };
 
         user = _host: user: _: {
           darwin.system.principalUser = user.userName;

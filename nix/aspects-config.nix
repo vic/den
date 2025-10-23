@@ -40,7 +40,7 @@ let
       default.host =
         { aspect, ... }:
         {
-          includes = [ (_: {class, ...}: aspect.${class} or {}) ];
+          includes = [ (_: { class, ... }: aspect.${class} or { }) ];
           __functor = _: host: x: {
             includes = lib.map (f: f host x) aspect.includes;
           };
@@ -48,7 +48,7 @@ let
       default.user =
         { aspect, ... }:
         {
-          includes = [ (_: _: {class, ...}: aspect.${class} or {}) ];
+          includes = [ (_: _: { class, ... }: aspect.${class} or { }) ];
           __functor = _: host: user: x: {
             includes = lib.map (f: f host user x) aspect.includes;
           };
