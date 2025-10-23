@@ -17,7 +17,7 @@ jobs:
           nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#default
           cat <<-EOF > modules/force.nix
           {
-            flake-file.inputs.den.url = \"github:$GITHUB_REPOSITORY/$GITHUB_SHA\";
+            flake-file.inputs.den.url = "github:$GITHUB_REPOSITORY/$GITHUB_SHA";
           }
           EOF
           nix run .#write-flake
