@@ -1,24 +1,24 @@
 # den - Dendritic Nix host configurations.
 
-<table>
-<tr>
-<td>
-
-<em>A minimalistic yet powerful approach to declaring Dendritic Nix host configurations.</em>
-
-<p align="left">
+<p align="right">
   <a href="https://vic.github.io/dendrix/Dendritic.html"> <img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/> </a>
   <a href="https://github.com/vic/den/actions">
   <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
 </p>
 
+<em>A minimalistic yet powerful approach to declaring Dendritic Nix host configurations.</em>
+
+<table>
+<tr>
+<td>
+
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" /> 
 
 </td>  
 <td>
 
-> Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
+🏠 Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
 
 ```nix
 # modules/hosts.nix
@@ -30,7 +30,7 @@
 }
 ```
 
-> [aspect-oriented](https://github.com/vic/flake-aspects) modules ([example](templates/default/modules/_example/aspects.nix))
+🧩 [aspect-oriented](https://github.com/vic/flake-aspects) dendritic modules ([example](templates/default/modules/_example/aspects.nix))
 
 ```nix
 # modules/work-laptop.nix
@@ -54,7 +54,7 @@
 </tr>  
 </table>
 
-**Try it now! launch our template VM:**
+**❄️ Try it now! launch our template VM:**
 
 ```console
 nix run "github:vic/den?dir=templates/default#vm" --no-write-lock-file
