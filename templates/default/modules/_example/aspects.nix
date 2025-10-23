@@ -7,6 +7,7 @@
     {
       # hosts
       rockhopper.includes = [ aspects.example.provides.host ];
+      emperor.includes = [ aspects.example.provides.host ];
 
       # users
       alice.includes = [

@@ -7,13 +7,13 @@
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
 </p>
 
-<em>A minimalistic yet powerful approach to declaring Dendritic Nix host configurations.</em>
-
 <table>
 <tr>
 <td>
 
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" /> 
+
+<em><h4>Powerful, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
 
 </td>  
 <td>
