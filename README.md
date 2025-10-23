@@ -8,8 +8,9 @@
 **Try it now! launch our example VM:**
 
 ```console
-nix run "github:vic/den?dir=templates/default"_
-```  
+nix run "github:vic/den?dir=templates/default#vm" --no-write-lock-file
+```
+
 </td>  
 <td>
 
@@ -25,8 +26,7 @@ Concise host definitions ([example](templates/default/modules/_example/hosts.nix
 }
 ```
 
-
-[`flake-aspect`](https://github.com/vic/flake-aspect) powered [dendritic](https://vic.github.io/dendrix/Dendritic.html) modules ([example](templates/default/modules/_example/aspects.nix))  
+[`flake-aspect`](https://github.com/vic/flake-aspect) powered [dendritic](https://vic.github.io/dendrix/Dendritic.html) modules ([example](templates/default/modules/_example/aspects.nix))
 
 ```nix
 # aspects.nix
@@ -41,4 +41,3 @@ Concise host definitions ([example](templates/default/modules/_example/hosts.nix
 </td>
 </tr>  
 </table>
-
