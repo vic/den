@@ -7,11 +7,12 @@
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
 </p>
 
-A minimalistic approach to declaring Dendritic Nix host configurations.
-
 <table>
 <tr>
-<td width="50%">
+<td style="max-width: 400px;">
+
+<em>A minimalistic yet powerful approach to declaring Dendritic Nix host configurations.</em>
+
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" /> 
 
 **Try it now! launch our template VM:**
@@ -59,6 +60,41 @@ nix run "github:vic/den?dir=templates/default#vm" --no-write-lock-file
 </tr>  
 </table>
 
-## Core concepts
+## Usage
 
-## Getting Started.
+The [syntax](nix/types.nix) for a host and its users is concise and [focused](nix/os-config.nix) on declaration. host/user features are handled by [aspects](nix/aspects-config.nix).
+
+```nix
+# modules/hosts/gaming-laptop.nix
+{
+  den.hosts.gaming-laptop = { 
+    system = "x86_64-linux"; # discovered as nixos, default aspect name: gaming-laptop.
+    users.vic.aspect = "vic@gaming-laptop"; # custom aspect name for user vic.
+  }
+}
+```
+
+And then you create as many other dendritic modules to extend the features of `gaming-laptop` and `vic`.
+
+```nix
+# modules/gaming/gaming-laptop.nix
+{
+  flake.aspects.gaming-laptop = {
+    nixos = {
+      # enable steam, enable firewall ports, etc.
+    };
+  }
+}
+```
+
+```nix
+# modules/gaming/vic.nix
+{
+  flake.aspects = { aspects, ... }: {
+    "vic@gaming-laptop".includes = [ aspects.vic ];
+    "vic@gaming-laptop".nixos = {
+      # extend the normal `vic` aspect with gaming features.
+    };
+  };
+}
+```
