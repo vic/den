@@ -14,7 +14,7 @@ let
     {
       ${host.aspect} = {
         description = lib.mkDefault "Host ${host.hostName}";
-        includes = [ (aspects.default.host host) ];
+        includes = [ (aspects.default.host { inherit host; }) ];
         ${host.class} = { };
       };
     };
@@ -25,7 +25,7 @@ let
     {
       ${user.aspect} = {
         description = lib.mkDefault "User ${user.userName}";
-        includes = [ (aspects.default.user host user) ];
+        includes = [ (aspects.default.user { inherit host user; }) ];
         ${user.class} = { };
       };
     };
@@ -40,18 +40,26 @@ let
       default.host =
         { aspect, ... }:
         {
-          includes = [ (_: { class, ... }: aspect.${class} or { }) ];
-          __functor = _: host: x: {
-            includes = lib.map (f: f host x) aspect.includes;
-          };
+          __functor =
+            _:
+            { host }:
+            { class, ... }:
+            {
+              includes = lib.map (f: f { inherit host; }) aspect.includes;
+              ${class} = aspect.${class} or { };
+            };
         };
       default.user =
         { aspect, ... }:
         {
-          includes = [ (_: _: { class, ... }: aspect.${class} or { }) ];
-          __functor = _: host: user: x: {
-            includes = lib.map (f: f host user x) aspect.includes;
-          };
+          __functor =
+            _:
+            { host, user }:
+            { class, ... }:
+            {
+              includes = lib.map (f: f { inherit host user; }) aspect.includes;
+              ${class} = aspect.${class} or { };
+            };
         };
     }
   ];
@@ -62,7 +70,7 @@ let
     lib.mkOption {
       inherit description;
       default = { };
-      type = fa-types.aspectSubmoduleType;
+      type = fa-types.aspectSubmodule;
     };
 
 in

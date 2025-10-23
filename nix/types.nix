@@ -3,7 +3,7 @@ let
   hostsOption = lib.mkOption {
     description = documentation;
     default = { };
-    type = lib.types.lazyAttrsOf hostType;
+    type = lib.types.attrsOf hostType;
   };
 
   documentation = ''
@@ -41,7 +41,7 @@ let
         users = lib.mkOption {
           description = "user accounts";
           default = { };
-          type = lib.types.lazyAttrsOf userType;
+          type = lib.types.attrsOf userType;
         };
       };
     }
