@@ -14,23 +14,21 @@
       ];
 
       # aspects for demo purposes only.
-      example.provides =
-        { ... }:
-        {
-          user = userName: insecurePassword: _: {
-            nixos.users.users.${userName} = {
-              password = insecurePassword;
-              isNormalUser = true;
-              extraGroups = [ "wheel" ];
-            };
-          };
-          host = _: {
-            nixos =
-              { modulesPath, ... }:
-              {
-                imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
-              };
+      example.provides = {
+        user = userName: insecurePassword: _: {
+          nixos.users.users.${userName} = {
+            password = insecurePassword;
+            isNormalUser = true;
+            extraGroups = [ "wheel" ];
           };
         };
+        host = _: {
+          nixos =
+            { modulesPath, ... }:
+            {
+              imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
+            };
+        };
+      };
     };
 }

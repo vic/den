@@ -15,5 +15,10 @@ jobs:
           set -uveo pipefail
           mkdir templated; cd templated
           nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#default
-          nix flake update
-          nix build .#vm
+          cat <<-EOF > modules/force.nix
+          {
+            flake-file.inputs.den.url = \"github:$GITHUB_REPOSITORY/$GITHUB_SHA\";
+          }
+          EOF
+          nix run .#write-flake
+          nix flake check
