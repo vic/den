@@ -6,7 +6,7 @@
       packages.vm = pkgs.writeShellApplication {
         name = "vm";
         text = ''
-          ${inputs.self.nixosConfigurations.rockhopper.config.system.build.vm}/bin/run-nixos-vm "$@"
+          ${inputs.self.nixosConfigurations.rockhopper.config.system.build.vm}/bin/run-rockhopper-vm "$@"
         '';
       };
     };
