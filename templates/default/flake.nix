@@ -6,7 +6,7 @@
 
   inputs = {
     den = {
-      url = "path:../..";
+      url = "github:vic/den";
     };
     flake-aspects = {
       url = "github:vic/flake-aspects";

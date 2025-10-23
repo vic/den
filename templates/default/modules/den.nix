@@ -1,7 +1,6 @@
 { inputs, lib, ... }:
 {
-  flake-file.inputs.den.url =
-    if lib.hasInfix "templates/default" (builtins.toString ./.) then "path:../.." else "github:vic/den";
+  flake-file.inputs.den.url = lib.mkDefault "github:vic/den";
 
   imports = [
     inputs.den.flakeModule
