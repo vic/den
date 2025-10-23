@@ -1,5 +1,10 @@
 # create aspect dependencies from hosts/users
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  inputs,
+  ...
+}:
 let
   hosts = lib.attrValues config.den.hosts;
 
@@ -9,48 +14,65 @@ let
     {
       ${host.aspect} = {
         description = lib.mkDefault "Host ${host.hostName}";
-        includes = [ aspects.${host.class} ];
+        includes = [ (aspects.defaults.host host) ];
         ${host.class} = { };
       };
-      ${host.class}.${host.class} = { };
     };
-
-  hostUsers = host: lib.attrValues host.users;
 
   hostIncludesUser =
     host: user:
     { aspects, ... }:
     {
-      ${host.aspect} = {
-        includes = [ aspects.${user.aspect} ];
-      };
       ${user.aspect} = {
         description = lib.mkDefault "User ${user.userName}";
+        includes = [ (aspects.defaults.user host user) ];
         ${user.class} = { };
-        ${host.class} = { };
       };
     };
-
-  hmUsers = host: lib.filter (u: u.class == "homeManager") (hostUsers host);
-  anyHm = host: lib.length (hmUsers host) > 0;
-  hostHomeManager =
-    host:
-    { aspects, ... }:
-    {
-      ${host.aspect}.includes = [ aspects.homeManager ];
-    };
-  homeManager.homeManager.description = "home manager aspect";
 
   deps = lib.map (host: [
     (hostAspect host)
-    (lib.map (hostIncludesUser host) (hostUsers host))
-    (lib.optionals (anyHm host) [
-      (hostHomeManager host)
-      homeManager
-    ])
+    (lib.map (hostIncludesUser host) (lib.attrValues host.users))
   ]) hosts;
+
+  defaults = [
+    {
+      defaults.host =
+        { aspect, ... }:
+        {
+          __functor = _: host: x: {
+            includes = lib.map (f: f host x) aspect.includes;
+          };
+        };
+      defaults.user =
+        { aspect, ... }:
+        {
+          __functor = _: host: user: x: {
+            includes = lib.map (f: f host user x) aspect.includes;
+          };
+        };
+    }
+  ];
+
+  fa-types = inputs.flake-aspects.lib.types lib;
+  defaultsOption =
+    description:
+    lib.mkOption {
+      inherit description;
+      default = { };
+      type = fa-types.aspectSubmoduleType;
+    };
 
 in
 {
-  flake.aspects = lib.mkMerge (lib.flatten deps);
+  config.flake.aspects = lib.mkMerge (lib.flatten (defaults ++ deps));
+
+  options.flake.aspects.defaults = lib.mkOption {
+    description = "defaults";
+    default = { };
+    type = lib.types.submodule {
+      options.host = defaultsOption "defaults for hosts";
+      options.user = defaultsOption "defaults for users";
+    };
+  };
 }

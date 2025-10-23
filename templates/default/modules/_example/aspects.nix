@@ -6,29 +6,33 @@
     { aspects, ... }:
     {
       # hosts
-      rockhopper.includes = [ aspects.example.provides.host ];
-      emperor.includes = [ aspects.example.provides.host ];
+      # rockhopper.nixos = { }; # config for rockhopper host
+
+      # on all hosts. see aspects-config.nix
+      defaults.host.includes = [ aspects.example.provides.host ];
 
       # users
-      alice.includes = [
-        (aspects.example.provides.user "alice" "password")
-      ];
+      # alice.homeManager = { }; # config for alice
 
-      # aspects for demo purposes only.
+      # on all users. see aspects-config.nix
+      defaults.user.includes = [ aspects.example.provides.user ];
+
+      # parametric providers.
       example.provides = {
-        user = userName: insecurePassword: _: {
-          nixos.users.users.${userName} = {
-            password = insecurePassword;
-            isNormalUser = true;
-            extraGroups = [ "wheel" ];
-          };
-        };
-        host = _: {
+        host = host: _: {
           nixos =
             { modulesPath, ... }:
             {
               imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
+              networking.hostName = host.hostName;
             };
+        };
+
+        user = _host: user: _: {
+          nixos.users.users.${user.userName} = {
+            isNormalUser = true;
+            extraGroups = [ "wheel" ];
+          };
         };
       };
     };
