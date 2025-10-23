@@ -14,39 +14,41 @@ let
     {
       ${host.aspect} = {
         description = lib.mkDefault "Host ${host.hostName}";
-        includes = [ (aspects.defaults.host host) ];
+        includes = [ (aspects.default.host host) ];
         ${host.class} = { };
       };
     };
 
-  hostIncludesUser =
+  hostUserAspect =
     host: user:
     { aspects, ... }:
     {
       ${user.aspect} = {
         description = lib.mkDefault "User ${user.userName}";
-        includes = [ (aspects.defaults.user host user) ];
+        includes = [ (aspects.default.user host user) ];
         ${user.class} = { };
       };
     };
 
   deps = lib.map (host: [
     (hostAspect host)
-    (lib.map (hostIncludesUser host) (lib.attrValues host.users))
+    (lib.map (hostUserAspect host) (lib.attrValues host.users))
   ]) hosts;
 
   defaults = [
     {
-      defaults.host =
+      default.host =
         { aspect, ... }:
         {
+          includes = [ (_: {class, ...}: aspect.${class} or {}) ];
           __functor = _: host: x: {
             includes = lib.map (f: f host x) aspect.includes;
           };
         };
-      defaults.user =
+      default.user =
         { aspect, ... }:
         {
+          includes = [ (_: _: {class, ...}: aspect.${class} or {}) ];
           __functor = _: host: user: x: {
             includes = lib.map (f: f host user x) aspect.includes;
           };
@@ -55,7 +57,7 @@ let
   ];
 
   fa-types = inputs.flake-aspects.lib.types lib;
-  defaultsOption =
+  defaultOption =
     description:
     lib.mkOption {
       inherit description;
@@ -67,12 +69,12 @@ in
 {
   config.flake.aspects = lib.mkMerge (lib.flatten (defaults ++ deps));
 
-  options.flake.aspects.defaults = lib.mkOption {
+  options.flake.aspects.default = lib.mkOption {
     description = "defaults";
     default = { };
     type = lib.types.submodule {
-      options.host = defaultsOption "defaults for hosts";
-      options.user = defaultsOption "defaults for users";
+      options.host = defaultOption "defaults for hosts";
+      options.user = defaultOption "defaults for users";
     };
   };
 }
