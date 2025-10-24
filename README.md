@@ -25,7 +25,10 @@ Or clone it and run the VM as you edit
 
 ```console
 nix flake init -t github:vic/den
+nix run .#vm
 ```
+
+Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 </td>  
 <td>
