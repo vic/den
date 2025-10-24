@@ -91,29 +91,40 @@ The following code example tries to take you into a tour of `den` usage. Remembe
   # You can nest the definition when needed, eg. to set non-default values.
 
   den.x86-64-linux.work-laptop.users.vic = {};
-
-  # From this example: `class` is inferred as `nixos` (because of `system`),
-  # aspect-name is `work-laptop` for host, and `vic` for user.
-
-  # `flake.nixosConfigurations.work-laptop` will import `flake.modules.nixos.work-laptop`.
-  #  the flake.aspects system computes the final aggregated module by:
-  #
-  # - importing `flake.aspects.default.host.nixos` module if any.
-  # - calling each `flake.aspects.default.host.includes` with `{ host }` 
-  #   to obtain other aspects.
-  # - calling each `flake.aspects.default.user.includes` with `{ host, user }`
-  #   to obtain other aspects.
-  # - all aspect dependencies are followed and their same-class modules (`nixos`)
-  #   are all imported in the final `flake.modules.nixos.work-laptop` module.
-  #
-  # The same would happen for any other nix class, like `darwin`.
-
 }
 ```
 
-That's pretty much it, as far as host definition is concerned. Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects), refer to its README and tests for usage. The rest of this guide is an example of aspects customization.
+> That's pretty much it! as far as host definition is concerned.
 
-Remember that dendritic aspects are incremental, many different files can contribute to the same aspect. Read [vic](https://github.com/vic)'s [dendritic guide](https://vic.github.io/dendrix/Dendritic.html) for more on this. In our following example, we try to keep things minimal, but files will grow or be split into other modules as you improve them.
+Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects), refer to its README and tests for usage. The rest of this guide is an example of aspects customization.
+
+From our example, `class` is inferred as `nixos` because its `system` name,
+aspect-names are `work-laptop` for host, and `vic` for user.
+
+`flake.nixosConfigurations.work-laptop` will import `flake.modules.nixos.work-laptop`.
+the `flake.aspects` system computes the final aggregated module by:
+
+- using global `flake.aspects.default.host.${host.class}` definitions.
+- calling `flake.aspects.default.host.includes` with `{ host }`
+  to obtain `${host.class}` modules from other aspects.
+- calling `flake.aspects.${user.aspect}.provides.${host.aspect}` with `{ host, user }`
+  to obtain `${host.class}` modules from other aspects.
+- all aspect dependencies are followed and all `${host.class}` modules
+  collected and imported in the final `flake.modules.nixos.work-laptop` module.
+
+The same would happen for any other host nix class, like `darwin`.
+
+You can see these dependencies being defined at [`aspects-config.nix`](nix/aspects-config.nix).
+
+In a similar fashion, user aspects have these dependencies:
+
+- using global `flake.aspects.default.user.${user.class}` definitions.
+- calling each `flake.aspects.default.user.includes` with `{ host, user }`
+  to obtain more `${user.class}` modules from other aspects.
+
+For user level configs common classes are `homeManager` or `hjem`.
+
+Remember that dendritic aspects are incremental, and many different files can contribute to the same aspect. Read [vic](https://github.com/vic)'s [dendritic guide](https://vic.github.io/dendrix/Dendritic.html) for more on this. In our following example, we try to keep things minimal, but files will grow or be split into other modules as you improve them.
 
 Now, lets continue our example by adding some dendritic modules:
 
@@ -158,26 +169,14 @@ Now, lets continue our example by adding some dendritic modules:
   };
 }
 
-# modules/vic/host-user.nix -- routes aspects per host
+# modules/vic/at-work-laptop.nix
 {
-  flake.aspects = { aspects, ... }: {
-
-    # hook into default.host so we can provide the vic user.
-    default.user.includes = [ aspects.vic.provides.host-user ];
-
-    vic.provides.host-user = { host, user }:
-      if user.userName == "vic"
-      then flake.aspects.vic.provides."user-at-${host.hostName}"
-      else _: {};
-
-    vic.provides.user-at-work-laptop = _: {
-      darwin.system.primaryUser = "vic";
-      nixos.users.users.vic = {
-        isNormalUser = true;
-        extraGroups = [ "wheel" ];
-      };
+  flake.aspects.vic.provides.work-laptop = {host, user}: _: {
+    darwin.system.primaryUser = "vic";
+    nixos.users.users.vic = {
+      isNormalUser = true;
+      extraGroups = [ "wheel" ];
     };
-
   };
 }
 ```
