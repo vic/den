@@ -11,7 +11,7 @@
 <tr>
 <td>
 
-<img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" /> 
+<img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
 <em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
 
@@ -30,7 +30,7 @@ nix run .#vm
 
 Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
-</td>  
+</td>
 <td>
 
 🏠 Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
@@ -39,7 +39,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 # modules/hosts.nix -- see schema at nix/types.nix
 {
   # Define a host with a single user:
-  den.x86-64-linux.work-laptop.users.vic = {};
+  den.hosts.x86-64-linux.work-laptop.users.vic = {};
 
   # That's it! The rest is adding flake.aspects.
 }
@@ -74,7 +74,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 ```
 
 </td>
-</tr>  
+</tr>
 </table>
 
 ## Usage
@@ -91,7 +91,7 @@ The following code example provides a tour of `den`'s usage. Remember that you a
   # The most common use is a one-liner: defining a host with a single user.
   # You can nest the definition when needed, for example, to set non-default values.
 
-  den.x86-64-linux.work-laptop.users.vic = {};
+  den.hosts.x86-64-linux.work-laptop.users.vic = {};
 }
 ```
 
@@ -164,7 +164,7 @@ Now, let's continue our example by adding some dendritic modules:
 {
   flake.aspects = { aspects, ... }: {
     vic.homeManager = ...; # dot-files, basic environment.
-    vic.includes = with aspects; [ 
+    vic.includes = with aspects; [
       tiling-desktop vim-btw secret-vault.provides.vic-personal
     ];
   };

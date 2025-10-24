@@ -1,6 +1,6 @@
 lib:
 let
-  denOption = lib.mkOption {
+  hostsOption = lib.mkOption {
     description = "den hosts definition";
     default = { };
     type = lib.types.attrsOf systemType;
@@ -57,5 +57,5 @@ let
 
 in
 {
-  inherit denOption;
+  inherit hostsOption;
 }

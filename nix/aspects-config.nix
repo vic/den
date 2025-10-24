@@ -6,7 +6,7 @@
   ...
 }:
 let
-  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den));
+  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.hosts));
 
   hostAspect =
     host:

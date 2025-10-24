@@ -1,21 +1,22 @@
 # Instantiate osConfigurations from hosts
 {
+  config,
   inputs,
   lib,
-  config,
+  self,
   ...
 }:
 let
-  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den));
+  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.hosts));
 
   mkSystem =
     class: if class == "darwin" then inputs.darwin.lib.darwinSystem else inputs.nixpkgs.lib.nixosSystem;
 
   osConfiguration = host: {
-    name = host.name;
+    inherit (host) name;
     value = (mkSystem host.class) {
-      system = host.system;
-      modules = [ inputs.self.modules.${host.class}.${host.aspect} ];
+      inherit (host) system;
+      modules = [ self.modules.${host.class}.${host.aspect} ];
     };
   };
 
