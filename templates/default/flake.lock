@@ -2,11 +2,11 @@
   "nodes": {
     "den": {
       "locked": {
-        "lastModified": 1761284496,
-        "narHash": "sha256-+fBpEG+SatCPaZ7gJR2+oLTD90qzib98GzOZ7ETmKrM=",
+        "lastModified": 1761329604,
+        "narHash": "sha256-MvlCy2qW7pQf9WyGdZF2Ys6mv6oiLZVv4eoDhTXpjI0=",
         "owner": "vic",
         "repo": "den",
-        "rev": "ef7a1406c111135a4005e9132409dbe284bfa208",
+        "rev": "6ac390757fb661360e7a0f38d9a444078b5d2346",
         "type": "github"
       },
       "original": {
@@ -32,11 +32,11 @@
     },
     "flake-file": {
       "locked": {
-        "lastModified": 1761001623,
-        "narHash": "sha256-HpDrrMY2CMzHy8xX3Flxo4P1Mj92teEa0FjGEN2xI3s=",
+        "lastModified": 1761337130,
+        "narHash": "sha256-v/YUSrVy1Nscw4SA1JWztxkoCvUNhwArCklzLvNmqOU=",
         "owner": "vic",
         "repo": "flake-file",
-        "rev": "53a9c4bb40fcc8c834136a393fbbee0083f9c7a7",
+        "rev": "4eb2b6a29158489d54b8c68ccd1d4887b380dcf0",
         "type": "github"
       },
       "original": {
@@ -195,11 +195,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1760945191,
-        "narHash": "sha256-ZRVs8UqikBa4Ki3X4KCnMBtBW0ux1DaT35tgsnB1jM4=",
+        "lastModified": 1761311587,
+        "narHash": "sha256-Msq86cR5SjozQGCnC6H8C+0cD4rnx91BPltZ9KK613Y=",
         "owner": "numtide",
         "repo": "treefmt-nix",
-        "rev": "f56b1934f5f8fcab8deb5d38d42fd692632b47c2",
+        "rev": "2eddae033e4e74bf581c2d1dfa101f9033dbd2dc",
         "type": "github"
       },
       "original": {
