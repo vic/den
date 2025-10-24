@@ -18,7 +18,7 @@ let
     value = withSystem host.system (
       { inputs', self', ... }:
       (mkSystem host.class) {
-        system = host.system;
+        inherit (host) system;
         specialArgs = { inherit inputs' self'; };
         modules = [ self.modules.${host.class}.${host.aspect} ];
       }
