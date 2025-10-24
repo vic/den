@@ -6,7 +6,7 @@
   ...
 }:
 let
-  hosts = lib.flatten (lib.map lib.attrValues (lib.attrValues config.den));
+  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den));
 
   hostAspect =
     host:
@@ -38,9 +38,9 @@ let
       ${host.aspect}.includes = [ (hostUserProvider context) ];
     };
 
-  deps = lib.map (host: [
+  deps = map (host: [
     (hostAspect host)
-    (lib.map (hostUserAspect host) (lib.attrValues host.users))
+    (map (hostUserAspect host) (builtins.attrValues host.users))
   ]) hosts;
 
   defaults = [
@@ -54,7 +54,7 @@ let
             { class, ... }:
             {
               name = "(default.host ${host.name})";
-              includes = lib.map (f: f { inherit host; }) aspect.includes;
+              includes = map (f: f { inherit host; }) aspect.includes;
               ${class} = aspect.${class} or { };
             };
         };
@@ -67,7 +67,7 @@ let
             { class, ... }:
             {
               name = "(default.user ${host.name} ${user.name})";
-              includes = lib.map (f: f { inherit host user; }) aspect.includes;
+              includes = map (f: f { inherit host user; }) aspect.includes;
               ${class} = aspect.${class} or { };
             };
         };
