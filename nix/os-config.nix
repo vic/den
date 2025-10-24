@@ -1,10 +1,8 @@
 # Instantiate osConfigurations from hosts
 {
-  config,
   inputs,
   lib,
-  self,
-  withSystem,
+  config,
   ...
 }:
 let
@@ -15,14 +13,10 @@ let
 
   osConfiguration = host: {
     name = host.name;
-    value = withSystem host.system (
-      { inputs', self', ... }:
-      (mkSystem host.class) {
-        inherit (host) system;
-        specialArgs = { inherit inputs' self'; };
-        modules = [ self.modules.${host.class}.${host.aspect} ];
-      }
-    );
+    value = (mkSystem host.class) {
+      system = host.system;
+      modules = [ inputs.self.modules.${host.class}.${host.aspect} ];
+    };
   };
 
   osConfigurations =
