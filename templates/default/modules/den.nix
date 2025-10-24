@@ -1,12 +1,6 @@
-{ inputs, lib, ... }:
+# USER TODO: remove this file.
+# copy any desired module to your ./modules and let it be auto-imported.
+{ inputs, ... }:
 {
-  flake-file.inputs.den.url = lib.mkDefault "github:vic/den";
-
-  imports = [
-    inputs.den.flakeModule
-
-    # USER TODO: remove this import-tree
-    # copy any desired module to your ./modules and let it be auto-imported.
-    (inputs.import-tree ./_example)
-  ];
+  imports = [ (inputs.import-tree ./_example) ];
 }
