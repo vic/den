@@ -18,17 +18,14 @@
 **❄️ Try it now! Launch our template VM:**
 
 ```console
-nix run "github:vic/den?dir=templates/default#vm"
+nix run github:vic/den
 ```
 
-Or clone it and adapt it to your liking:
+Or clone it and run the VM as you edit
 
 ```console
 nix flake init -t github:vic/den
-nix run .#vm # Launch the VM as you edit.
 ```
-
-
 
 </td>  
 <td>
