@@ -7,6 +7,7 @@
 }:
 let
   hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.hosts));
+  homes = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.homes));
 
   hostAspect =
     host:
@@ -15,6 +16,16 @@ let
       ${host.aspect} = {
         includes = [ (aspects.default.host { inherit host; }) ];
         ${host.class} = { };
+      };
+    };
+
+  homeAspect =
+    home:
+    { aspects, ... }:
+    {
+      ${home.aspect} = {
+        includes = [ (aspects.default.home { inherit home; }) ];
+        ${home.class} = { };
       };
     };
 
@@ -38,10 +49,14 @@ let
       ${host.aspect}.includes = [ (hostUserProvider context) ];
     };
 
-  deps = map (host: [
+  hostDeps = map (host: [
     (hostAspect host)
     (map (hostUserAspect host) (builtins.attrValues host.users))
   ]) hosts;
+
+  homeDeps = map homeAspect homes;
+
+  deps = hostDeps ++ homeDeps;
 
   defaults = [
     {
@@ -71,6 +86,19 @@ let
               ${class} = aspect.${class} or { };
             };
         };
+      default.home =
+        { aspect, ... }:
+        {
+          __functor =
+            _:
+            { home }:
+            { class, ... }:
+            {
+              name = "(default.home ${home.name})";
+              includes = map (f: f { inherit home; }) aspect.includes;
+              ${class} = aspect.${class} or { };
+            };
+        };
     }
   ];
 
@@ -93,6 +121,7 @@ in
     type = lib.types.submodule {
       options.host = defaultOption "defaults for hosts";
       options.user = defaultOption "defaults for users";
+      options.home = defaultOption "defaults for standalone homes";
     };
   };
 }

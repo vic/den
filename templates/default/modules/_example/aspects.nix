@@ -8,7 +8,7 @@
       # rockhopper.nixos = { };  # config for rockhopper host
       # alice.homeManager = { }; # config for alice
 
-      # default.{host,user} can be used for global settings.
+      # default.{host,user,home} can be used for global settings.
       default.host.darwin.system.stateVersion = 6;
       default.host.nixos =
         { modulesPath, ... }:
@@ -18,9 +18,16 @@
           system.stateVersion = "25.11";
         };
 
+      default.home.homeManager =
+        { lib, ... }:
+        {
+          home.stateVersion = lib.mkDefault "25.11";
+        };
+
       # parametric host and user configs. see aspects-config.nix
       default.host.includes = [ aspects.example.provides.host ];
       default.user.includes = [ aspects.example.provides.user ];
+      default.home.includes = [ aspects.example.provides.home ];
 
       # parametric providers.
       example.provides = {
@@ -38,6 +45,16 @@
             nixos.users.users.${user.userName} = {
               isNormalUser = true;
               extraGroups = [ "wheel" ];
+            };
+          };
+
+        home =
+          { home }:
+          { class, ... }:
+          {
+            ${class}.home = {
+              username = home.userName;
+              homeDirectory = "/home/${home.userName}";
             };
           };
       };

@@ -2,18 +2,14 @@
   "nodes": {
     "den": {
       "locked": {
-        "lastModified": 1761337784,
-        "narHash": "sha256-cqGXSrdMzMPblFRBPrWrnGMzCdNVmM7ZW8DBoKCG1xU=",
-        "owner": "vic",
-        "repo": "den",
-        "rev": "cb49a1e30d668c7034bbf7c622977152d2065073",
-        "type": "github"
+        "path": "../..",
+        "type": "path"
       },
       "original": {
-        "owner": "vic",
-        "repo": "den",
-        "type": "github"
-      }
+        "path": "../..",
+        "type": "path"
+      },
+      "parent": []
     },
     "flake-aspects": {
       "locked": {
@@ -60,6 +56,26 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1761395627,
+        "narHash": "sha256-9wQpgBRW2PzYw1wx+MgCt1IbPAYz93csApLMgSZOJCk=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "7296022150cd775917e4c831c393026eae7c2427",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
         "type": "github"
       }
     },
@@ -165,6 +181,7 @@
         "flake-aspects": "flake-aspects",
         "flake-file": "flake-file",
         "flake-parts": "flake-parts",
+        "home-manager": "home-manager",
         "import-tree": "import-tree",
         "nix-auto-follow": "nix-auto-follow",
         "nixpkgs": "nixpkgs_2",

@@ -55,7 +55,36 @@ let
       inherit description default;
     };
 
+  homesOption = lib.mkOption {
+    description = "den standalone home-manager configurations";
+    default = { };
+    type = lib.types.attrsOf homeSystemType;
+  };
+
+  homeSystemType = lib.types.submodule (
+    { name, ... }:
+    {
+      freeformType = lib.types.attrsOf (homeType name);
+    }
+  );
+
+  homeType =
+    system:
+    lib.types.submodule (
+      { name, config, ... }:
+      {
+        options = {
+          name = strOpt "home configuration name" name;
+          userName = strOpt "user account name" name;
+          system = strOpt "platform system" system;
+          class = strOpt "home management nix class" "homeManager";
+          aspect = strOpt "main aspect name" config.userName;
+          description = strOpt "home description" "home.${config.userName}@${config.system}";
+        };
+      }
+    );
+
 in
 {
-  inherit hostsOption;
+  inherit hostsOption homesOption;
 }

@@ -79,7 +79,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 ## Usage
 
-The [syntax](nix/types.nix) for a Host and its Users is concise and [focused](nix/os-config.nix) on system definition, not on their features.
+The [syntax](nix/types.nix) for a Host and its Users is concise and [focused](nix/os-config.nix) on system definition, not on their features. Standalone home configurations are managed via [home-config.nix](nix/home-config.nix).
 
 Host and User features are configured using [flake.aspects](https://github.com/vic/flake-aspects). For global features, this library [adds](nix/aspects-config.nix) `flake.aspects.default.host` and `flake.aspects.default.user`.
 
@@ -96,6 +96,21 @@ The following code example provides a tour of `den`'s usage. Remember that you a
 ```
 
 > That's it for the host definition.
+
+For standalone home-manager configurations (without a NixOS/Darwin host):
+
+```nix
+# modules/homes.nix -- see <den>/nix/types.nix for schema.
+{
+  # Define standalone home configurations for any system.
+  den.homes.x86-64-linux.vic = {};
+  
+  # Multiple homes can share the same aspect.
+  den.homes.aarch64-darwin.vic = {};
+}
+```
+
+These will generate `flake.homeConfigurations.vic` entries that can be activated with `home-manager switch --flake .#vic`.
 
 Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects). Refer to its README and tests for usage. The rest of this guide is an example of aspect customization.
 
