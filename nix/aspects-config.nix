@@ -13,7 +13,6 @@ let
     { aspects, ... }:
     {
       ${host.aspect} = {
-        description = lib.mkDefault "Host ${host.hostName}";
         includes = [ (aspects.default.host { inherit host; }) ];
         ${host.class} = { };
       };
@@ -23,11 +22,8 @@ let
     host: user:
     { aspects, ... }:
     {
-      ${user.aspect} = {
-        description = lib.mkDefault "User ${user.userName}";
-        includes = [ (aspects.default.user { inherit host user; }) ];
-        ${user.class} = { };
-      };
+      ${host.aspect}.includes = [ (aspects.default.user { inherit host user; }) ];
+      ${user.aspect}.${user.class} = { };
     };
 
   deps = lib.map (host: [
@@ -45,6 +41,7 @@ let
             { host }:
             { class, ... }:
             {
+              name = "(default.host ${host.name})";
               includes = lib.map (f: f { inherit host; }) aspect.includes;
               ${class} = aspect.${class} or { };
             };
@@ -57,6 +54,7 @@ let
             { host, user }:
             { class, ... }:
             {
+              name = "(default.user ${host.name} ${user.name})";
               includes = lib.map (f: f { inherit host user; }) aspect.includes;
               ${class} = aspect.${class} or { };
             };
@@ -64,13 +62,13 @@ let
     }
   ];
 
-  fa-types = inputs.flake-aspects.lib.types lib;
+  aspect-types = inputs.flake-aspects.lib.types lib;
   defaultOption =
     description:
     lib.mkOption {
       inherit description;
       default = { };
-      type = fa-types.aspectSubmodule;
+      type = aspect-types.aspectSubmodule;
     };
 
 in

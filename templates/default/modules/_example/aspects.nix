@@ -5,26 +5,21 @@
   flake.aspects =
     { aspects, ... }:
     {
-      # hosts
-      # rockhopper.nixos = { }; # config for rockhopper host
+      # rockhopper.nixos = { };  # config for rockhopper host
+      # alice.homeManager = { }; # config for alice
 
-      # parametric host configs. see aspects-config.nix
+      # parametric host and user configs. see aspects-config.nix
       default.host.includes = [ aspects.example.provides.host ];
-      # host defaults.
+      default.user.includes = [ aspects.example.provides.user ];
+
       default.host.darwin.system.stateVersion = 6;
-      # for demo, we make all our nixos hosts vm bootable.
       default.host.nixos =
         { modulesPath, ... }:
         {
+          # for demo, we make all our nixos hosts vm bootable.
           imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
           system.stateVersion = "25.11";
         };
-
-      # users
-      # alice.homeManager = { }; # config for alice
-
-      # parametric default user configs. see aspects-config.nix
-      default.user.includes = [ aspects.example.provides.user ];
 
       # parametric providers.
       example.provides = {
@@ -36,7 +31,7 @@
           };
 
         user =
-          { user }:
+          { user, ... }:
           _: {
             darwin.system.principalUser = user.userName;
             nixos.users.users.${user.userName} = {
