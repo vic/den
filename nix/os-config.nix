@@ -8,7 +8,7 @@
   ...
 }:
 let
-  hosts = lib.flatten (lib.map lib.attrValues (lib.attrValues config.den));
+  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den));
 
   mkSystem =
     class: if class == "darwin" then inputs.darwin.lib.darwinSystem else inputs.nixpkgs.lib.nixosSystem;
@@ -18,7 +18,7 @@ let
     value = withSystem host.system (
       { inputs', self', ... }:
       (mkSystem host.class) {
-        system = host.system;
+        inherit (host) system;
         specialArgs = { inherit inputs' self'; };
         modules = [ self.modules.${host.class}.${host.aspect} ];
       }
@@ -26,7 +26,7 @@ let
   };
 
   osConfigurations =
-    class: lib.listToAttrs (lib.map osConfiguration (lib.filter (x: x.class == class) hosts));
+    class: builtins.listToAttrs (map osConfiguration (builtins.filter (x: x.class == class) hosts));
 
   flake.nixosConfigurations = osConfigurations "nixos";
   flake.darwinConfigurations = osConfigurations "darwin";
