@@ -21,9 +21,10 @@
 🏠 Concise host definitions ([working example](templates/default/modules/_example/hosts.nix))
 
 ```nix
-# modules/hosts.nix -- defines a host with single user.
+# modules/hosts.nix
 {
-  den.x86-64-linux.work-laptop.users.vic = {}; # schema: types.nix
+  # define a host with single user. schema: types.nix
+  den.x86-64-linux.work-laptop.users.vic = {};
 }
 ```
 
@@ -34,7 +35,9 @@
 {
   flake.aspects = { aspects, ... }: {
     work-laptop = {
-      includes = with aspects; [ vpn office secrets.provides.work ];
+      includes = with aspects; [
+        vpn office secrets.provides.work
+      ];
       darwin = ...; # (see nix-darwin options)
       nixos  = ...; # (see nixos options)
     };
@@ -100,7 +103,7 @@ Remember that dendritic aspects are incremental, many different files can contri
 
 Now, lets continue our example by adding some dendritic modules:
 
-```
+```nix
 # modules/host-defaults.nix -- these apply to all hosts
 {
   flake.aspects.default.host = {
