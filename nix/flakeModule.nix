@@ -7,5 +7,5 @@ in
     ./os-config.nix
     ./aspects-config.nix
   ];
-  options.den.hosts = types.hostsOption;
+  options.den = types.denOption;
 }

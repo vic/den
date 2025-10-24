@@ -6,7 +6,7 @@
   ...
 }:
 let
-  hosts = lib.attrValues config.den.hosts;
+  hosts = lib.flatten (lib.map lib.attrValues (lib.attrValues config.den));
 
   mkSystem =
     class: if class == "darwin" then inputs.darwin.lib.darwinSystem else inputs.nixpkgs.lib.nixosSystem;

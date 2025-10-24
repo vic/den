@@ -2,25 +2,15 @@
 # Feel free to remove it, adapt or split into several modules.
 # See documentation at <den>/nix/types.nix
 {
-  den.hosts = {
+  den.aarch64-darwin.honeycrisp.users.alice = { };
+  den.aarch64-linux.emperor.users.alice = { };
+  den.x86_64-linux = {
     rockhopper = {
-      description = "rockhopper is a kind of penguin";
-      system = "x86_64-linux";
-      users.alice = { };
-    };
-    honeycrisp = {
-      description = "nix-darwin on MacOS";
-      system = "aarch64-darwin";
-      users.alice = { };
-    };
-    emperor = {
-      description = "nixos on MacMini";
-      system = "aarch64-linux";
+      # description = "rockhopper is a kind of penguin";
       users.alice = { };
     };
     adelie = {
-      description = "wsl on windows";
-      system = "x86_64-linux";
+      # description = "wsl on windows";
       users.alice = { };
     };
   };

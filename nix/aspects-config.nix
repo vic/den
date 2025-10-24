@@ -6,7 +6,7 @@
   ...
 }:
 let
-  hosts = lib.attrValues config.den.hosts;
+  hosts = lib.flatten (lib.map lib.attrValues (lib.attrValues config.den));
 
   hostAspect =
     host:
@@ -18,12 +18,24 @@ let
       };
     };
 
+  emptyHostUserProvider =
+    # deadnix: skip
+    { host, user }: _: { };
+
   hostUserAspect =
     host: user:
     { aspects, ... }:
+    let
+      context = { inherit host user; };
+      hostUserProvider = aspects.${user.aspect}.provides.${host.aspect} or emptyHostUserProvider;
+    in
     {
-      ${host.aspect}.includes = [ (aspects.default.user { inherit host user; }) ];
-      ${user.aspect}.${user.class} = { };
+      ${user.aspect} = {
+        ${user.class} = { };
+        includes = [ (aspects.default.user context) ];
+      };
+
+      ${host.aspect}.includes = [ (hostUserProvider context) ];
     };
 
   deps = lib.map (host: [

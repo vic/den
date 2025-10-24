@@ -18,28 +18,42 @@
 </td>  
 <td>
 
-🏠 Concise host definitions ([working example](templates/default/modules/_example/hosts.nix))
+🏠 Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
 
 ```nix
-# modules/hosts.nix
+# modules/hosts.nix -- see schema at types.nix
 {
-  # define a host with single user. schema: types.nix
+  # define a host with single user:
   den.x86-64-linux.work-laptop.users.vic = {};
+
+  # that's it! the rest is adding flake.aspects
 }
 ```
 
-🧩 [aspect-oriented](https://github.com/vic/flake-aspects) dendritic modules ([working example](templates/default/modules/_example/aspects.nix))
+🧩 [aspect-oriented](https://github.com/vic/flake-aspects) dendritic modules ([example](templates/default/modules/_example/aspects.nix))
 
 ```nix
 # modules/work-laptop.nix
 {
-  flake.aspects = { aspects, ... }: {
-    work-laptop = {
-      includes = with aspects; [
-        vpn office secrets.provides.work
-      ];
-      darwin = ...; # (see nix-darwin options)
-      nixos  = ...; # (see nixos options)
+  flake.aspects.work-laptop = {
+    darwin = ...; # (see nix-darwin options)
+    nixos  = ...; # (see nixos options)
+
+    includes = with flake.aspects; [ vpn office ];
+  };
+}
+
+# modules/vic.nix -- see <den>/nix/aspects.nix
+{
+  flake.aspects.vic = {
+    includes = with flake.aspects; [ tiling-wm secrets ];
+    homeManager = ...; # dot-files, etc.
+    nixos = ...; # vic's common os level services.
+
+    # `vic` provides `work-laptop` to configure os.
+    provides.work-laptop = { host, user }: _: {
+      darwin.system.primaryUser = user.userName;
+      nixos.users.users.vic.isNormalUser = true;
     };
   };
 }
@@ -78,18 +92,18 @@ The following code example tries to take you into a tour of `den` usage. Remembe
 
   den.x86-64-linux.work-laptop.users.vic = {};
 
-  # From this example: `class` is `nixos` (`system` does not end with `darwin`)
-  # Inferred aspect-name is `work-laptop` for host, and `vic` for user.
+  # From this example: `class` is inferred as `nixos` (because of `system`),
+  # aspect-name is `work-laptop` for host, and `vic` for user.
 
   # `flake.nixosConfigurations.work-laptop` will import `flake.modules.nixos.work-laptop`.
-  # from there, the aspects dependency system computes the aggregated module by:
+  #  the flake.aspects system computes the final aggregated module by:
   #
   # - importing `flake.aspects.default.host.nixos` module if any.
-  # - calling each of `flake.aspects.default.host.includes` with `{ host }` 
+  # - calling each `flake.aspects.default.host.includes` with `{ host }` 
   #   to obtain other aspects.
-  # - calling each of `flake.aspects.default.user.includes` with `{ host, user }`
+  # - calling each `flake.aspects.default.user.includes` with `{ host, user }`
   #   to obtain other aspects.
-  # - all aspect dependencies are followed and their nixos modules
+  # - all aspect dependencies are followed and their same-class modules (`nixos`)
   #   are all imported in the final `flake.modules.nixos.work-laptop` module.
   #
   # The same would happen for any other nix class, like `darwin`.
@@ -97,7 +111,7 @@ The following code example tries to take you into a tour of `den` usage. Remembe
 }
 ```
 
-That's pretty much it, as long as host definition is concerned. Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects), refer to its README and tests for usage.
+That's pretty much it, as far as host definition is concerned. Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects), refer to its README and tests for usage. The rest of this guide is an example of aspects customization.
 
 Remember that dendritic aspects are incremental, many different files can contribute to the same aspect. Read [vic](https://github.com/vic)'s [dendritic guide](https://vic.github.io/dendrix/Dendritic.html) for more on this. In our following example, we try to keep things minimal, but files will grow or be split into other modules as you improve them.
 
@@ -144,12 +158,12 @@ Now, lets continue our example by adding some dendritic modules:
   };
 }
 
-# modules/vic/host-user.nix -- routes per host
+# modules/vic/host-user.nix -- routes aspects per host
 {
   flake.aspects = { aspects, ... }: {
 
     # hook into default.host so we can provide the vic user.
-    default.host.includes = [ aspects.vic.provides.host-user ];
+    default.user.includes = [ aspects.vic.provides.host-user ];
 
     vic.provides.host-user = { host, user }:
       if user.userName == "vic"
