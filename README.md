@@ -15,6 +15,21 @@
 
 <em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
 
+**❄️ Try it now! Launch our template VM:**
+
+```console
+nix run "github:vic/den?dir=templates/default#vm"
+```
+
+Or clone it and adapt it to your liking:
+
+```console
+nix flake init -t github:vic/den
+nix run .#vm # Launch the VM as you edit.
+```
+
+
+
 </td>  
 <td>
 
@@ -46,11 +61,10 @@
 # modules/vic.nix -- see <den>/nix/aspects.nix
 {
   flake.aspects.vic = {
-    includes = with flake.aspects; [ tiling-wm secrets ];
-    homeManager = ...; # dot-files, etc.
-    nixos = ...; # vic's common os level services.
+    includes = with flake.aspects; [ tiling-wm ];
+    homeManager = ...;
+    nixos = ...;
 
-    # `vic` provides `work-laptop` to configure the OS.
     provides.work-laptop = { host, user }: _: {
       darwin.system.primaryUser = user.userName;
       nixos.users.users.vic.isNormalUser = true;
@@ -62,19 +76,6 @@
 </td>
 </tr>  
 </table>
-
-**❄️ Try it now! Launch our template VM:**
-
-```console
-nix run "github:vic/den?dir=templates/default#vm"
-```
-
-Or clone it and adapt it to your liking:
-
-```console
-nix flake init -t github:vic/den
-nix run .#vm # Launch the VM as you edit.
-```
 
 ## Usage
 
