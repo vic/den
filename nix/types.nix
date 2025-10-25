@@ -1,6 +1,6 @@
 lib:
 let
-  denOption = lib.mkOption {
+  hostsOption = lib.mkOption {
     description = "den hosts definition";
     default = { };
     type = lib.types.attrsOf systemType;
@@ -18,6 +18,7 @@ let
     lib.types.submodule (
       { name, config, ... }:
       {
+        freeformType = lib.types.attrsOf lib.types.anything;
         options = {
           name = strOpt "host configuration name" name;
           hostName = strOpt "Network hostname" name;
@@ -39,6 +40,7 @@ let
   userType = lib.types.submodule (
     { name, ... }:
     {
+      freeformType = lib.types.attrsOf lib.types.anything;
       options = {
         name = strOpt "user configuration name" name;
         userName = strOpt "user account name" name;
@@ -55,7 +57,37 @@ let
       inherit description default;
     };
 
+  homesOption = lib.mkOption {
+    description = "den standalone home-manager configurations";
+    default = { };
+    type = lib.types.attrsOf homeSystemType;
+  };
+
+  homeSystemType = lib.types.submodule (
+    { name, ... }:
+    {
+      freeformType = lib.types.attrsOf (homeType name);
+    }
+  );
+
+  homeType =
+    system:
+    lib.types.submodule (
+      { name, config, ... }:
+      {
+        freeformType = lib.types.attrsOf lib.types.anything;
+        options = {
+          name = strOpt "home configuration name" name;
+          userName = strOpt "user account name" name;
+          system = strOpt "platform system" system;
+          class = strOpt "home management nix class" "homeManager";
+          aspect = strOpt "main aspect name" config.userName;
+          description = strOpt "home description" "home.${config.userName}@${config.system}";
+        };
+      }
+    );
+
 in
 {
-  inherit denOption;
+  inherit hostsOption homesOption;
 }

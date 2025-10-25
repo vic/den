@@ -17,6 +17,14 @@
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
     };
+    home-manager = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs";
+        };
+      };
+      url = "github:nix-community/home-manager";
+    };
     import-tree = {
       url = "github:vic/import-tree";
     };
