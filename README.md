@@ -107,8 +107,8 @@ For standalone home-manager configurations (without a NixOS/Darwin host):
 # modules/homes.nix -- see <den>/nix/types.nix for schema.
 {
   # Define standalone home configurations for any system.
-  den.homes.x86-64-linux.vic = {};
-  
+  den.homes.x86_64-linux.vic = {};
+
   # Multiple homes can share the same aspect.
   den.homes.aarch64-darwin.vic = {};
 }
