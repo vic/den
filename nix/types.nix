@@ -18,6 +18,7 @@ let
     lib.types.submodule (
       { name, config, ... }:
       {
+        freeformType = lib.types.attrsOf lib.types.anything;
         options = {
           name = strOpt "host configuration name" name;
           hostName = strOpt "Network hostname" name;
@@ -39,6 +40,7 @@ let
   userType = lib.types.submodule (
     { name, ... }:
     {
+      freeformType = lib.types.attrsOf lib.types.anything;
       options = {
         name = strOpt "user configuration name" name;
         userName = strOpt "user account name" name;
@@ -73,6 +75,7 @@ let
     lib.types.submodule (
       { name, config, ... }:
       {
+        freeformType = lib.types.attrsOf lib.types.anything;
         options = {
           name = strOpt "home configuration name" name;
           userName = strOpt "user account name" name;

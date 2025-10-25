@@ -83,6 +83,10 @@ The [syntax](nix/types.nix) for a Host and its Users is concise and [focused](ni
 
 Host and User features are configured using [flake.aspects](https://github.com/vic/flake-aspects). For global features, this library [adds](nix/aspects-config.nix) `flake.aspects.default.host` and `flake.aspects.default.user`.
 
+### Freeform Attributes
+
+The `host`, `user`, and `home` types support freeform attributes, meaning you can add any custom attributes you need beyond the standard options. These custom attributes are accessible in aspect provider functions registered in `flake.aspects.default.{home,user,host}` and in aspect provides functions like `flake.aspects.${user.aspect}.provides.${host.aspect}`. This allows you to pass additional metadata or configuration options that your aspects can use when building the final configuration.
+
 The following code example provides a tour of `den`'s usage. Remember that you are free to have as many or as few files as you want; the Dendritic pattern imposes no rules on where your files are located or how they are named. It is up to you to organize and create a directory structure and aspect organization that makes sense for your use case.
 
 ```nix
