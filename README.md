@@ -207,3 +207,39 @@ Now, let's continue our example by adding some dendritic modules:
 ### Freeform Attributes
 
 The `host`, `user`, and `home` configuration types support freeform attributes, meaning you can add any custom attributes you need beyond the standard options. These custom attributes are accessible in aspect provider functions registered in `flake.aspects.default.{home,user,host}` and in aspect provides functions like `flake.aspects.${user.aspect}.provides.${host.aspect}`. This allows you to pass additional metadata or configuration options that your aspects can use when building the final configuration.
+
+### Custom os/home instantiations
+
+Each `host`/`home` configuration has an optional [`instantiate`](https://github.com/vic/den/blob/2480d18/nix/types.nix#L36) function. You can set this attribute to support new types of OS systems or new types of standalone homes.
+
+As an example lets suppose we need a specific input name (e.g, `nixpkgs-stable` etc) for a particular host:
+
+```nix
+# modules/wsl-instantiate.nix
+{ inputs, ... }:
+{
+  flake.inputs.nixpkgs-stable.url = "https://channels.nixos.org/nixos-25.05/nixexprs.tar.xz";
+  flake.inputs.nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-stable";
+
+  # see <den>/nix/config.nix: `osConfiguration`, types.nix: `hostType.instantiate`
+  den.hosts.x86_64-linux.my-wsl.instantiate = inputs.nixpkgs-stable.lib.nixosSystem;
+}
+```
+
+Another use case is using `extraSpecialArgs` in a standalone-home. Note that using `specialArgs` or `extraSpecialArgs` is an anti-pattern in Dendritic nix, most of the time there's no need for using special args since all dendritic modules are flake-parts modules and all have access to inputs, perSystem, etc. However, if for whatever reason you have _no way around_, you can use the instantiate function to pass special args, just be very very cautious of doing this.
+
+```nix
+{ inputs, self, ... }: 
+{
+  # $ home-manager switch --flake .#vic@work-laptop
+  den.homes.x86_64-linux."vic@work-laptop" = {
+    aspect = "vic"; # re-use same aspect as work-laptop.users.vic
+    # see config.nix: `homeConfiguration`, types.nix: `homeType.instantiate`
+    instantiate = { pkgs, modules }: inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs modules;
+      # example: both os-hm and standalone-hm configs depend on `os-config` arg.
+      extraSpecialArgs.os-config = self.nixosConfigurations.work-laptop.config;
+    };
+  };
+}
+```
