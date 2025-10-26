@@ -74,7 +74,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
     homeManager = ...;
     nixos = ...;
     includes = with flake.aspects; [ tiling-wm ];
-    provides.work-laptop = { host, user }: _: {
+    provides.work-laptop = { host, user }: {
       darwin.system.primaryUser = user.userName;
       nixos.users.users.vic.isNormalUser = true;
     };
@@ -194,7 +194,7 @@ Now, let's continue our example by adding some dendritic modules:
 
 # modules/vic/at-work-laptop.nix
 {
-  flake.aspects.vic.provides.work-laptop = {host, user}: _: {
+  flake.aspects.vic.provides.work-laptop = {host, user}: {
     darwin.system.primaryUser = "vic";
     nixos.users.users.vic = {
       isNormalUser = true;
