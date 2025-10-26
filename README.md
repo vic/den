@@ -7,18 +7,17 @@
 
 # den - Dendritic Nix Host Configurations
 
+
 <table>
 <tr>
 <td>
 
-<em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
-
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- focused on host/homes definitions, configuration via aspects.
-- multi-tenant hosts, shareable configs between os-hm and standalone-hm.
-- supports any nix class: `nixos`, `darwin`, `system-manager`, `wsl`, `home-manager`, `hjem`, etc.
-- custom nixpkgs/darwin inputs, custom os/home factories for nix wizards.
+- focused definitions, configuration via aspects.
+- multi-tenant hosts, shareable-hm: os and standalone.
+- any nix class: `nixos`, `darwin`, `system-manager`, `wsl`, `home-manager`, `hjem`, etc.
+- stable/unstable inputs, custom os/home factories.
 
 **❄️ Try it now! Launch our template VM:**
 
@@ -39,7 +38,9 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 </td>
 <td>
 
-🏠 Concise ([hosts](templates/default/modules/_example/hosts.nix)) and ([homes](templates/default/modules/_example/homes.nix)) definitions.
+<em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
+
+🏠 Concise [hosts+users](templates/default/modules/_example/hosts.nix) and [standalone-homes](templates/default/modules/_example/homes.nix) definition.
 
 ```nix
 # modules/den.nix -- reuse home in nixos & standalone.
@@ -47,7 +48,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
   # $ nixos-rebuild switch --flake .#work-laptop
   den.hosts.x86-64-linux.work-laptop.users.vic = {};
   # $ home-manager switch --flake .#vic
-  den.homes.x86_64-linux.vic = { };
+  den.homes.aarch64-darwin.vic = { };
 
   # That's it! The rest is adding flake.aspects.
 }
