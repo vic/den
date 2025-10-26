@@ -21,8 +21,10 @@ let
   osConfiguration =
     host:
     host.instantiate {
-      inherit (host) system;
-      modules = [ self.modules.${host.class}.${host.aspect} ];
+      modules = [
+        self.modules.${host.class}.${host.aspect}
+        { nixpkgs.hostPlatform = lib.mkDefault host.system; }
+      ];
     };
 
   homeConfiguration =
