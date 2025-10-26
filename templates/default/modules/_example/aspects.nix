@@ -1,6 +1,6 @@
 # example aspect dependencies for our hosts
 # Feel free to remove it, adapt or split into modules.
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
 
   flake.aspects =
@@ -8,6 +8,7 @@
     {
       # rockhopper.nixos = { };  # config for rockhopper host
       # alice.homeManager = { }; # config for alice
+      developer.homeManager = { }; # bob hm aspect=developer.
 
       # wsl is an example aspect for github:nix-community/NixOS-WSL
       wsl.nixos = {
@@ -66,24 +67,16 @@
           { home }:
           { class, ... }:
           {
-            ${class}.home = {
-              username = home.userName;
-              homeDirectory = "/home/${home.userName}";
-            };
+            ${class}.home =
+              let
+                path = if lib.hasSuffix "darwin" home.system then "/Users" else "/home";
+              in
+              {
+                username = home.userName;
+                homeDirectory = "${path}/${home.userName}";
+              };
           };
       };
 
     };
-
-  flake-file.inputs.home-manager = {
-    url = "github:nix-community/home-manager";
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
-
-  flake-file.inputs.nixos-wsl = {
-    url = "github:nix-community/nixos-wsl";
-    inputs.nixpkgs.follows = "nixpkgs";
-    inputs.flake-compat.follows = "";
-  };
-
 }

@@ -2,6 +2,9 @@ on:
   pull_request:
   push:
     branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   flake-check:
     name: nix flake check
@@ -10,19 +13,25 @@ jobs:
       - uses: cachix/install-nix-action@v30
       - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
   template:
-    name: Check template
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        template: [default]
+    name: Check template ${{matrix.template}} ${{matrix.os}}
+    runs-on: ${{matrix.os}}
     steps:
       - uses: wimpysworld/nothing-but-nix@main
+        if: matrix.os == 'ubuntu-latest'
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: |
           set -uveo pipefail
           mkdir templated; cd templated
           nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#default
-          cat <<-EOF > modules/force.nix
+          cat <<-EOF > modules/ci-runtime.nix
           {
             flake-file.inputs.den.url = "github:$GITHUB_REPOSITORY/$GITHUB_SHA";
+            _module.args.ci-os = "${{matrix.os}}";
           }
           EOF
           nix run .#write-flake
