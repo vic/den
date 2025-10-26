@@ -7,14 +7,16 @@
 }:
 let
 
-  build = builder: cfg:
+  build =
+    builder: cfg:
     let
       items = map builtins.attrValues (builtins.attrValues cfg);
       buildItem = item: {
         inherit (item) name intoAttr;
         value = builder item;
       };
-    in map buildItem (lib.flatten items);
+    in
+    map buildItem (lib.flatten items);
 
   osConfiguration =
     host:
@@ -23,7 +25,8 @@ let
       modules = [ self.modules.${host.class}.${host.aspect} ];
     };
 
-  homeConfiguration = home: 
+  homeConfiguration =
+    home:
     withSystem home.system (
       { pkgs, ... }:
       home.instantiate {
