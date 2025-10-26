@@ -17,8 +17,8 @@
 - host/home configs via aspects.
 - multi-platform, multi-tenant hosts.
 - shareable-hm in os and standalone.
-- easily extensible for new nix classes.
-- stable/unstable inputs.
+- extensible for new host/home classes.
+- stable/unstable input channels.
 - customizable os/home factories.
 
 **❄️ Try it now! Launch our template VM:**
@@ -208,7 +208,7 @@ Now, let's continue our example by adding some dendritic modules:
 
 The `host`, `user`, and `home` configuration types support freeform attributes, meaning you can add any custom attributes you need beyond the standard options. These custom attributes are accessible in aspect provider functions registered in `flake.aspects.default.{home,user,host}` and in aspect provides functions like `flake.aspects.${user.aspect}.provides.${host.aspect}`. This allows you to pass additional metadata or configuration options that your aspects can use when building the final configuration.
 
-### Custom os/home instantiations
+### Custom os/home factories
 
 Each `host`/`home` configuration has an optional [`instantiate`](https://github.com/vic/den/blob/2480d18/nix/types.nix#L36) function. You can set this attribute to support new types of OS systems or new types of standalone homes.
 

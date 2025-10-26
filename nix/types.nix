@@ -21,12 +21,12 @@ let
         freeformType = lib.types.attrsOf lib.types.anything;
         options = {
           name = strOpt "host configuration name" name;
-          hostName = strOpt "Network hostname" name;
+          hostName = strOpt "Network hostname" config.name;
           system = strOpt "platform system" system;
           class = strOpt "os-configuration nix class for host" (
             if lib.hasSuffix "darwin" config.system then "darwin" else "nixos"
           );
-          aspect = strOpt "main aspect name of <class>" config.hostName;
+          aspect = strOpt "main aspect name of <class>" config.name;
           description = strOpt "host description" "${config.class}.${config.hostName}@${config.system}";
           users = lib.mkOption {
             description = "user accounts";
@@ -82,14 +82,14 @@ let
     );
 
   userType = lib.types.submodule (
-    { name, ... }:
+    { name, config, ... }:
     {
       freeformType = lib.types.attrsOf lib.types.anything;
       options = {
         name = strOpt "user configuration name" name;
-        userName = strOpt "user account name" name;
+        userName = strOpt "user account name" config.name;
         class = strOpt "home management nix class" "homeManager";
-        aspect = strOpt "main aspect name" name;
+        aspect = strOpt "main aspect name" config.name;
       };
     }
   );
@@ -122,10 +122,10 @@ let
         freeformType = lib.types.attrsOf lib.types.anything;
         options = {
           name = strOpt "home configuration name" name;
-          userName = strOpt "user account name" name;
+          userName = strOpt "user account name" config.name;
           system = strOpt "platform system" system;
           class = strOpt "home management nix class" "homeManager";
-          aspect = strOpt "main aspect name" config.userName;
+          aspect = strOpt "main aspect name" config.name;
           description = strOpt "home description" "home.${config.userName}@${config.system}";
           instantiate = lib.mkOption {
             description = ''

@@ -7,4 +7,12 @@
     userName = "robert";
     aspect = "developer";
   };
+
+  # move these inputs to any module you want.
+  # they are here for all our examples to work on CI.
+  flake-file.inputs.home-manager = {
+    url = "github:nix-community/home-manager";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
 }
