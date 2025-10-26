@@ -7,17 +7,19 @@
 
 # den - Dendritic Nix Host Configurations
 
-
 <table>
 <tr>
 <td>
 
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- focused definitions, configuration via aspects.
-- multi-tenant hosts, shareable-hm: os and standalone.
-- any nix class: `nixos`, `darwin`, `system-manager`, `wsl`, `home-manager`, `hjem`, etc.
-- stable/unstable inputs, custom os/home factories.
+- focused on host/home definitions.
+- host/home configs via aspects.
+- multi-platform, multi-tenant hosts.
+- shareable-hm in os and standalone.
+- easily extensible for new nix classes.
+- stable/unstable inputs.
+- customizable os/home factories.
 
 **❄️ Try it now! Launch our template VM:**
 
@@ -38,7 +40,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 </td>
 <td>
 
-<em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
+<em><h4>A refined, minimalistic approach to declaring<br/>Dendritic Nix host configurations.</h4></em>
 
 🏠 Concise [hosts+users](templates/default/modules/_example/hosts.nix) and [standalone-homes](templates/default/modules/_example/homes.nix) definition.
 
