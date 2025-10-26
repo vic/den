@@ -2,14 +2,18 @@
   "nodes": {
     "den": {
       "locked": {
-        "path": "../..",
-        "type": "path"
+        "lastModified": 1761421703,
+        "narHash": "sha256-gQlS7SVNdDK1G1woZnDWOzM2SeKlIXhRzktijNufqZM=",
+        "owner": "vic",
+        "repo": "den",
+        "rev": "ee168770a272eaed4718804c29812717d67ba594",
+        "type": "github"
       },
       "original": {
-        "path": "../..",
-        "type": "path"
-      },
-      "parent": []
+        "owner": "vic",
+        "repo": "den",
+        "type": "github"
+      }
     },
     "flake-aspects": {
       "locked": {
