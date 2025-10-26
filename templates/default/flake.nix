@@ -5,6 +5,14 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
   inputs = {
+    darwin = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs";
+        };
+      };
+      url = "github:nix-darwin/nix-darwin";
+    };
     den = {
       url = "github:vic/den";
     };
@@ -35,7 +43,7 @@
       inputs = {
         flake-compat = { };
         nixpkgs = {
-          follows = "nixpkgs";
+          follows = "nixpkgs-stable";
         };
       };
       url = "github:nix-community/nixos-wsl";
@@ -45,6 +53,9 @@
     };
     nixpkgs-lib = {
       follows = "nixpkgs";
+    };
+    nixpkgs-stable = {
+      url = "https://channels.nixos.org/nixos-25.05/nixexprs.tar.xz";
     };
     systems = {
       url = "github:nix-systems/default";
