@@ -1,4 +1,4 @@
-lib:
+{ inputs, lib, ... }:
 let
   hostsOption = lib.mkOption {
     description = "den hosts definition";
@@ -32,6 +32,50 @@ let
             description = "user accounts";
             default = { };
             type = lib.types.attrsOf userType;
+          };
+          instantiate = lib.mkOption {
+            description = ''
+              Function used to instantiate the OS configuration.
+
+              Depending on class, defaults to:
+              `darwin`: inputs.darwin.lib.darwinSystem
+              `nixos`:  inputs.nixpkgs.lib.nixosSystem
+              `systemManager`: inputs.system-manager.lib.makeSystemConfig
+
+              Set explicitly if you need:
+
+              - a custom input name, eg, nixos-unstable.
+              - adding specialArgs when absolutely required.
+            '';
+            example = lib.literalExpression "inputs.nixpkgs.lib.nixosSystem";
+            type = lib.types.unspecified;
+            default =
+              {
+                nixos = inputs.nixpkgs.lib.nixosSystem;
+                darwin = inputs.darwin.lib.darwinSystem;
+                systemManager = inputs.system-manager.lib.makeSystemConfig;
+              }
+              .${config.class};
+          };
+          intoAttr = lib.mkOption {
+            description = ''
+              Flake attr where to add the named result of this configuration.
+              flake.<intoAttr>.<name>
+
+              Depending on class, defaults to:
+              `darwin`: darwinConfigurations
+              `nixos`:  nixosConfigurations
+              `systemManager`: systemConfigs
+            '';
+            example = lib.literalExpression ''"nixosConfigurations"'';
+            type = lib.types.str;
+            default =
+              {
+                nixos = "nixosConfigurations";
+                darwin = "darwinConfigurations";
+                systemManager = "systemConfigs";
+              }
+              .${config.class};
           };
         };
       }
@@ -83,6 +127,42 @@ let
           class = strOpt "home management nix class" "homeManager";
           aspect = strOpt "main aspect name" config.userName;
           description = strOpt "home description" "home.${config.userName}@${config.system}";
+          instantiate = lib.mkOption {
+            description = ''
+              Function used to instantiate the home configuration.
+
+              Depending on class, defaults to:
+              `homeManager`: inputs.home-manager.lib.homeManagerConfiguration
+
+              Set explicitly if you need:
+
+              - a custom input name, eg, home-manager-unstable.
+              - adding extraSpecialArgs when absolutely required.
+            '';
+            example = lib.literalExpression "inputs.home-manager.lib.homeManagerConfiguration";
+            type = lib.types.unspecified;
+            default =
+              {
+                homeManager = inputs.home-manager.lib.homeManagerConfiguration;
+              }
+              .${config.class};
+          };
+          intoAttr = lib.mkOption {
+            description = ''
+              Flake attr where to add the named result of this configuration.
+              flake.<intoAttr>.<name>
+
+              Depending on class, defaults to:
+              `homeManager`: homeConfigurations
+            '';
+            example = lib.literalExpression ''"homeConfigurations"'';
+            type = lib.types.str;
+            default =
+              {
+                homeManager = "homeConfigurations";
+              }
+              .${config.class};
+          };
         };
       }
     );

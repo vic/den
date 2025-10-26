@@ -26,4 +26,7 @@ jobs:
           }
           EOF
           nix run .#write-flake
+          nix flake update den
+          nix run .#write-flake
+          nix flake metadata
           nix flake check
