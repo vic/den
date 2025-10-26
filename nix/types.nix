@@ -37,7 +37,7 @@ let
             description = ''
               Function used to instantiate the OS configuration.
 
-              Depending of class, defaults to:
+              Depending on class, defaults to:
               `darwin`: inputs.darwin.lib.darwinSystem
               `nixos`:  inputs.nixpkgs.lib.nixosSystem
               `systemManager`: inputs.system-manager.lib.makeSystemConfig
@@ -62,7 +62,7 @@ let
               Flake attr where to add the named result of this configuration.
               flake.<intoAttr>.<name>
 
-              Depending of class, defaults to:
+              Depending on class, defaults to:
               `darwin`: darwinConfigurations
               `nixos`:  nixosConfigurations
               `systemManager`: systemConfigs
@@ -131,7 +131,7 @@ let
             description = ''
               Function used to instantiate the home configuration.
 
-              Depending of class, defaults to:
+              Depending on class, defaults to:
               `homeManager`: inputs.home-manager.lib.homeManagerConfiguration
 
               Set explicitly if you need:
@@ -152,7 +152,7 @@ let
               Flake attr where to add the named result of this configuration.
               flake.<intoAttr>.<name>
 
-              Depending of class, defaults to:
+              Depending on class, defaults to:
               `homeManager`: homeConfigurations
             '';
             example = lib.literalExpression ''"homeConfigurations"'';
