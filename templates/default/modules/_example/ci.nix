@@ -17,6 +17,10 @@
         homes-alice = mkCheck "homes-alice" ''
           ls -la ${self.homeConfigurations.alice.activation-script} | tee $out
         '';
+
+        wsl-adelie = mkCheck "wsl-adelie" ''
+          ls -la ${self.wslConfigurations.adelie.config.system.build.toplevel} | tee $out
+        '';
       };
     in
     {

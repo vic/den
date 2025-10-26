@@ -12,6 +12,8 @@
     adelie = {
       description = "wsl on windows";
       users.alice = { };
+      aspect = "wsl";
+      intoAttr = "wslConfigurations";
     };
   };
 }

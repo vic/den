@@ -1,5 +1,3 @@
-# den - Dendritic Nix Host Configurations
-
 <p align="right">
   <a href="https://vic.github.io/dendrix/Dendritic.html"> <img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/> </a>
   <a href="https://github.com/vic/den/actions">
@@ -7,13 +5,20 @@
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
 </p>
 
+# den - Dendritic Nix Host Configurations
+
 <table>
 <tr>
 <td>
 
+<em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
+
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-<em><h4>A refined, minimalistic approach to declaring Dendritic Nix host configurations.</h4></em>
+- focused on host/homes definitions, configuration via aspects.
+- multi-tenant hosts, shareable configs between os-hm and standalone-hm.
+- supports any nix class: `nixos`, `darwin`, `system-manager`, `wsl`, `home-manager`, `hjem`, etc.
+- custom nixpkgs/darwin inputs, custom os/home factories for nix wizards.
 
 **❄️ Try it now! Launch our template VM:**
 
@@ -25,6 +30,7 @@ Or clone it and run the VM as you edit
 
 ```console
 nix flake init -t github:vic/den
+nix flake update den
 nix run .#vm
 ```
 
@@ -33,13 +39,15 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 </td>
 <td>
 
-🏠 Concise host definitions ([example](templates/default/modules/_example/hosts.nix))
+🏠 Concise ([hosts](templates/default/modules/_example/hosts.nix)) and ([homes](templates/default/modules/_example/homes.nix)) definitions.
 
 ```nix
-# modules/hosts.nix -- see schema at nix/types.nix
+# modules/den.nix -- reuse home in nixos & standalone.
 {
-  # Define a host with a single user:
+  # $ nixos-rebuild switch --flake .#work-laptop
   den.hosts.x86-64-linux.work-laptop.users.vic = {};
+  # $ home-manager switch --flake .#vic
+  den.homes.x86_64-linux.vic = { };
 
   # That's it! The rest is adding flake.aspects.
 }
@@ -53,18 +61,16 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
   flake.aspects.work-laptop = {
     darwin = ...; # (see nix-darwin options)
     nixos  = ...; # (see nixos options)
-
     includes = with flake.aspects; [ vpn office ];
   };
 }
 
-# modules/vic.nix -- see <den>/nix/aspects.nix
+# modules/vic.nix
 {
   flake.aspects.vic = {
-    includes = with flake.aspects; [ tiling-wm ];
     homeManager = ...;
     nixos = ...;
-
+    includes = with flake.aspects; [ tiling-wm ];
     provides.work-laptop = { host, user }: _: {
       darwin.system.primaryUser = user.userName;
       nixos.users.users.vic.isNormalUser = true;
@@ -79,13 +85,9 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 ## Usage
 
-The [syntax](nix/types.nix) for a Host and its Users is concise and [focused](nix/os-config.nix) on system definition, not on their features. Standalone home configurations are managed via [home-config.nix](nix/home-config.nix).
+The syntax for Hosts, Users and standalone Homes is concise and [focused](nix/config.nix) on system definition, not on their features.
 
-Host and User features are configured using [flake.aspects](https://github.com/vic/flake-aspects). For global features, this library [adds](nix/aspects-config.nix) `flake.aspects.default.host` and `flake.aspects.default.user`.
-
-### Freeform Attributes
-
-The `host`, `user`, and `home` types support freeform attributes, meaning you can add any custom attributes you need beyond the standard options. These custom attributes are accessible in aspect provider functions registered in `flake.aspects.default.{home,user,host}` and in aspect provides functions like `flake.aspects.${user.aspect}.provides.${host.aspect}`. This allows you to pass additional metadata or configuration options that your aspects can use when building the final configuration.
+Features are configured using [flake.aspects](https://github.com/vic/flake-aspects). For global features, this library [adds](nix/aspects.nix) `flake.aspects.default.host`, `flake.aspects.default.user` and `flake.aspects.default.home`.
 
 The following code example provides a tour of `den`'s usage. Remember that you are free to have as many or as few files as you want; the Dendritic pattern imposes no rules on where your files are located or how they are named. It is up to you to organize and create a directory structure and aspect organization that makes sense for your use case.
 
@@ -94,7 +96,6 @@ The following code example provides a tour of `den`'s usage. Remember that you a
 {
   # The most common use is a one-liner: defining a host with a single user.
   # You can nest the definition when needed, for example, to set non-default values.
-
   den.hosts.x86-64-linux.work-laptop.users.vic = {};
 }
 ```
@@ -106,10 +107,9 @@ For standalone home-manager configurations (without a NixOS/Darwin host):
 ```nix
 # modules/homes.nix -- see <den>/nix/types.nix for schema.
 {
-  # Define standalone home configurations for any system.
-  den.homes.x86_64-linux.vic = {};
-
   # Multiple homes can share the same aspect.
+  # this standalone-darwin-home shares same modules 
+  # as the home-managed nixos at work-laptop.
   den.homes.aarch64-darwin.vic = {};
 }
 ```
@@ -118,7 +118,7 @@ These will generate `flake.homeConfigurations.vic` entries that can be activated
 
 Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects). Refer to its README and tests for usage. The rest of this guide is an example of aspect customization.
 
-From our example, the `class` is inferred as `nixos` from its `system` name.
+From our `work-laptop` host example, the `class` is inferred as `nixos` from its `system` name.
 The aspect names are `work-laptop` for the host and `vic` for the user.
 
 `flake.nixosConfigurations.work-laptop` will import `flake.modules.nixos.work-laptop`.
@@ -134,7 +134,7 @@ The `flake.aspects` system computes the final aggregated module by:
 
 The same process applies to any other host Nix class, like `darwin`.
 
-You can see these dependencies defined at [`aspects-config.nix`](nix/aspects-config.nix).
+You can see these dependencies defined at [`aspects.nix`](nix/aspects.nix).
 
 Similarly, user aspects have these dependencies:
 
@@ -200,3 +200,7 @@ Now, let's continue our example by adding some dendritic modules:
   };
 }
 ```
+
+### Freeform Attributes
+
+The `host`, `user`, and `home` configuration types support freeform attributes, meaning you can add any custom attributes you need beyond the standard options. These custom attributes are accessible in aspect provider functions registered in `flake.aspects.default.{home,user,host}` and in aspect provides functions like `flake.aspects.${user.aspect}.provides.${host.aspect}`. This allows you to pass additional metadata or configuration options that your aspects can use when building the final configuration.
