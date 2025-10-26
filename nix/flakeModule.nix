@@ -1,12 +1,11 @@
-{ lib, ... }:
+{ inputs, lib, ... }:
 let
-  types = import ./types.nix lib;
+  types = import ./types.nix { inherit inputs lib; };
 in
 {
   imports = [
-    ./os-config.nix
-    ./home-config.nix
-    ./aspects-config.nix
+    ./config.nix
+    ./aspects.nix
   ];
   options.den.hosts = types.hostsOption;
   options.den.homes = types.homesOption;
