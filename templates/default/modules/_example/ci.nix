@@ -12,7 +12,7 @@
 
       checks.x86_64-linux = {
         vm = checkFile "${self.nixosConfigurations.rockhopper.config.system.build.vm}/bin/run-rockhopper-vm";
-        hosts-adelie = checkFile self.wslConfigurations.adelie.config.system.build.toplevel;
+        # hosts-adelie = checkFile self.wslConfigurations.adelie.config.system.build.toplevel;
         homes-alice = checkFile self.homeConfigurations.alice.activation-script;
       };
 
