@@ -23,7 +23,7 @@
   # move these inputs to any module you want.
   # they are here for all our examples to work on CI.
   flake-file.inputs = {
-    nixpkgs-stable.url = "https://channels.nixos.org/nixos-25.05/nixexprs.tar.xz";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
     nixos-wsl = {
       url = "github:nix-community/nixos-wsl";
       inputs.nixpkgs.follows = "nixpkgs-stable";
