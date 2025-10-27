@@ -38,7 +38,8 @@ let
     { aspects, ... }:
     let
       context = { inherit host user; };
-      hostUserProvider = aspects.${user.aspect}.provides.${host.aspect} or emptyHostUserProvider;
+      genericProvider = aspects.${user.aspect}.provides.hostUser or emptyHostUserProvider;
+      userProvider = aspects.${user.aspect}.provides.${host.aspect} or genericProvider;
     in
     {
       ${user.aspect} = {
@@ -46,7 +47,7 @@ let
         includes = [ (aspects.default.user context) ];
       };
 
-      ${host.aspect}.includes = [ (hostUserProvider context) ];
+      ${host.aspect}.includes = [ (userProvider context) ];
     };
 
   hostDeps = map (host: [

@@ -92,7 +92,9 @@ The syntax for Hosts, Users and standalone Homes is concise and [focused](nix/co
 
 Features are configured using [flake.aspects](https://github.com/vic/flake-aspects). For global features, this library [adds](nix/aspects.nix) `flake.aspects.default.host`, `flake.aspects.default.user` and `flake.aspects.default.home`.
 
-The following code example provides a tour of `den`'s usage. Remember that you are free to have as many or as few files as you want; the Dendritic pattern imposes no rules on where your files are located or how they are named. It is up to you to organize and create a directory structure and aspect organization that makes sense for your use case.
+### Defining a host
+
+The following code defines a host. You can define all hosts/homes in a single file or split them on different modules. Remember that the Dendritic pattern imposes no rules on where your files are located or how they are named. It is up to you to organize and create a directory structure and aspect organization that makes sense for your use case.
 
 ```nix
 # modules/hosts.nix -- see <den>/nix/types.nix for schema.
@@ -102,6 +104,8 @@ The following code example provides a tour of `den`'s usage. Remember that you a
   den.hosts.x86-64-linux.work-laptop.users.vic = {};
 }
 ```
+
+`den` will generate `flake.nixosConfigurations.work-laptop` entry that can be activated with `nixos-rebuild switch --flake .#work-laptop`.
 
 > That's it for the host definition.
 
@@ -117,7 +121,7 @@ For standalone home-manager configurations (without a NixOS/Darwin host):
 }
 ```
 
-These will generate `flake.homeConfigurations.vic` entries that can be activated with `home-manager switch --flake .#vic`.
+`den` will generate `flake.homeConfigurations.vic` entry that can be activated with `home-manager switch --flake .#vic`.
 
 Now you need to enhance the host and user aspects using [`flake.aspects`](https://github.com/vic/flake-aspects). Refer to its README and tests for usage. The rest of this guide is an example of aspect customization.
 
@@ -128,14 +132,14 @@ The aspect names are `work-laptop` for the host and `vic` for the user.
 The `flake.aspects` system computes the final aggregated module by:
 
 - Using global `flake.aspects.default.host.${host.class}` definitions.
-- Calling `flake.aspects.default.host.includes` with `{ host }`
+- Calling each function at `flake.aspects.default.host.includes` with `{ host }`
   to obtain `${host.class}` modules from other aspects.
-- Calling `flake.aspects.${user.aspect}.provides.${host.aspect}` with `{ host, user }`
+- Calling `flake.aspects.${user.aspect}.provides.${host.aspect}` or `flake.aspects.${user.aspect}.provides.hostUser` with `{ host, user }`
   to obtain `${host.class}` modules from other aspects.
 - All aspect dependencies are followed, and all `${host.class}` modules
   are collected and imported into the final `flake.modules.nixos.work-laptop` module.
 
-The same process applies to any other host Nix class, like `darwin`.
+The same process applies to any other host Nix class, like `darwin` or `system-manager`.
 
 You can see these dependencies defined at [`aspects.nix`](nix/aspects.nix).
 
@@ -145,64 +149,17 @@ Similarly, user aspects have these dependencies:
 - Calling each `flake.aspects.default.user.includes` with `{ host, user }`
   to obtain more `${user.class}` modules from other aspects.
 
-For user-level configs, common classes are `homeManager` or `hjem`.
+For user-level configs, common classes are: `homeManager`, `hjem`.
+
+Standalone home aspects use these dependencies:
+
+- Using global `flake.aspects.default.home.${home.class}` definitions.
+- Calling each `flake.aspects.default.home.includes` with `{ home }`
+  to obtain more `${home.class}` modules from other aspects.
+
+Common classes for standalone home aspects are: `homeManager`.
 
 Remember that dendritic aspects are incremental, and many different files can contribute to the same aspect. Read [vic](https://github.com/vic)'s [dendritic guide](https://vic.github.io/dendrix/Dendritic.html) for more on this. In the following example, we try to keep things minimal, but files will grow or be split into other modules as you improve them.
-
-Now, let's continue our example by adding some dendritic modules:
-
-```nix
-# modules/host-defaults.nix -- These apply to all hosts.
-{
-  flake.aspects.default.host = {
-    nixos.system.stateVersion = "25.11";
-    darwin.system.stateVersion = 6;
-  };
-}
-
-# modules/work/thinkpad.nix
-{
-  flake.aspects.work-laptop.nixos = {
-    networking.hostName = "penguin";
-    imports = [ ./_thinkpad/hardware.nix ./_thinkpad/filesystems.nix ];
-  };
-}
-
-# modules/work/macbook.nix
-{
-  flake.aspects.work-laptop.darwin = {
-    networking.hostName = "fruit";
-  };
-}
-
-# modules/work/features.nix -- Add the same features to all work laptops.
-{
-  flake.aspects = { aspects, ... }: {
-    work-laptop.includes = with aspects; [ vpn meetings office ];
-  };
-}
-
-# modules/vic/base.nix -- Included on all hosts where vic exists.
-{
-  flake.aspects = { aspects, ... }: {
-    vic.homeManager = ...; # dot-files, basic environment.
-    vic.includes = with aspects; [
-      tiling-desktop vim-btw secret-vault.provides.vic-personal
-    ];
-  };
-}
-
-# modules/vic/at-work-laptop.nix
-{
-  flake.aspects.vic.provides.work-laptop = {host, user}: {
-    darwin.system.primaryUser = "vic";
-    nixos.users.users.vic = {
-      isNormalUser = true;
-      extraGroups = [ "wheel" ];
-    };
-  };
-}
-```
 
 ### Freeform Attributes
 

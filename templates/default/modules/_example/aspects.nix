@@ -24,10 +24,21 @@
       default.host.nixos.system.stateVersion = "25.11";
       default.home.homeManager.home.stateVersion = lib.mkDefault "25.11";
 
-      # parametric host and user configs. see aspects-config.nix
+      # parametric host and user default configs. see aspects-config.nix
       default.host.includes = [ aspects.example.provides.host ];
       default.user.includes = [ aspects.example.provides.user ];
       default.home.includes = [ aspects.example.provides.home ];
+
+      # aspect for each host that includes the user alice.
+      alice.provides.hostUser =
+        { user, ... }:
+        {
+          # administrator in all nixos hosts
+          nixos.users.users.${user.userName} = {
+            isNormalUser = true;
+            extraGroups = [ "wheel" ];
+          };
+        };
 
       # subtree of aspects for demo purposes.
       example.provides = {
@@ -57,10 +68,7 @@
               name = "(example.user ${host.name} ${user.name})";
               description = "user setup on different OS";
               darwin.system.primaryUser = user.userName;
-              nixos.users.users.${user.userName} = {
-                isNormalUser = true;
-                extraGroups = [ "wheel" ];
-              };
+              nixos.users.users.${user.userName}.isNormalUser = true;
             };
 
             # adelie is nixos-on-wsl, has special user setup
