@@ -114,9 +114,9 @@ let
 
 in
 {
-  config.flake.aspects = lib.mkMerge (lib.flatten (defaults ++ deps));
+  config.den.aspects = lib.mkMerge (lib.flatten (defaults ++ deps));
 
-  options.flake.aspects.default = lib.mkOption {
+  options.den.aspects.default = lib.mkOption {
     description = "defaults";
     default = { };
     type = lib.types.submodule {

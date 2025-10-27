@@ -52,7 +52,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
   # $ home-manager switch --flake .#vic
   den.homes.aarch64-darwin.vic = { };
 
-  # That's it! The rest is adding flake.aspects.
+  # That's it! The rest is adding den.aspects.
 }
 ```
 
@@ -60,20 +60,22 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 ```nix
 # modules/work-laptop.nix
+{ den, ... }:
 {
-  flake.aspects.work-laptop = {
+  den.aspects.work-laptop = {
     darwin = ...; # (see nix-darwin options)
     nixos  = ...; # (see nixos options)
-    includes = with flake.aspects; [ vpn office ];
+    includes = with den.aspects; [ vpn office ];
   };
 }
 
 # modules/vic.nix
+{ den, ... }:
 {
-  flake.aspects.vic = {
+  den.aspects.vic = {
     homeManager = ...;
     nixos = ...;
-    includes = with flake.aspects; [ tiling-wm ];
+    includes = with den.aspects; [ tiling-wm ];
     provides.work-laptop = { host, user }: {
       darwin.system.primaryUser = user.userName;
       nixos.users.users.vic.isNormalUser = true;
@@ -92,7 +94,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 - **Hosts & Homes**: You define *what* systems exist (e.g., `den.hosts.my-laptop` or `den.homes.my-user`). This part is focused only on the system's identity and its users.
 
-- **Aspects**: You define *how* systems are configured using `flake.aspects`. An aspect is a collection of configuration settings. Aspects can provide other nested aspects forming a tree of related setups. Aspect depdendency graphs are applied to hosts and homes to build the final system configuration.
+- **Aspects**: You define *how* systems are configured using `den.aspects`. An [aspect](https://github.com/vic/flake-aspects) is a tree of configuration modules. Aspects can provide modules to other aspects forming a graph of configurations. Aspect depdendency graphs are applied to hosts and homes to build the final system configuration.
 
 This separation keeps your system definitions clean and makes your configurations reusable and composable.
 
@@ -138,7 +140,7 @@ home-manager switch --flake .#vic
 
 ## Configuring with Aspects
 
-Once you have defined a host or home, you use aspects to configure it. By default, a host named `work-laptop` is associated with the `work-laptop` aspect, and a user named `vic` is associated with the `vic` aspect.
+Once you have defined a host or home, you use [aspects](https://github.com/vic/flake-aspects) to configure it. By default, a host named `work-laptop` is associated with the `work-laptop` aspect, and a user named `vic` is associated with the `vic` aspect.
 
 You can contribute to these aspects from any module. Dendritic aspects are incremental, meaning many files can add settings to the same aspect.
 
@@ -146,12 +148,12 @@ You can contribute to these aspects from any module. Dendritic aspects are incre
 # modules/aspects.nix
 {
   # Add configuration to the 'work-laptop' aspect.
-  flake.aspects.work-laptop = {
+  den.aspects.work-laptop = {
     nixos = { ... }; # NixOS-specific settings
   };
 
   # Add configuration to the 'vic' aspect.
-  flake.aspects.vic = {
+  den.aspects.vic = {
     homeManager = { ... }; # home-manager settings
   };
 }
@@ -161,9 +163,9 @@ You can contribute to these aspects from any module. Dendritic aspects are incre
 
 This library also provides `default` aspects to apply global configurations to all hosts, users, or homes of a certain class.
 
-- `flake.aspects.default.host`: Applied to all hosts.
-- `flake.aspects.default.user`: Applied to all users within hosts.
-- `flake.aspects.default.home`: Applied to all standalone homes.
+- `den.aspects.default.host`: Applied to all hosts.
+- `den.aspects.default.user`: Applied to all users within hosts.
+- `den.aspects.default.home`: Applied to all standalone homes.
 
 ## Advanced Customization
 
@@ -174,7 +176,7 @@ Aspects can be composed together to create complex configurations from smaller, 
 - **`includes`**: An aspect can include other aspects. For example, a `work` aspect could include `vpn` and `office` aspects.
 - **`provides`**: An aspect can provide configuration to another. For example, a user aspect can provide user-specific host-level settings to the host it's running on.
 
-The `flake.aspects` system resolves this dependency graph to build the final configuration module. For a deeper dive, refer to the [`flake-aspects`](https://github.com/vic/flake-aspects) documentation.
+The `den.aspects` system resolves this dependency graph to build the final configuration module. For a deeper dive, refer to the [`flake-aspects`](https://github.com/vic/flake-aspects) documentation and tests.
 
 ### Freeform Attributes
 
@@ -235,9 +237,9 @@ While using `specialArgs` is often an anti-pattern in Dendritic Nix (as inputs a
 
 ### Advanced Aspect Patterns
 
-The [`_example/aspects.nix`](templates/default/modules/_example/aspects.nix) file demonstrates several powerful patterns for creating flexible and maintainable configurations.
+The [`_example/aspects.nix`](templates/default/modules/_example/aspects.nix) file demonstrates several patterns for creating flexible and maintainable configurations.
 
-#### Global User-to-Host Configuration (`provides.hostUser`)
+#### Global User-to-Host Configuration (`<user_aspect>.provides.hostUser`)
 
 A user aspect can provide configuration to *any* host it is a part of using `provides.hostUser`. This is useful for defining settings that should apply whenever a user is present on a system, regardless of the specific host.
 
@@ -246,7 +248,7 @@ For example, to make the user `alice` an administrator on any NixOS host she bel
 ```nix
 # modules/aspects.nix
 {
-  flake.aspects.alice.provides.hostUser = { user, host }: {
+  den.aspects.alice.provides.hostUser = { user, host }: {
     # These settings are applied to any host that includes the user 'alice'.
     nixos.users.users.${user.userName} = {
       isNormalUser = true;
@@ -260,21 +262,23 @@ For example, to make the user `alice` an administrator on any NixOS host she bel
 
 You can define default settings that apply to all hosts, users, or homes. This is a powerful way to enforce global standards and reduce duplication.
 
-##### Class-Based Defaults (`default.<...>`)
+##### Class-Based Defaults (`den.aspects.default.<host|user|home>`)
 
 You can apply settings to all systems of a specific *class* (e.g., `nixos`, `darwin`, `homeManager`) by adding them directly to the default aspect.
 
 ```nix
 # modules/aspects.nix
 {
-  flake.aspects.default.host.nixos.system.stateVersion = "25.11";
-  flake.aspects.default.host.darwin.system.stateVersion = 6;
-  flake.aspects.default.user.homeManager.home.stateVersion = "25.11";
-  flake.aspects.default.home.homeManager.home.stateVersion = "25.11";
+  den.aspects.default = {
+    host.nixos.system.stateVersion = "25.11";
+    host.darwin.system.stateVersion = 6;
+    user.homeManager.home.stateVersion = "25.11";
+    home.homeManager.home.stateVersion = "25.11";
+  };
 }
 ```
 
-##### Parametric Defaults (`default.<...>.includes`)
+##### Parametric Defaults (`den.aspects.default.<host|user|home>.includes`)
 
 For more dynamic configurations, you can add *functions* to the `includes` list of a default aspect. These functions are called for every host, user, or home, and receive the corresponding object (`host`, `user`, or `home`) as an argument. This allows you to generate configuration that is parameterized by the system's properties.
 
@@ -282,17 +286,18 @@ For instance, to set the `hostName` for every host automatically based on its de
 
 ```nix
 # modules/aspects.nix
+{ den, ... }:
 {
   # 1. Define a parametric aspect (a function) that takes a host and returns
   #    a configuration snippet.
-  flake.aspects.example.provides.hostName = { host }: { class, ... }: {
+  den.aspects.example.provides.hostName = { host }: { class, ... }: {
     ${class}.networking.hostName = host.hostName;
   };
 
   # 2. Include this function in the default host includes.
   #    This function will now be called for every host defined in `den.hosts`.
-  flake.aspects.default.host.includes = [
-    flake.aspects.example.provides.hostName
+  den.aspects.default.host.includes = [
+    den.aspects.example.provides.hostName
   ];
 }
 ```
@@ -303,9 +308,9 @@ Under the hood, `aspects.default.host`, `aspects.default.user`, and `aspects.def
 
 The parameters passed to the functions in each `includes` list are as follows:
 
-- `flake.aspects.default.host.includes`: Each function receives the `host` object (`{ host }`).
-- `flake.aspects.default.user.includes`: Each function receives the `host` and `user` objects (`{ host, user }`). This applies to users defined within a host.
-- `flake.aspects.default.home.includes`: Each function receives the `home` object (`{ home }`). This applies to standalone home-manager configurations.
+- `den.aspects.default.host.includes`: Each function receives the `host` object (`{ host }`).
+- `den.aspects.default.user.includes`: Each function receives the `host` and `user` objects (`{ host, user }`). This applies to users defined within a host.
+- `den.aspects.default.home.includes`: Each function receives the `home` object (`{ home }`). This applies to standalone home-manager configurations.
 
 This mechanism allows you to create highly reusable and context-aware default configurations that adapt to each system's specific attributes.
 
@@ -316,7 +321,7 @@ Aspect provider functions can contain conditional logic to apply different confi
 ```nix
 # modules/aspects.nix
 {
-  flake.aspects.example.provides.user = { user, host }:
+  den.aspects.example.provides.user = { user, host }:
     let
       # Default configuration for a user
       defaultConfig = {
@@ -344,7 +349,7 @@ The precedence is as follows:
 
    ```nix
    # User 'vic' provides specific settings only for the 'work-laptop' host.
-   flake.aspects.vic.provides.work-laptop = { host, user }: {
+   den.aspects.vic.provides.work-laptop = { host, user }: {
      nixos.services.openssh.enable = true;
    };
    ```
@@ -354,7 +359,7 @@ The precedence is as follows:
    ```nix
    # User 'vic' provides these settings to any host that doesn't have a more
    # specific provider.
-   flake.aspects.vic.provides.hostUser = { user, host }: {
+   den.aspects.vic.provides.hostUser = { user, host }: {
      nixos.users.users.${user.userName}.extraGroups = [ "wheel" ];
    };
    ```

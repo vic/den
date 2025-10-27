@@ -3,7 +3,7 @@
 { inputs, lib, ... }:
 {
 
-  flake.aspects =
+  den.aspects =
     { aspects, ... }:
     {
       # rockhopper.nixos = { };  # config for rockhopper host

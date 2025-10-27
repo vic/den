@@ -1,9 +1,12 @@
 {
   inputs,
   lib,
+  config,
   ...
 }:
 let
+  den = config.den;
+
   hostsOption = lib.mkOption {
     description = "den hosts definition";
     default = { };
@@ -83,11 +86,11 @@ let
           };
           mainModule = lib.mkOption {
             description = ''
-              Defaults to: self.modules.<class>.<aspect>
+              Defaults to: den.modules.<class>.<aspect>
               Can be set in order to access a module in a different place.
             '';
             type = lib.types.deferredModule;
-            default = inputs.self.modules.${config.class}.${config.aspect};
+            default = den.modules.${config.class}.${config.aspect};
           };
         };
       }
@@ -177,11 +180,11 @@ let
           };
           mainModule = lib.mkOption {
             description = ''
-              Defaults to: self.modules.<class>.<aspect>
+              Defaults to: den.modules.<class>.<aspect>
               Can be set in order to access a module in a different place.
             '';
             type = lib.types.deferredModule;
-            default = inputs.self.modules.${config.class}.${config.aspect};
+            default = den.modules.${config.class}.${config.aspect};
           };
         };
       }
