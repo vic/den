@@ -141,7 +141,7 @@ The `flake.aspects` system computes the final aggregated module by:
 
 The same process applies to any other host Nix class, like `darwin` or `system-manager`.
 
-You can see these dependencies defined at [`aspects.nix`](nix/aspects.nix).
+You can see these dependencies defined at [`aspects.nix`](nix/aspects.nix), and how they are [used in examples](templates/default/modules/_example/aspects.nix).
 
 Similarly, user aspects have these dependencies:
 
