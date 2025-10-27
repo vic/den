@@ -186,7 +186,7 @@ The `host`, `user`, and `home` types support freeform attributes, allowing you t
   den.hosts.x86-64-linux.work-laptop = {
     users.vic = {};
     # Custom attribute:
-    secretsModule = ./_work/sec.nix
+    sopsFile = ./_work/sops.yaml;
   };
 }
 ```
@@ -203,8 +203,8 @@ For ultimate control, each `host` and `home` definition accepts an optional `ins
 # modules/wsl-instantiate.nix
 { inputs, ... }:
 {
-  flake.inputs.nixpkgs-stable.url = "https://channels.nixos.org/nixos-25.05/nixexprs.tar.xz";
-  flake.inputs.nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-stable";
+  flake-file.inputs.nixpkgs-stable.url = "https://channels.nixos.org/nixos-25.05/nixexprs.tar.xz";
+  flake-file.inputs.nixos-wsl.inputs.nixpkgs.follows = "nixpkgs-stable";
 
   den.hosts.x86_64-linux.my-wsl = {
     # Override the default builder to use the stable nixpkgs input.
@@ -260,7 +260,7 @@ For example, to make the user `alice` an administrator on any NixOS host she bel
 
 You can define default settings that apply to all hosts, users, or homes. This is a powerful way to enforce global standards and reduce duplication.
 
-##### Class-Based Defaults
+##### Class-Based Defaults (`default.<...>`)
 
 You can apply settings to all systems of a specific *class* (e.g., `nixos`, `darwin`, `homeManager`) by adding them directly to the default aspect.
 
@@ -274,7 +274,7 @@ You can apply settings to all systems of a specific *class* (e.g., `nixos`, `dar
 }
 ```
 
-##### Parametric Defaults (`includes`)
+##### Parametric Defaults (`default.<...>.includes`)
 
 For more dynamic configurations, you can add *functions* to the `includes` list of a default aspect. These functions are called for every host, user, or home, and receive the corresponding object (`host`, `user`, or `home`) as an argument. This allows you to generate configuration that is parameterized by the system's properties.
 
@@ -334,7 +334,7 @@ Aspect provider functions can contain conditional logic to apply different confi
 }
 ```
 
-### Provider Precedence
+### Host configuration by Users
 
 When a user aspect provides configuration to a host, `den` follows a specific order of precedence. This allows you to define a general configuration and override it for specific hosts.
 
@@ -354,7 +354,7 @@ The precedence is as follows:
    ```nix
    # User 'vic' provides these settings to any host that doesn't have a more
    # specific provider.
-   flake.aspects.vic.provides.hostUser = { user, ... }: {
+   flake.aspects.vic.provides.hostUser = { user, host }: {
      nixos.users.users.${user.userName}.extraGroups = [ "wheel" ];
    };
    ```
