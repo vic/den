@@ -23,6 +23,11 @@
       url = "github:vic/flake-file";
     };
     flake-parts = {
+      inputs = {
+        nixpkgs-lib = {
+          follows = "nixpkgs-lib";
+        };
+      };
       url = "github:hercules-ci/flake-parts";
     };
     home-manager = {
@@ -37,11 +42,18 @@
       url = "github:vic/import-tree";
     };
     nix-auto-follow = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs";
+        };
+      };
       url = "github:fzakaria/nix-auto-follow";
     };
     nixos-wsl = {
       inputs = {
-        flake-compat = { };
+        flake-compat = {
+          follows = "";
+        };
         nixpkgs = {
           follows = "nixpkgs-stable";
         };
@@ -55,12 +67,17 @@
       follows = "nixpkgs";
     };
     nixpkgs-stable = {
-      url = "https://channels.nixos.org/nixos-25.05/nixexprs.tar.xz";
+      url = "github:nixos/nixpkgs/nixos-25.05";
     };
     systems = {
       url = "github:nix-systems/default";
     };
     treefmt-nix = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs";
+        };
+      };
       url = "github:numtide/treefmt-nix";
     };
   };
