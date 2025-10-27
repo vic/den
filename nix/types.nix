@@ -1,4 +1,8 @@
-{ inputs, lib, ... }:
+{
+  inputs,
+  lib,
+  ...
+}:
 let
   hostsOption = lib.mkOption {
     description = "den hosts definition";
@@ -76,6 +80,14 @@ let
                 systemManager = "systemConfigs";
               }
               .${config.class};
+          };
+          mainModule = lib.mkOption {
+            description = ''
+              Defaults to: self.modules.<class>.<aspect>
+              Can be set in order to access a module in a different place.
+            '';
+            type = lib.types.deferredModule;
+            default = inputs.self.modules.${config.class}.${config.aspect};
           };
         };
       }
@@ -162,6 +174,14 @@ let
                 homeManager = "homeConfigurations";
               }
               .${config.class};
+          };
+          mainModule = lib.mkOption {
+            description = ''
+              Defaults to: self.modules.<class>.<aspect>
+              Can be set in order to access a module in a different place.
+            '';
+            type = lib.types.deferredModule;
+            default = inputs.self.modules.${config.class}.${config.aspect};
           };
         };
       }

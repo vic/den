@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  self,
   withSystem,
   ...
 }:
@@ -22,7 +21,7 @@ let
     host:
     host.instantiate {
       modules = [
-        self.modules.${host.class}.${host.aspect}
+        host.mainModule
         { nixpkgs.hostPlatform = lib.mkDefault host.system; }
       ];
     };
@@ -33,7 +32,7 @@ let
       { pkgs, ... }:
       home.instantiate {
         inherit pkgs;
-        modules = [ self.modules.${home.class}.${home.aspect} ];
+        modules = [ home.mainModule ];
       }
     );
 
