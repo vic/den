@@ -92,7 +92,7 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 - **Hosts & Homes**: You define *what* systems exist (e.g., `den.hosts.my-laptop` or `den.homes.my-user`). This part is focused only on the system's identity and its users.
 
-- **Aspects**: You define *how* systems are configured using `flake.aspects`. An aspect is a collection of configuration settings. For example, a `work` aspect might add VPN software, while a `gaming` aspect might add Steam. Aspects are applied to hosts and homes to build the final system configuration.
+- **Aspects**: You define *how* systems are configured using `flake.aspects`. An aspect is a collection of configuration settings. Aspects can provide other nested aspects forming a tree of related setups. Aspect depdendency graphs are applied to hosts and homes to build the final system configuration.
 
 This separation keeps your system definitions clean and makes your configurations reusable and composable.
 
@@ -171,8 +171,8 @@ This library also provides `default` aspects to apply global configurations to a
 
 Aspects can be composed together to create complex configurations from smaller, reusable parts.
 
-- **`includes`**: An aspect can include other aspects. For example, a `laptop` aspect could include `wifi` and `power-saving` aspects.
-- **`provides`**: An aspect can provide configuration to another. For example, a user aspect can provide user-specific settings to the host it's running on.
+- **`includes`**: An aspect can include other aspects. For example, a `work` aspect could include `vpn` and `office` aspects.
+- **`provides`**: An aspect can provide configuration to another. For example, a user aspect can provide user-specific host-level settings to the host it's running on.
 
 The `flake.aspects` system resolves this dependency graph to build the final configuration module. For a deeper dive, refer to the [`flake-aspects`](https://github.com/vic/flake-aspects) documentation.
 
@@ -184,9 +184,9 @@ The `host`, `user`, and `home` types support freeform attributes, allowing you t
 # modules/hosts.nix
 {
   den.hosts.x86-64-linux.work-laptop = {
-    # Custom attribute
-    isWorkMachine = true;
     users.vic = {};
+    # Custom attribute:
+    secretsModule = ./_work/sec.nix
   };
 }
 ```
@@ -216,7 +216,7 @@ For ultimate control, each `host` and `home` definition accepts an optional `ins
 
 **Example: Using `extraSpecialArgs` in a standalone home:**
 
-While using `specialArgs` is often an anti-pattern in Dendritic Nix (as inputs are already available to all modules), the `instantiate` function provides an escape hatch if you have no other choice.
+While using `specialArgs` is often an anti-pattern in Dendritic Nix (as inputs are already available to all modules), the `instantiate` function provides an escape hatch if you absolutely have no other choice.
 
 ```nix
 { inputs, self, ... }:
@@ -235,7 +235,7 @@ While using `specialArgs` is often an anti-pattern in Dendritic Nix (as inputs a
 
 ### Advanced Aspect Patterns
 
-The `_example/aspects.nix` file demonstrates several powerful patterns for creating flexible and maintainable configurations.
+The [`_example/aspects.nix`](templates/default/modules/_example/aspects.nix) file demonstrates several powerful patterns for creating flexible and maintainable configurations.
 
 #### Global User-to-Host Configuration (`provides.hostUser`)
 
@@ -267,13 +267,9 @@ You can apply settings to all systems of a specific *class* (e.g., `nixos`, `dar
 ```nix
 # modules/aspects.nix
 {
-  # Set stateVersion for all NixOS hosts
   flake.aspects.default.host.nixos.system.stateVersion = "25.11";
-
-  # Set stateVersion for all Darwin hosts
   flake.aspects.default.host.darwin.system.stateVersion = 6;
-
-  # Set stateVersion for all standalone home-manager homes
+  flake.aspects.default.user.homeManager.home.stateVersion = "25.11";
   flake.aspects.default.home.homeManager.home.stateVersion = "25.11";
 }
 ```
