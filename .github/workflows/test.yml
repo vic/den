@@ -34,7 +34,7 @@ jobs:
             _module.args.ci-os = "${{matrix.os}}";
           }
           EOF
-          nix run .#write-flake
+          nix run .#write-flake --override-input den "github:$GITHUB_REPOSITORY/$GITHUB_SHA"
           nix flake update den
           nix run .#write-flake
           nix flake metadata

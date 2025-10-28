@@ -5,6 +5,6 @@
       path = ./templates/default;
       description = "Minimal nixos configuration";
     };
-    packages = import ./nix/default_packages.nix;
+    packages = import ./nix/template-packages.nix;
   };
 }

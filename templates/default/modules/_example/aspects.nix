@@ -1,97 +1,105 @@
 # example aspect dependencies for our hosts
 # Feel free to remove it, adapt or split into modules.
-{ inputs, lib, ... }:
+# see also: defaults.nix, compat-imports.nix, home-managed.nix
 {
+  inputs,
+  den,
+  lib,
+  ...
+}:
+{
+  # see also defaults.nix where static settings are set.
+  den.default = {
+    # parametric defaults for host/user/home. see aspects/dependencies.nix
+    # `_` is shorthand alias for `provides`.
+    host.includes = [ den.aspects.example._.host ];
+    user.includes = [ den.aspects.example._.user ];
+    home.includes = [ den.aspects.example._.home ];
+  };
 
-  den.aspects =
-    { aspects, ... }:
-    {
-      # rockhopper.nixos = { };  # config for rockhopper host
-      # alice.homeManager = { }; # config for alice
-      developer = {
-        description = "aspect for bob's standalone home-manager";
-        homeManager = { };
+  # aspects for our example host/user/home definitions.
+  # on a real setup you will split these over into multiple dendritic files.
+  den.aspects = {
+    rockhopper.nixos = { }; # config for rockhopper host
+    # alice.homeManager = { }; # config for alice
+
+    developer = {
+      description = "aspect for bob's standalone home-manager";
+      homeManager = { };
+    };
+
+    # aspect for adelie host using github:nix-community/NixOS-WSL
+    wsl.nixos = {
+      imports = [ inputs.nixos-wsl.nixosModules.default ];
+      wsl.enable = true;
+    };
+
+    # aspect for each host that includes the user alice.
+    alice.provides.hostUser =
+      { user, ... }:
+      {
+        # administrator in all nixos hosts
+        nixos.users.users.${user.userName} = {
+          isNormalUser = true;
+          extraGroups = [ "wheel" ];
+        };
       };
 
-      # aspect for adelie host using github:nix-community/NixOS-WSL
-      wsl.nixos = {
-        imports = [ inputs.nixos-wsl.nixosModules.default ];
-        wsl.enable = true;
+    # subtree of aspects for demo purposes.
+    example.provides = {
+
+      # in our example, we allow all nixos hosts to be vm-bootable.
+      vm-bootable = {
+        nixos =
+          { modulesPath, ... }:
+          {
+            imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
+          };
       };
 
-      # default.{host,user,home} can be used for global settings.
-      default.host.darwin.system.stateVersion = lib.mkDefault 6;
-      default.host.nixos.system.stateVersion = "25.11";
-      default.home.homeManager.home.stateVersion = lib.mkDefault "25.11";
-
-      # parametric host and user default configs. see aspects-config.nix
-      default.host.includes = [ aspects.example.provides.host ];
-      default.user.includes = [ aspects.example.provides.user ];
-      default.home.includes = [ aspects.example.provides.home ];
-
-      # aspect for each host that includes the user alice.
-      alice.provides.hostUser =
-        { user, ... }:
+      # parametric providers.
+      host =
+        { host }:
+        { class, ... }:
         {
-          # administrator in all nixos hosts
-          nixos.users.users.${user.userName} = {
-            isNormalUser = true;
-            extraGroups = [ "wheel" ];
-          };
+          # `_` is a shorthand alias for `provides`
+          includes = [ den.aspects.example._.vm-bootable ];
+          ${class}.networking.hostName = host.hostName;
         };
 
-      # subtree of aspects for demo purposes.
-      example.provides = {
+      user =
+        { user, host }:
+        let
+          by-class.nixos.users.users.${user.userName}.isNormalUser = true;
+          by-class.darwin = {
+            system.primaryUser = user.userName;
+            users.users.${user.userName}.isNormalUser = true;
+          };
 
-        # in our example, we allow all nixos hosts to be vm-bootable.
-        vm-bootable = {
-          nixos =
-            { modulesPath, ... }:
-            {
-              imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
-            };
+          # adelie is nixos-on-wsl, has special additional user setup
+          by-host.adelie.nixos.defaultUser = user.userName;
+        in
+        {
+          includes = [
+            by-class
+            (by-host.${host.name} or { })
+          ];
         };
 
-        # parametric providers.
-        host =
-          { host }:
-          { class, ... }:
-          {
-            includes = [ aspects.example.provides.vm-bootable ];
-            ${class}.networking.hostName = host.hostName;
+      home =
+        { home }:
+        { class, ... }:
+        let
+          homeDir = if lib.hasSuffix "darwin" home.system then "/Users" else "/home";
+        in
+        {
+          ${class}.home = {
+            username = lib.mkDefault home.userName;
+            homeDirectory = lib.mkDefault "${homeDir}/${home.userName}";
           };
-
-        user =
-          { user, host }:
-          let
-            aspect = {
-              name = "(example.user ${host.name} ${user.name})";
-              description = "user setup on different OS";
-              darwin.system.primaryUser = user.userName;
-              nixos.users.users.${user.userName}.isNormalUser = true;
-            };
-
-            # adelie is nixos-on-wsl, has special user setup
-            by-host.adelie = {
-              nixos.defaultUser = user.userName;
-            };
-          in
-          by-host.${host.name} or aspect;
-
-        home =
-          { home }:
-          { class, ... }:
-          let
-            path = if lib.hasSuffix "darwin" home.system then "/Users" else "/home";
-          in
-          {
-            ${class}.home = {
-              username = home.userName;
-              homeDirectory = "${path}/${home.userName}";
-            };
-          };
-
-      };
+        };
 
     };
+
+  };
 }
