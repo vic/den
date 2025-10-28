@@ -94,13 +94,13 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 
 - **Hosts & Homes**: You define *what* systems exist (e.g., `den.hosts.my-laptop` or `den.homes.my-user`). This part is focused only on the system's identity and its users.
 
-- **Aspects**: You define *how* systems are configured using `den.aspects`. An [aspect](https://github.com/vic/flake-aspects) is a tree of configuration modules. Aspects can provide modules to other aspects forming a graph of configurations. Aspect depdendency graphs are applied to hosts and homes to build the final system configuration.
+- **Aspects**: You define *how* systems are configured using `den.aspects`. An [aspect](https://github.com/vic/flake-aspects) is a tree of configuration modules. Aspects can provide modules to other aspects forming a graph of configurations. Aspect dependency graphs are applied to hosts and homes to build the final system configuration.
 
 This separation keeps your system definitions clean and makes your configurations reusable and composable.
 
 ## Basic Usage
 
-The syntax for defining hosts and standalone homes is minimal and focuses on the system's identity, not its features.
+The syntax for defining hosts and standalone homes is minimal and focuses on the system's identity, not its features. See all options at [types.nix](nix/types.nix).
 
 ### Defining a Host
 
