@@ -37,11 +37,11 @@
     },
     "flake-aspects": {
       "locked": {
-        "lastModified": 1761558021,
-        "narHash": "sha256-RI+i/zIsceZgAlo8hJE/zT48rbQg1S6aSYwMFJxCMYI=",
+        "lastModified": 1761612377,
+        "narHash": "sha256-0TW8xGpORlWt1mLjKqslAN3C/OM/EFnurCQjsSSQipQ=",
         "owner": "vic",
         "repo": "flake-aspects",
-        "rev": "c9425a919198f75fd46a4944367a7b7f8ea4eb92",
+        "rev": "b94d806d772c9b4a78dd3f446228a099ac8f997b",
         "type": "github"
       },
       "original": {

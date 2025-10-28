@@ -103,7 +103,7 @@ let
     }
   ];
 
-  aspect-types = inputs.flake-aspects.lib.types lib;
+  aspect-types = (inputs.flake-aspects.lib lib).types;
   defaultOption =
     description:
     lib.mkOption {
