@@ -27,6 +27,8 @@
       description = "aspect for bob's standalone home-manager";
       homeManager = { };
     };
+    # adding a parametric aspect on a specific host/user/home.
+    developer._.home.includes = [ den.aspects.example._.home ];
 
     # aspect for adelie host using github:nix-community/NixOS-WSL
     wsl.nixos = {
