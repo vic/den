@@ -20,7 +20,7 @@
 - adaptable to new host/home classes.
 - stable/unstable input [channels](#custom-factories-instantiate).
 - customizable os/home factories.
-- [batteries](modules/aspects/batteries) included and replaceable.
+- [batteries](#batteries-included) included and replaceable.
 - features [tested](https://github.com/vic/den/actions) with [examples](templates/default/modules/_example).
 
 **❄️ Try it now! Launch our template VM:**
@@ -168,6 +168,32 @@ This library also provides `default` aspects to apply global configurations to a
 - `den.default.host`: Applied to all hosts.
 - `den.default.user`: Applied to all users within hosts.
 - `den.default.home`: Applied to all standalone homes.
+
+## Batteries Included
+
+**Home Managed NixOS/Darwin**
+
+An aspect that integrates home-manager into nixos and darwin classes.
+
+See [`home-manager.nix`](modules/aspects/batteries/home-manager.nix)
+
+```nix
+# enable home-manager on for all hosts.
+den.default.host.includes = [ den.home-manager ];
+
+# enable just on my laptop:
+den.aspects.my-laptop._.host.includes = [ den.home-manager ];
+```
+
+**Auto-Import non-dendritic nix modules**
+
+An aspect that allows you to recursively import non-dendritic nix
+files.
+
+Useful with migration from non-dendritic repos and to load directories
+of auto-generated nix modules, like nixos-generate-config.
+
+See [`import-tree.nix`](modules/aspects/batteries/import-tree.nix)
 
 ## Advanced Customization
 
