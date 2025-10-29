@@ -14,7 +14,7 @@
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
 - focused on host/home [definitions](#basic-usage).
-- host/home configs via [aspects](#advanced-aspect-patterns).
+- host/home configs via aspect [dependencies](modules/aspects/dependencies.nix).
 - multi-platform, multi-tenant hosts.
 - shareable-hm in os and standalone.
 - extensible for new host/home classes.

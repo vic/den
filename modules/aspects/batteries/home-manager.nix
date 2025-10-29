@@ -12,7 +12,7 @@ let
 
       for using home-manager in just a particular host:
 
-        den.aspects.my-host.includes = [ (den.home-manager { host = den.hosts.<system>.my-host; }) ];
+        den.aspects.my-laptop._.host.includes = [ den.home-manager ];
 
       for enabling home-manager by default on all hosts:
 
