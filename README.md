@@ -13,13 +13,15 @@
 
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- focused on host/home definitions.
-- host/home configs via aspects.
+- focused on host/home [definitions](#basic-usage).
+- host/home configs via [aspects](#advanced-aspect-patterns).
 - multi-platform, multi-tenant hosts.
 - shareable-hm in os and standalone.
 - extensible for new host/home classes.
-- stable/unstable input channels.
+- stable/unstable input [channels](#custom-factories-instantiate).
 - customizable os/home factories.
+- [batteries](modules/aspects/batteries) included and replaceable.
+- features [tested](https://github.com/vic/den/actions) with [examples](templates/default/modules/_example).
 
 **❄️ Try it now! Launch our template VM:**
 
@@ -163,9 +165,9 @@ You can contribute to these aspects from any module. Dendritic aspects are incre
 
 This library also provides `default` aspects to apply global configurations to all hosts, users, or homes of a certain class.
 
-- `den.aspects.default.host`: Applied to all hosts.
-- `den.aspects.default.user`: Applied to all users within hosts.
-- `den.aspects.default.home`: Applied to all standalone homes.
+- `den.default.host`: Applied to all hosts.
+- `den.default.user`: Applied to all users within hosts.
+- `den.default.home`: Applied to all standalone homes.
 
 ## Advanced Customization
 
@@ -262,14 +264,14 @@ For example, to make the user `alice` an administrator on any NixOS host she bel
 
 You can define default settings that apply to all hosts, users, or homes. This is a powerful way to enforce global standards and reduce duplication.
 
-##### Class-Based Defaults (`den.aspects.default.<host|user|home>`)
+##### Class-Based Defaults (`den.default.<host|user|home>`)
 
 You can apply settings to all systems of a specific *class* (e.g., `nixos`, `darwin`, `homeManager`) by adding them directly to the default aspect.
 
 ```nix
 # modules/aspects.nix
 {
-  den.aspects.default = {
+  den.default = {
     host.nixos.system.stateVersion = "25.11";
     host.darwin.system.stateVersion = 6;
     user.homeManager.home.stateVersion = "25.11";
@@ -278,7 +280,7 @@ You can apply settings to all systems of a specific *class* (e.g., `nixos`, `dar
 }
 ```
 
-##### Parametric Defaults (`den.aspects.default.<host|user|home>.includes`)
+##### Parametric Defaults (`den.default.<host|user|home>.includes`)
 
 For more dynamic configurations, you can add *functions* to the `includes` list of a default aspect. These functions are called for every host, user, or home, and receive the corresponding object (`host`, `user`, or `home`) as an argument. This allows you to generate configuration that is parameterized by the system's properties.
 
@@ -290,13 +292,14 @@ For instance, to set the `hostName` for every host automatically based on its de
 {
   # 1. Define a parametric aspect (a function) that takes a host and returns
   #    a configuration snippet.
+  #    re-usable aspects use `den.aspects` and private ones let bindings.
   den.aspects.example.provides.hostName = { host }: { class, ... }: {
     ${class}.networking.hostName = host.hostName;
   };
 
   # 2. Include this function in the default host includes.
   #    This function will now be called for every host defined in `den.hosts`.
-  den.aspects.default.host.includes = [
+  den.default.host.includes = [
     den.aspects.example.provides.hostName
   ];
 }
@@ -304,13 +307,13 @@ For instance, to set the `hostName` for every host automatically based on its de
 
 ###### How Parametric Defaults Work
 
-Under the hood, `aspects.default.host`, `aspects.default.user`, and `aspects.default.home` are not static aspects but **functors**. When `den` evaluates a system, it invokes the corresponding default functor, which in turn iterates over the functions in its `includes` list. It calls each function with a context-specific object and merges the resulting configuration snippets.
+Under the hood, `den.default.host`, `den.default.user`, and `den.default.home` are not static aspects but **functors**. When `den` evaluates a system, it invokes the corresponding default functor, which in turn iterates over the functions in its `includes` list. It calls each function with a context-specific object and merges the resulting configuration snippets.
 
 The parameters passed to the functions in each `includes` list are as follows:
 
-- `den.aspects.default.host.includes`: Each function receives the `host` object (`{ host }`).
-- `den.aspects.default.user.includes`: Each function receives the `host` and `user` objects (`{ host, user }`). This applies to users defined within a host.
-- `den.aspects.default.home.includes`: Each function receives the `home` object (`{ home }`). This applies to standalone home-manager configurations.
+- `den.default.host.includes`: Each function receives the `host` object (`{ host }`).
+- `den.default.user.includes`: Each function receives the `host` and `user` objects (`{ host, user }`). This applies to users defined within a host.
+- `den.default.home.includes`: Each function receives the `home` object (`{ home }`). This applies to standalone home-manager configurations.
 
 This mechanism allows you to create highly reusable and context-aware default configurations that adapt to each system's specific attributes.
 
@@ -323,19 +326,18 @@ Aspect provider functions can contain conditional logic to apply different confi
 {
   den.aspects.example.provides.user = { user, host }:
     let
-      # Default configuration for a user
-      defaultConfig = {
+      aspect = {
         nixos.users.users.${user.userName}.isNormalUser = true;
         darwin.system.primaryUser = user.userName;
       };
 
-      # Special configuration for NixOS-on-WSL 
-      hostSpecificConfig.adelie = {
+      # Special aspect for NixOS-on-WSL 
+      per-host.adelie = {
         nixos.defaultUser = user.userName;
       };
     in
     # Use the host-specific config if it exists, otherwise use the default.
-    hostSpecificConfig.${host.name} or defaultConfig;
+    per-host.${host.name} or aspect;
 }
 ```
 
