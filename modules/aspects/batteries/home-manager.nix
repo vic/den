@@ -45,20 +45,8 @@ let
       }) hmUsers;
 
       hmModule = inputs.${host.hm-input or "home-manager"}."${class}Modules".home-manager;
-      osPerUser =
-        user:
-        let
-          homeDir = if lib.hasSuffix "darwin" host.system then "/Users" else "/home";
-        in
-        {
-          users.users.${user.userName} = {
-            name = lib.mkDefault user.userName;
-            home = lib.mkDefault "${homeDir}/${user.userName}";
-          };
-        };
-
       aspect.${class} = {
-        imports = [ hmModule ] ++ (map osPerUser hmUsers);
+        imports = [ hmModule ];
         home-manager.users = lib.listToAttrs users;
       };
 

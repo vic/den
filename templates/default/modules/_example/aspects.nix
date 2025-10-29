@@ -72,8 +72,11 @@
         let
           by-class.nixos.users.users.${user.userName}.isNormalUser = true;
           by-class.darwin = {
-            system.primaryUser = user.userName;
-            users.users.${user.userName}.isNormalUser = true;
+            system.primaryUser = lib.mkDefault user.userName;
+            users.users.${user.userName} = {
+              name = lib.mkDefault user.userName;
+              home = lib.mkDefault "/Users/${user.userName}";
+            };
           };
 
           # adelie is nixos-on-wsl, has special additional user setup
