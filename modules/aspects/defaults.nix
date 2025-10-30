@@ -1,87 +1,45 @@
 { inputs, lib, ... }:
 let
 
-  # set host static default values directly by class:
-  #
-  #    den.aspects.default.host = {
-  #      nixos  = ...;
-  #      darwin = ...;
-  #    }
-  #
-  # or register a function that takes the { host } param:
-  #
-  #    den.aspects.default.host.includes = [ aspectByHost ];
-  #    aspectByHost = { host }: { class, aspect-chain }: {
-  #      nixos  = ...;
-  #      darwin = ...;
-  #    }
   default.host =
     { aspect, ... }:
     {
-      __functor =
-        _:
+      name = "<default.host>";
+      provides.host.includes = [ ];
+      provides.host.__functor =
+        callbacks:
         { host }:
-        { class, ... }:
         {
-          name = "(default.host ${host.name})";
-          includes = map (f: f { inherit host; }) aspect.includes;
-          ${class} = aspect.${class} or { };
+          name = "<${aspect.name}.host.*>";
+          includes = [ aspect ] ++ (map (f: f { inherit host; }) callbacks.includes);
         };
     };
 
-  # set user static values directly by class:
-  #
-  #    den.aspects.default.user = {
-  #      nixos  = ...;
-  #      darwin = ...;
-  #      homeManager = ...;
-  #    }
-  #
-  # or register a function that takes the { host, user } param:
-  #
-  #    den.aspects.default.user.includes = [ aspectByUser ];
-  #    aspectByUser = { host, user }: { class, aspect-chain }: {
-  #      nixos  = ...;
-  #      darwin = ...;
-  #      homeManager = ...;
-  #    }
   default.user =
     { aspect, ... }:
     {
-      __functor =
-        _:
+      name = "<default.user>";
+      provides.user.includes = [ ];
+      provides.user.__functor =
+        callbacks:
         { host, user }:
-        { class, ... }:
         {
-          name = "(default.user ${host.name} ${user.name})";
-          includes = map (f: f { inherit host user; }) aspect.includes;
-          ${class} = aspect.${class} or { };
+          name = "<${aspect.name}.user.*>";
+          includes = [ aspect ] ++ (map (f: f { inherit host user; }) callbacks.includes);
         };
     };
 
-  # set home static values directly by class:
-  #
-  #    den.aspects.default.home = {
-  #      homeManager = ...;
-  #    }
-  #
-  # or register a function that takes the { home } param:
-  #
-  #    den.aspects.default.home.includes = [ aspectByHome ];
-  #    aspectByHome = { home }: { class, aspect-chain }: {
-  #      homeManager = ...;
-  #    }
   default.home =
     { aspect, ... }:
     {
-      __functor =
-        _:
+      name = "<default.home>";
+      provides.home.includes = [ ];
+      provides.home.__functor =
+        callbacks:
         { home }:
-        { class, ... }:
         {
-          name = "(default.home ${home.name})";
-          includes = map (f: f { inherit home; }) aspect.includes;
-          ${class} = aspect.${class} or { };
+          name = "<${aspect.name}.home.*>";
+          includes = [ aspect ] ++ (map (f: f { inherit home; }) callbacks.includes);
         };
     };
 

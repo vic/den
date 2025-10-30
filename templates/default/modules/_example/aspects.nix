@@ -1,107 +1,102 @@
-# example aspect dependencies for our hosts
+# example aspect dependencies for our hosts, checked at ci.nix
 # Feel free to remove it, adapt or split into modules.
 # see also: defaults.nix, compat-imports.nix, home-managed.nix
 {
   inputs,
-  den,
   lib,
   ...
 }:
-{
-  # see also defaults.nix where static settings are set.
-  den.default = {
-    # parametric defaults for host/user/home. see aspects/dependencies.nix
-    # `_` is shorthand alias for `provides`.
-    host.includes = [ den.aspects.example._.host ];
-    user.includes = [ den.aspects.example._.user ];
-    home.includes = [ den.aspects.example._.home ];
-  };
+let
 
-  # aspects for our example host/user/home definitions.
-  # on a real setup you will split these over into multiple dendritic files.
-  den.aspects = {
-    rockhopper.nixos = { }; # config for rockhopper host
-    # alice.homeManager = { }; # config for alice
-
-    developer = {
-      description = "aspect for bob's standalone home-manager";
-      homeManager = { };
-    };
-    # adding a parametric aspect on a specific host/user/home.
-    developer._.home.includes = [ den.aspects.example._.home ];
-
-    # aspect for adelie host using github:nix-community/NixOS-WSL
-    wsl.nixos = {
-      imports = [ inputs.nixos-wsl.nixosModules.default ];
-      wsl.enable = true;
-    };
-
-    # aspect for each host that includes the user alice.
-    alice.provides.hostUser =
-      { user, ... }:
+  # Example: An aspect for vm installers.
+  vm-bootable = {
+    nixos =
+      { modulesPath, ... }:
       {
-        # administrator in all nixos hosts
-        nixos.users.users.${user.userName} = {
-          isNormalUser = true;
-          extraGroups = [ "wheel" ];
-        };
+        imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
       };
+  };
 
-    # subtree of aspects for demo purposes.
-    example.provides = {
-
-      # in our example, we allow all nixos hosts to be vm-bootable.
-      vm-bootable = {
-        nixos =
-          { modulesPath, ... }:
-          {
-            imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
-          };
-      };
-
-      # parametric providers.
-      host =
-        { host }:
-        { class, ... }:
-        {
-          # `_` is a shorthand alias for `provides`
-          includes = [ den.aspects.example._.vm-bootable ];
-          ${class}.networking.hostName = host.hostName;
-        };
-
-      user =
-        { user, host }:
-        let
-          by-class.nixos.users.users.${user.userName}.isNormalUser = true;
-          by-class.darwin = {
-            system.primaryUser = user.userName;
-            users.users.${user.userName}.isNormalUser = true;
-          };
-
-          # adelie is nixos-on-wsl, has special additional user setup
-          by-host.adelie.nixos.defaultUser = user.userName;
-        in
-        {
-          includes = [
-            by-class
-            (by-host.${host.name} or { })
-          ];
-        };
-
-      home =
-        { home }:
-        { class, ... }:
-        let
-          homeDir = if lib.hasSuffix "darwin" home.system then "/Users" else "/home";
-        in
-        {
-          ${class}.home = {
-            username = lib.mkDefault home.userName;
-            homeDirectory = lib.mkDefault "${homeDir}/${home.userName}";
-          };
-        };
-
+  # Example: parametric host aspect to automatically set hostName on any host.
+  set-host-name =
+    { host }:
+    {
+      ${host.class}.networking.hostName = host.name;
     };
 
+  homeDir =
+    userName: system:
+    if lib.hasSuffix "darwin" system then "/Users/${userName}" else "/home/${userName}";
+
+  set-home-dir = userName: system: {
+    homeManager.home.username = userName;
+    homeManager.home.homeDirectory = homeDir userName system;
   };
+
+  # Example: parametric user aspect to define os-level user.
+  define-user =
+    { host, user }:
+    let
+      on-linux.nixos.users.users.${user.name}.isNormalUser = true;
+      on-macos.darwin.users.users.${user.name} = {
+        name = user.userName;
+        home = homeDir user.userName host.system;
+      };
+
+      macos-admin.darwin.system.primaryUser = user.name;
+      wsl-admin.nixos.wsl.defaultUser = user.name;
+
+      per-host = { adelie = wsl-admin; }.${host.name} or { };
+
+      aspect.includes = [
+        on-macos
+        on-linux
+        macos-admin
+        per-host
+      ];
+    in
+    aspect;
+
+  # Example: alice enables programs on non-darwin
+  host-conditional =
+    { host, user }:
+    if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
+      {
+        nixos.programs.tmux.enable = true;
+        homeManager.programs.git.enable = true;
+      }
+    else
+      { };
+
+in
+{
+  # Example: static aspects on host
+  den.default.host.includes = [ vm-bootable ];
+
+  # Example: parametric host aspects
+  den.default.host._.host.includes = [ set-host-name ];
+
+  # Example: parametric user aspect.
+  den.default.user._.user.includes = [
+    define-user
+    ({ host, user }: set-home-dir user.userName host.system)
+  ];
+
+  # Example: parametric home aspect.
+  den.default.home._.home.includes = [
+    ({ home }: set-home-dir home.userName home.system)
+  ];
+
+  # Example: adelie host using github:nix-community/NixOS-WSL
+  den.aspects.adelie.nixos = {
+    imports = [ inputs.nixos-wsl.nixosModules.default ];
+    wsl.enable = true;
+  };
+
+  # Example: enable helix for alice on all its home-managed hosts.
+  den.aspects.alice.homeManager.programs.helix.enable = true;
+
+  # Example: user provides host configuration.
+  den.aspects.alice._.user.includes = [ host-conditional ];
+
 }

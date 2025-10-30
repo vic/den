@@ -19,8 +19,8 @@ let
         den.default.host.includes = [ den.home-manager ];
 
     Does nothing for hosts that have no users with `homeManager` class.
-    Expects `inputs.home-manager` to exist. If `<host>.hm-input` exists
-    it is the name of the input to use instead of `home-manager`.
+    Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
+    it is the home-manager.{nixos/darwin}Modules.home-manager.
 
     For each user resolves den.aspects.''${user.aspect} and imports its homeManager class module.
   '';
@@ -34,39 +34,31 @@ let
 
       hmUserModule =
         user:
-        den.aspects.${user.aspect}.resolve {
-          inherit aspect-chain;
-          class = "homeManager";
-        };
+        let
+          ctx = {
+            inherit aspect-chain;
+            class = "homeManager";
+          };
+          aspect = den.aspects.${user.aspect}._.user { inherit host; };
+        in
+        aspect.resolve ctx;
 
       users = map (user: {
         name = user.userName;
         value.imports = [ (hmUserModule user) ];
       }) hmUsers;
 
-      hmModule = inputs.${host.hm-input or "home-manager"}."${class}Modules".home-manager;
-      osPerUser =
-        user:
-        let
-          homeDir = if lib.hasSuffix "darwin" host.system then "/Users" else "/home";
-        in
-        {
-          users.users.${user.userName} = {
-            name = lib.mkDefault user.userName;
-            home = lib.mkDefault "${homeDir}/${user.userName}";
-          };
-        };
-
+      hmModule = host.hm-module or inputs.home-manager."${class}Modules".home-manager;
       aspect.${class} = {
-        imports = [ hmModule ] ++ (map osPerUser hmUsers);
+        imports = [ hmModule ];
         home-manager.users = lib.listToAttrs users;
       };
 
-      supportedHmOS = builtins.elem class [
+      supportedOS = builtins.elem class [
         "nixos"
         "darwin"
       ];
-      enabled = supportedHmOS && builtins.length hmUsers > 0;
+      enabled = supportedOS && builtins.length hmUsers > 0;
     in
     if enabled then aspect else { };
 

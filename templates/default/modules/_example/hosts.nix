@@ -12,18 +12,24 @@
     };
     adelie = {
       description = "wsl on windows";
-      users.alice = { };
-      aspect = "wsl";
+      users.will = { };
       intoAttr = "wslConfigurations";
       # custom nixpkgs channel.
       instantiate = inputs.nixpkgs-stable.lib.nixosSystem;
+      # custom hm (see home-manager.nix)
+      hm-module = inputs.home-manager-stable.nixosModules.home-manager;
     };
   };
 
   # move these inputs to any module you want.
   # they are here for all our examples to work on CI.
   flake-file.inputs = {
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
+
+    # these stable inputs are for wsl
+    nixpkgs-stable.url = "github:nixos/nixpkgs/release-25.05";
+    home-manager-stable.url = "github:nix-community/home-manager/release-25.05";
+    home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
+
     nixos-wsl = {
       url = "github:nix-community/nixos-wsl";
       inputs.nixpkgs.follows = "nixpkgs-stable";

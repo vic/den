@@ -22,11 +22,11 @@
     },
     "den": {
       "locked": {
-        "lastModified": 1761617317,
-        "narHash": "sha256-QzXeoJ8YHTx866AjW4ocJXIaR7gvPolqba5I8dnKddw=",
+        "lastModified": 1761724700,
+        "narHash": "sha256-VxEFZI+3N0whAojjLvQdSrvb/mfkatzZCDER/eekqio=",
         "owner": "vic",
         "repo": "den",
-        "rev": "fb490adb547f2f89539ee1cefad37f80aa2c2e1e",
+        "rev": "895fed7c94e39df1f21606c28f352d100e1b1b4c",
         "type": "github"
       },
       "original": {
@@ -37,11 +37,11 @@
     },
     "flake-aspects": {
       "locked": {
-        "lastModified": 1761689934,
-        "narHash": "sha256-gPib0lEup5yJP0LTeNiSCVymLbQceGRpX5kz2Z83/Zg=",
+        "lastModified": 1761855217,
+        "narHash": "sha256-hw/JcRW+th/7wm2W3cj3Iy8gLZhshtbaq26v8J15dGM=",
         "owner": "vic",
         "repo": "flake-aspects",
-        "rev": "20ea52a231c688ef46339d2f4319d8ac0186a8a3",
+        "rev": "c1773064daef959c3eb3b002b785a713691aa524",
         "type": "github"
       },
       "original": {
@@ -101,6 +101,27 @@
       },
       "original": {
         "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "home-manager-stable": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-stable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1758463745,
+        "narHash": "sha256-uhzsV0Q0I9j2y/rfweWeGif5AWe0MGrgZ/3TjpDYdGA=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "3b955f5f0a942f9f60cdc9cacb7844335d0f21c3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "release-25.05",
         "repo": "home-manager",
         "type": "github"
       }
@@ -179,16 +200,16 @@
     },
     "nixpkgs-stable": {
       "locked": {
-        "lastModified": 1761468971,
-        "narHash": "sha256-vY2OLVg5ZTobdroQKQQSipSIkHlxOTrIF1fsMzPh8w8=",
+        "lastModified": 1761845553,
+        "narHash": "sha256-c1syrVBdPiNFD3d4ruGxu/XU819s5a01wrL/ndfENeo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "78e34d1667d32d8a0ffc3eba4591ff256e80576e",
+        "rev": "24ccb50bc2f7905565ff1550502175ad29175f21",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-25.05",
+        "ref": "release-25.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -201,6 +222,7 @@
         "flake-file": "flake-file",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
+        "home-manager-stable": "home-manager-stable",
         "import-tree": "import-tree",
         "nix-auto-follow": "nix-auto-follow",
         "nixos-wsl": "nixos-wsl",
