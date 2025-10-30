@@ -19,25 +19,26 @@ let
       this aspect can be included explicitly on any aspect:
 
           # example: my-host will import _nixos or _darwin nix files automatically.
-          den.aspects.my_host.includes = [ (den.import-tree ./.) ];
+          den.aspects.my_host.includes = [ (den.import-tree { root = ./.; }) ];
 
       or it can be default imported per host/user/home:
 
           
           # each host will import-tree from ./hosts/''${host.name}/_{nixos,darwin}/*.nix
-          den.default.host.includes = [ (den.import-tree._.host ./hosts) ];
+          den.default.host._.host.includes = [ (den.import-tree._.host { root = ./hosts; }) ];
 
           # each user will import-tree from ./users/''${user.name}@''${host.name}/_homeManager/*.nix
-          den.default.user.includes = [ (den.import-tree._.user ./users) ];
+          den.default.user._.user.includes = [ (den.import-tree._.user { root = ./users; }) ];
 
           # each home will import-tree from ./homes/''${home.name}/_homeManager/*.nix
-          den.default.home.includes = [ (den.import-tree._.home ./homes) ];
+          den.default.home._.home.includes = [ (den.import-tree._.home { root = ./homes; }) ];
 
       you are also free to create your own auto-imports layout following the implementation of these.
   '';
 
   import-tree.__functor =
-    _: root:
+    _:
+    { root }:
     { class, ... }:
     let
       path = "${toString root}/_${class}";
@@ -48,9 +49,10 @@ let
     if builtins.pathExists path then aspect else { };
 
   import-tree.provides = {
-    host = root: { host }: import-tree "${toString root}/${host.name}";
-    user = root: { host, user }: import-tree "${toString root}/${user.name}@${host.name}";
-    home = root: { home }: import-tree "${toString root}/${home.name}";
+    host = { root }: { host }: import-tree { root = "${toString root}/${host.name}"; };
+    user =
+      { root }: { host, user }: import-tree { root = "${toString root}/${user.name}@${host.name}"; };
+    home = { root }: { home }: import-tree { root = "${toString root}/${home.name}"; };
   };
 
   aspect-option = import ../_aspect_option.nix { inherit inputs lib; };

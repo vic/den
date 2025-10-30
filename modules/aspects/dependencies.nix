@@ -6,79 +6,81 @@
   ...
 }:
 let
-  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.hosts));
-  homes = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.homes));
 
   # creates den.aspects.${host.aspect}
-  #
-  # ${host.aspect} invokes ${host.aspect}._.host.includes with { host }
-  # - den.default.host is in this list.
-  hostAspect = host: {
-    ${host.aspect} =
+  hostAspect =
+    host:
+    { aspects, ... }:
+    {
+      ${host.aspect} =
+        { aspect, ... }:
+        {
+          name = "<host:${host.name}>";
+          ${host.class} = { };
+          includes = map (f: f { inherit host; }) aspect._.host.includes;
+          provides.host.includes = [
+            den.default.host._.host
+            (hostUserContribs aspects)
+          ];
+        };
+    };
+
+  hostUserContribs =
+    aspects:
+    { host }:
+    {
+      name = "<host-user-contribs:${host.name}.users.*>";
+      includes =
+        let
+          users = lib.attrValues host.users;
+          userContribs = map (user: aspects.${user.aspect}._.user { inherit host; }) users;
+        in
+        userContribs;
+    };
+
+  # creates aspects.${user.aspect}
+  userAspect = user: {
+    ${user.aspect} =
       { aspect, ... }:
       {
-        ${host.class} = { };
-        includes = map (f: f { inherit host; }) aspect._.host.includes;
-        _.host.includes = [ den.default.host ];
+        name = "<user:${user.name}>";
+        ${user.class} = { };
+        provides.user.includes = [ den.default.user._.user ];
+        provides.user.__functor =
+          callbacks:
+          { host }:
+          {
+            name = "<user:${user.name}.user.*>";
+            includes = [ aspect ] ++ map (f: f { inherit user host; }) callbacks.includes;
+          };
       };
   };
 
-  # creates aspects.${user.aspect}
-  #
-  # ${user.aspect} invokes ${user.aspect}._.user.includes with { host, user }
-  # - den.default.user is in this list.
-  #
-  # ${host.aspect} depends on:
-  #   - aspects.${user.aspect}.provides.${host.aspect} { host, user }
-  #   - aspects.${user.aspect}.provides.hostUser { host, user }
-  #   - den.default.user.provides.hostUser { host, user }
-  hostUserAspect =
-    host: user:
-    { aspects, ... }:
-    let
-      context = { inherit host user; };
-      empty =
-        # deadnix: skip
-        { host, user }: _: { };
-    in
-    {
-      ${user.aspect} =
-        { aspect, ... }:
-        {
-          ${user.class} = { };
-          includes = map (f: f context) aspect._.user.includes;
-          _.user.includes = [ den.default.user ];
-        };
-
-      ${host.aspect}.includes = map (f: f context) [
-        (aspects.${user.aspect}.provides.${host.aspect} or empty)
-        (aspects.${user.aspect}.provides.hostUser or empty)
-        (den.default.user.provides.hostUser or empty)
-      ];
-    };
-
   # creates den.aspects.${home.aspect}
-  #
-  # ${home.aspect} invokes ${home.aspect}._.home.includes with { home }
-  # - den.default.home is in this list.
   homeAspect = home: {
     ${home.aspect} =
       { aspect, ... }:
       {
+        name = "<home:${home.name}>";
         ${home.class} = { };
         includes = map (f: f { inherit home; }) aspect._.home.includes;
-        _.home.includes = [ den.default.home ];
+        provides.home.includes = [ den.default.home._.home ];
       };
   };
 
-  hostDeps = map (host: [
-    (hostAspect host)
-    (map (hostUserAspect host) (builtins.attrValues host.users))
-  ]) hosts;
+  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.hosts));
+  homes = lib.flatten (map builtins.attrValues (builtins.attrValues config.den.homes));
 
   homeDeps = map homeAspect homes;
+  hostDeps = map hostAspect hosts;
+  userDeps = lib.pipe hosts [
+    (map (h: builtins.attrValues h.users))
+    (lib.flatten)
+    (lib.unique)
+    (map userAspect)
+  ];
 
-  deps = hostDeps ++ homeDeps;
+  deps = hostDeps ++ userDeps ++ homeDeps;
 
 in
 {

@@ -38,6 +38,14 @@
       };
       url = "github:nix-community/home-manager";
     };
+    home-manager-stable = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs-stable";
+        };
+      };
+      url = "github:nix-community/home-manager/release-25.05";
+    };
     import-tree = {
       url = "github:vic/import-tree";
     };
@@ -67,7 +75,7 @@
       follows = "nixpkgs";
     };
     nixpkgs-stable = {
-      url = "github:nixos/nixpkgs/nixos-25.05";
+      url = "github:nixos/nixpkgs/release-25.05";
     };
     systems = {
       url = "github:nix-systems/default";
