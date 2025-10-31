@@ -86,6 +86,9 @@ Need more batteries? see [vic/denful](https://github.com/vic/denful)
 }
 ```
 
+For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den)
+or this [search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
+
 </td>
 </tr>
 </table>
