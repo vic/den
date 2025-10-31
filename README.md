@@ -13,13 +13,13 @@
 
 <img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- focused on host/home [definitions](#basic-usage).
+- focused on configurations [definition](#usage).
 - incremental [dependencies](modules/aspects/dependencies.nix).
 - multi-platform, multi-tenant hosts.
 - shareable-hm in os and standalone.
-- adaptable to new host/home classes.
+- `nixos`/`darwin`/`systemManager`/any nix `class`.
 - stable/unstable input [channels](#custom-factories-instantiate).
-- customizable os/home factories.
+- customizable config factories and output attr.
 - [batteries](#batteries-included) included and replaceable.
 - features [tested](templates/default/modules/_example/ci.nix) with [examples](templates/default/modules/_example).
 
