@@ -37,26 +37,13 @@ let
   # Example: parametric user aspect to define os-level user.
   define-user =
     { host, user }:
-    let
-      on-linux.nixos.users.users.${user.name}.isNormalUser = true;
-      on-macos.darwin.users.users.${user.name} = {
+    {
+      nixos.users.users.${user.name}.isNormalUser = true;
+      darwin.users.users.${user.name} = {
         name = user.userName;
         home = homeDir user.userName host.system;
       };
-
-      macos-admin.darwin.system.primaryUser = user.name;
-      wsl-admin.nixos.wsl.defaultUser = user.name;
-
-      per-host = { adelie = wsl-admin; }.${host.name} or { };
-
-      aspect.includes = [
-        on-macos
-        on-linux
-        macos-admin
-        per-host
-      ];
-    in
-    aspect;
+    };
 
   # Example: alice enables programs on non-darwin
   host-conditional =
@@ -101,10 +88,18 @@ in
   den.aspects.cam.homeManager.programs.vscode.enable = true;
   den.aspects.cam.includes = [ (den._.unfree { allow = [ "vscode" ]; }) ];
 
-  # will has always loved red snappers
-  den.aspects.will._.user.includes = [ (den._.user-shell { shell = "fish"; }) ];
+  den.aspects.will._.user.includes = [
+    # will has always loved red snappers
+    (den._.user-shell { shell = "fish"; })
+    # will is primary user in WSL NixOS.
+    den._.primary-user
+  ];
 
   # Example: user provides host configuration.
-  den.aspects.alice._.user.includes = [ host-conditional ];
+  den.aspects.alice._.user.includes = [
+    host-conditional
+    # alice is always admin in all its hosts
+    den._.primary-user
+  ];
 
 }
