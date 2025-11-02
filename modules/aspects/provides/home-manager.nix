@@ -1,12 +1,11 @@
-import ./_den_aspect.nix (
-  {
-    inputs,
-    lib,
-    den,
-    ...
-  }:
-  {
-    name = "home-manager";
+{
+  inputs,
+  lib,
+  den,
+  ...
+}:
+{
+  den.provides.home-manager = {
     description = ''
       integrates home-manager into nixos/darwin OS classes.
 
@@ -14,11 +13,11 @@ import ./_den_aspect.nix (
 
         for using home-manager in just a particular host:
 
-          den.aspects.my-laptop._.host.includes = [ den.home-manager ];
+          den.aspects.my-laptop._.host.includes = [ den._.home-manager ];
 
         for enabling home-manager by default on all hosts:
 
-          den.default.host.includes = [ den.home-manager ];
+          den.default.host.includes = [ den._.home-manager ];
 
       Does nothing for hosts that have no users with `homeManager` class.
       Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
@@ -63,5 +62,5 @@ import ./_den_aspect.nix (
         enabled = supportedOS && builtins.length hmUsers > 0;
       in
       if enabled then aspect else { };
-  }
-)
+  };
+}
