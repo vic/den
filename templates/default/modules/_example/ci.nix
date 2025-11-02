@@ -1,5 +1,5 @@
 # Adds some checks for CI
-{ self, ... }:
+{ self, lib, ... }:
 {
   perSystem =
     { pkgs, ... }:
@@ -73,6 +73,10 @@
         );
         alice-os-tmux-enabled-off = checkCond "os tmux for hosts having alice" (
           !honeycrisp.config.programs.tmux.enable
+        );
+
+        will-always-love-you = checkCond "red-snapper fish is default shell" (
+          "fish" == lib.getName adelie.config.users.users.will.shell
         );
 
       };

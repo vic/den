@@ -101,6 +101,9 @@ in
   den.aspects.cam.homeManager.programs.vscode.enable = true;
   den.aspects.cam.includes = [ (den._.unfree { allow = [ "vscode" ]; }) ];
 
+  # will has always loved red snappers
+  den.aspects.will._.user.includes = [ (den._.user-shell { shell = "fish"; }) ];
+
   # Example: user provides host configuration.
   den.aspects.alice._.user.includes = [ host-conditional ];
 
