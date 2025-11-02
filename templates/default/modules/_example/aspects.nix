@@ -1,6 +1,7 @@
 # example aspect dependencies for our hosts, checked at ci.nix
 # Feel free to remove it, adapt or split into modules.
 # see also: defaults.nix, compat-imports.nix, home-managed.nix
+# see den provided aspects: <den>/modules/aspects/provides
 {
   inputs,
   lib,
@@ -25,26 +26,6 @@ let
       ${host.class}.networking.hostName = host.name;
     };
 
-  homeDir =
-    userName: system:
-    if lib.hasSuffix "darwin" system then "/Users/${userName}" else "/home/${userName}";
-
-  set-home-dir = userName: system: {
-    homeManager.home.username = userName;
-    homeManager.home.homeDirectory = homeDir userName system;
-  };
-
-  # Example: parametric user aspect to define os-level user.
-  define-user =
-    { host, user }:
-    {
-      nixos.users.users.${user.name}.isNormalUser = true;
-      darwin.users.users.${user.name} = {
-        name = user.userName;
-        home = homeDir user.userName host.system;
-      };
-    };
-
   # Example: alice enables programs on non-darwin
   host-conditional =
     { host, user }:
@@ -65,15 +46,10 @@ in
   den.default.host._.host.includes = [ set-host-name ];
 
   # Example: parametric user aspect.
-  den.default.user._.user.includes = [
-    define-user
-    ({ host, user }: set-home-dir user.userName host.system)
-  ];
+  den.default.user._.user.includes = [ den._.define-user ];
 
-  # Example: parametric home aspect.
-  den.default.home._.home.includes = [
-    ({ home }: set-home-dir home.userName home.system)
-  ];
+  # Example: parametric standalone-home aspect.
+  den.default.home._.home.includes = [ den._.define-user._.home ];
 
   # Example: adelie host using github:nix-community/NixOS-WSL
   den.aspects.adelie.nixos = {
