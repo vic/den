@@ -16,6 +16,8 @@
   den._.primary-user.__functor =
     _:
     { user, host }:
+    # deadnix: skip
+    { class, ... }:
     let
       on-wsl.nixos.wsl.defaultUser = user.userName;
     in

@@ -14,6 +14,8 @@
       _:
       { shell }:
       { user, ... }:
+      # deadnix: skip
+      { class, ... }:
       {
         homeManager.programs.${shell}.enable = true;
         # Help needed: how to set default shell in darwin?
