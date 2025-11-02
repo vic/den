@@ -38,7 +38,7 @@
         honeycrisp-hostname = checkCond "den.default.host.includes sets hostName" (
           honeycrisp.config.networking.hostName == "honeycrisp"
         );
-        alice-primary-on-macos = checkCond "define-user sets macos primary" (
+        alice-primary-on-macos = checkCond "den._.primary-user sets macos primary" (
           honeycrisp.config.system.primaryUser == "alice"
         );
         alice-exists-on-rockhopper = checkCond "den.default.user.includes defines user on host" (

@@ -16,8 +16,10 @@
       intoAttr = "wslConfigurations";
       # custom nixpkgs channel.
       instantiate = inputs.nixpkgs-stable.lib.nixosSystem;
-      # custom hm (see home-manager.nix)
+      # custom attribute (see home-manager.nix)
       hm-module = inputs.home-manager-stable.nixosModules.home-manager;
+      # custom attribute (see primary-user.nix)
+      wsl = { };
     };
   };
 
