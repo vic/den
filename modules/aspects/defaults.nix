@@ -43,7 +43,13 @@ let
         };
     };
 
-  aspect-option = import ./_aspect_option.nix { inherit inputs lib; };
+  aspect-option =
+    description:
+    lib.mkOption {
+      inherit description;
+      default = { };
+      type = (inputs.flake-aspects.lib lib).types.aspectSubmodule;
+    };
 
 in
 {
