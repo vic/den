@@ -4,6 +4,7 @@
 {
   inputs,
   lib,
+  den,
   ...
 }:
 let
@@ -95,6 +96,10 @@ in
 
   # Example: enable helix for alice on all its home-managed hosts.
   den.aspects.alice.homeManager.programs.helix.enable = true;
+
+  # can uses unfree vscode.
+  den.aspects.cam.homeManager.programs.vscode.enable = true;
+  den.aspects.cam.includes = [ (den._.unfree { allow = [ "vscode" ]; }) ];
 
   # Example: user provides host configuration.
   den.aspects.alice._.user.includes = [ host-conditional ];
