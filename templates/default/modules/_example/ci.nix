@@ -22,6 +22,7 @@
       adelie = self.wslConfigurations.adelie;
       cam = self.homeConfigurations.cam;
       bob = self.homeConfigurations.bob;
+      luke = self.homeConfigurations.luke;
 
       alice-at-rockhopper = rockhopper.config.home-manager.users.alice;
       alice-at-honeycrisp = honeycrisp.config.home-manager.users.alice;
@@ -77,6 +78,10 @@
 
         will-always-love-you = checkCond "red-snapper fish is default shell" (
           "fish" == lib.getName adelie.config.users.users.will.shell
+        );
+
+        luke-hm-depends-on-osConfig = checkCond "standalone hm can depend on osConfig" (
+          luke.config.programs.bat.enable
         );
 
       };

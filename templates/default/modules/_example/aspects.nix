@@ -37,6 +37,18 @@ let
     else
       { };
 
+  # Example: luke standalone home-manager has access to rockhopper osConfig specialArg.
+  os-conditional-hm =
+    { home }:
+    {
+      # access osConfig, wired via extraSpecialArgs in homes.nix.
+      homeManager =
+        { osConfig, ... }:
+        {
+          programs.bat.enable = osConfig.programs.${home.programToDependOn}.enable;
+        };
+    };
+
 in
 {
   # Example: static aspects on host
@@ -76,6 +88,13 @@ in
     host-conditional
     # alice is always admin in all its hosts
     den._.primary-user
+  ];
+
+  # Example: standalone-hm config depends on osConfig (non-recursive)
+  # NOTE: this will only work for standalone hm, and not for hosted hm
+  # since a hosted hm configuration cannot depend on the os configuration.
+  den.aspects.luke._.home.includes = [
+    os-conditional-hm
   ];
 
 }
