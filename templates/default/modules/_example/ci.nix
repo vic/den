@@ -55,6 +55,14 @@
 
         import-tree = checkCond "auto-imported from rockhopper/_nixos" (rockhopper.config.auto-imported);
 
+        user-contributes-to-host = checkCond "alice.nixos sets on rockhopper host" (
+          rockhopper.config.users.users.alice.description == "Alice Q. User"
+        );
+
+        host-contributes-to-user = checkCond "rockhopper contributes to all its users" (
+          alice-at-rockhopper.programs.direnv.enable
+        );
+
         alice-hm-fish-enabled-by-default = checkCond "home-managed fish for alice" (
           alice-at-rockhopper.programs.fish.enable
         );

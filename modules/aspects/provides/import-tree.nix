@@ -5,32 +5,56 @@
 }:
 {
   den.provides.import-tree.description = ''
-    an aspect that recursively imports non-dendritic .nix files from a `_''${class}` directory.
+    Recursively imports non-dendritic .nix files depending on their Nix configuration `class`.
 
-      this can be used to help migrating from huge existing setups,
-      by having files: path/_nixos/*.nix, path/_darwin/*.nix, etc.
+    This can be used to help migrating from huge existing setups.
 
-    requirements:
+
+    ```
+      # this is at <repo>/modules/non-dendritic.nix
+      den.aspects.my-laptop.includes = [
+        (den._.import-tree._.host ../non-dendritic)
+      ]
+    ```
+
+    With following structure, it will automatically load modules depending on their class.
+
+    ```
+       <repo>/
+         modules/
+           non-dendritic.nix # configures this aspect
+         non-dendritic/ # name is just an example here
+           hosts/
+             my-laptop/
+               _nixos/          # a directory for `nixos` class
+                 auto-generated-hardware.nix # any nixos module
+               _darwin/ 
+                 foo.nix
+               _homeManager/
+                 me.nix
+    ```
+
+    ## Requirements
+
       - inputs.import-tree
 
-    usage:
+    ## Usage
 
       this aspect can be included explicitly on any aspect:
 
-          # example: my-host will import _nixos or _darwin nix files automatically.
-          den.aspects.my_host.includes = [ (den._.import-tree ./.) ];
+          # example: will import ./disko/_nixos files automatically.
+          den.aspects.my-disko.includes = [ (den._.import-tree ./disko/) ];
 
       or it can be default imported per host/user/home:
 
-          
-          # each host will import-tree from ./hosts/''${host.name}/_{nixos,darwin}/*.nix
-          den.default.host._.host.includes = [ (den._.import-tree._.host ./hosts) ];
+          # load from ./hosts/<host>/_nixos
+          den.default.includes = [ (den._.import-tree._.host ./hosts) ];
 
-          # each user will import-tree from ./users/''${user.name}@''${host.name}/_homeManager/*.nix
-          den.default.user._.user.includes = [ (den._.import-tree._.user ./users) ];
+          # load from ./users/<user>@<host>/{_homeManager, _nixos}
+          den.default.includes = [ (den._.import-tree._.user ./users) ];
 
-          # each home will import-tree from ./homes/''${home.name}/_homeManager/*.nix
-          den.default.home._.home.includes = [ (den._.import-tree._.home ./homes) ];
+          # load from ./homes/<home>/_homeManager
+          den.default.includes = [ (den._.import-tree._.home ./homes) ];
 
       you are also free to create your own auto-imports layout following the implementation of these.
   '';
@@ -40,9 +64,9 @@
     { class, ... }:
     let
       path = "${toString root}/_${class}";
-      mod.${class}.imports = [ (inputs.import-tree path) ];
+      aspect.${class}.imports = [ (inputs.import-tree path) ];
     in
-    if builtins.pathExists path then mod else { };
+    if builtins.pathExists path then aspect else { };
 
   den._.import-tree.provides = {
     host = root: { host }: den._.import-tree "${toString root}/${host.name}";

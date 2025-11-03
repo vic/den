@@ -1,50 +1,58 @@
 { lib, den, ... }:
-{
-  den.provides.define-user.description = ''
-    Defines user at OS and Home levels.
+let
+  description = ''
+    Defines a user at OS and Home levels.
+
+    Works in NixOS/Darwin and standalone Home-Manager
 
     ## Usage
 
-       den.aspects.my-user._.user.includes = [
-         den._.define-user
-       ]
+       # for NixOS/Darwin
+       den.aspects.my-user.includes = [ den._.define-user ]
 
-    for standalone-homes:
+       # for standalone home-manager
+       den.aspects.my-home.includes = [ den._.define-user ]
 
-       den.aspects.my-home._.home.includes = [
-         den._.define-user._.home
-       ]
+    or globally (automatically applied depending on context):
 
+       den.default.includes = [ den._.define-user ]
   '';
 
-  den._.define-user.__functor =
-    _:
-    { user, host }:
-    # deadnix: skip
-    { class, ... }:
-    let
-      homeDir =
-        if lib.hasSuffix "darwin" host.system then "/Users/${user.userName}" else "/home/${user.userName}";
+  homeDir =
+    host: user:
+    if lib.hasSuffix "darwin" host.system then "/Users/${user.userName}" else "/home/${user.userName}";
 
-      define-user = {
-        nixos.users.users.${user.userName}.isNormalUser = true;
-        darwin.users.users.${user.userName} = {
-          name = user.userName;
-          home = homeDir;
-        };
-        homeManager = {
-          home.username = user.userName;
-          home.homeDirectory = homeDir;
-        };
+  # Parametric { host, user } => aspect.
+  # Configures at OS and HM levels. For NixOs and Darwin.
+  osUser =
+    { host, user }:
+    {
+      nixos.users.users.${user.userName}.isNormalUser = true;
+      darwin.users.users.${user.userName} = {
+        name = user.userName;
+        home = homeDir host user;
       };
-    in
-    define-user;
+      homeManager = {
+        home.username = user.userName;
+        home.homeDirectory = homeDir host user;
+      };
+    };
 
-  den._.define-user._.home.__functor =
-    _:
+  # Parametric { home } => aspect.
+  hmUser =
     { home }:
-    den._.define-user {
+    osUser {
       user.userName = home.userName;
       host.system = home.system;
     };
+in
+{
+  den.provides.define-user = {
+    inherit description;
+    includes = [
+      osUser
+      hmUser
+    ];
+    __functor = den.lib.parametric true;
+  };
 }

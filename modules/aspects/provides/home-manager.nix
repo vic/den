@@ -13,11 +13,11 @@
 
         for using home-manager in just a particular host:
 
-          den.aspects.my-laptop._.host.includes = [ den._.home-manager ];
+          den.aspects.my-laptop.includes = [ den._.home-manager ];
 
         for enabling home-manager by default on all hosts:
 
-          den.default.host.includes = [ den._.home-manager ];
+          den.default.includes = [ den._.home-manager ];
 
       Does nothing for hosts that have no users with `homeManager` class.
       Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
@@ -36,11 +36,11 @@
         hmUserModule =
           user:
           let
+            aspect = den.aspects.${user.aspect} { inherit user host; };
             ctx = {
               inherit aspect-chain;
-              class = "homeManager";
+              class = user.class;
             };
-            aspect = den.aspects.${user.aspect}._.user { inherit host; };
           in
           aspect.resolve ctx;
 

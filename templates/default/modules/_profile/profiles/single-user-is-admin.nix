@@ -3,14 +3,14 @@
 
   # When a host includes *ONLY* one user, make that user the admin.
   pro.single-user-is-admin =
-    { host, user }@ctx:
+    { host, user }:
     let
       one-user = 1 == builtins.length (builtins.attrValues host.users);
       is-admin = one-user && builtins.hasAttr user.name host.users;
-      admin = lib.optionals is-admin [ (den._.primary-user ctx) ];
-      define = [ (den._.define-user ctx) ];
+      admin = lib.optionals is-admin [ den._.primary-user ];
+      define = [ den._.define-user ];
     in
     {
-      includes = define ++ admin;
+      includes = map (f: f { inherit user host; }) (define ++ admin);
     };
 }

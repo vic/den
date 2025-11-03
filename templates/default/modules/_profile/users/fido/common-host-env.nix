@@ -4,20 +4,16 @@ let
   # private aspects can be in variables
   # more re-usable ones are better defined inside the `pro` namespace.
   user-contrib-to-host =
-    { ... }: # replace with: { user, host }:
+    # { user, host }: # uncomment if needed
     {
       nixos = { };
       darwin = { };
     };
 in
 {
-  den.aspects.fido._.common-host-env =
-    { host, user }:
-    {
-      includes = map (f: f { inherit host user; }) [
-        # add other aspects of yours that use host, user
-        # to conditionally add behaviour.
-        user-contrib-to-host
-      ];
-    };
+  den.aspects.fido.provides.host.includes = [
+    # add other aspects of yours that use host, user
+    # to conditionally add behaviour.
+    user-contrib-to-host
+  ];
 }

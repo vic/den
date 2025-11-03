@@ -5,23 +5,115 @@
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
 </p>
 
-# den - Dendritic Nix Host Configurations
+# den - an aspect-oriented approach to Dendritic Nix configurations.
+
+> den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/vic)
 
 <table>
 <tr>
 <td>
+<div style="max-width: 320px;">
 
-<img width="400" height="400" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
+<img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- focused on configurations [definition](#core-concepts).
-- incremental [dependencies](#user-influencing-the-host).
-- multi-platform, multi-tenant hosts.
-- shareable HM in OS and standalone.
-- `nixos`/`darwin`/`systemManager`/any Nix `class`.
-- stable/unstable input [channels](#custom-configuration-factories).
-- customizable config factories and output attrs.
-- [batteries](#batteries-included-common-aspects-ready-to-use) included and replaceable.
-- features [tested](templates/default/modules/_example/ci.nix) with [examples](templates/default/modules/).
+- Dendritic: Same concern over different classes.
+
+- Small and [DRY](modules/aspects/provides/unfree.nix)<br>
+  [`class` generic](modules/aspects/provides/primary-user.nix) Nix configurations.
+
+- Context-Aware aspects.<br>[Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
+
+- Stop copying and **share**(tm)<br>
+  aspects across systems and Dendritic repos.
+
+- Bidirectional [configurations](modules/aspects/dependencies.nix).<br>
+  Users can contribute to their Host configuration and the other way around.
+
+- Custom factories and output attributes.<br>
+  Support any new `class` of Nix configurations.
+
+- Use your `stable`/`unstable` input channels.
+
+- _Freeform_ `host`/`user`/`host` schemas.<br>
+  Avoid the need for using `specialArgs`.
+
+- Multi-platform, Multi-tenant hosts.
+
+- Reuse aspects across hosts, OS, homes.
+
+- [Batteries Included](modules/aspects/provides/)<br>
+  Opt-in and replaceable.
+
+- [Well tested](templates/default/modules/_example/ci.nix)<br>
+  Suite exercises all [features with examples](templates/default/modules/).
+
+Need more batteries? See [vic/denful](https://github.com/vic/denful).
+
+Join the community [discussion](https://github.com/vic/den/discussions). Ask questions, share how you use `den`.
+
+</div>
+</td>
+<td>
+
+🏠 Concise definitions of
+[Hosts, Users](templates/default/modules/_example/hosts.nix) and [Standalone-Homes](templates/default/modules/_example/homes.nix).
+
+```nix
+# modules/den.nix
+{
+  # This example defines the following aspects:
+  #  den.aspects.my-laptop and den.aspects.vic
+  # standalone-hm and nixos-hm share vic aspect
+
+  # $ nixos-rebuild switch --flake .#my-laptop
+  den.hosts.x86-64-linux.my-laptop.users.vic = {}; 
+  # $ home-manager switch --flake .#vic
+  den.homes.aarch64-darwin.vic = { };
+
+  # That's it! Now lets attach configs via aspects
+}
+```
+
+🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) configurations. ([example](templates/default/modules/_example/aspects.nix))
+
+```nix
+# modules/my-laptop.nix -- Attach behaviour to host
+{ den, ... }:
+{
+  den.aspects.my-laptop = {
+    # dependency graph on other shared aspects
+    includes = [
+      # my parametric { host } => aspect
+      den.aspects.vpn # setups firewall/daemons
+      # opt-in, replaceable batteries included
+      den.provides.home-manager
+    ];
+    # provide same features at any OS/platform
+    nixos  = ...; # (see nixos options)
+    darwin = ...; # (see nix-darwin options)
+    # contrib hm-config to all my-laptop users
+    homeManager.programs.vim.enable = true;
+  };
+}
+
+# modules/vic.nix -- Reused in OS/standalone HM
+{ den, ... }:
+{
+  den.aspects.vic = {
+    homeManager = ...; # (see home-manager options)
+    # user can contrib to hosts where it lives
+    nixos.users.users.vic.description = "oeiuwq";
+    includes = [ 
+      den.aspects.tiling-wm 
+      # parametric { user, host } => aspect
+      den.provides.primary-user # vic is admin
+    ];
+  };
+}
+```
+
+For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den)
+or try this [GH search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
 
 **❄️ Try it now! Launch our template VM:**
 
@@ -37,184 +129,393 @@ nix flake update den
 nix run .#vm
 ```
 
-Need more batteries? See [vic/denful](https://github.com/vic/denful)
-
-</td>
-<td>
-
-<em><h4>A refined, minimalistic approach to declaring<br/>Dendritic Nix host configurations.</h4></em>
-
-🏠 Concise [hosts+users](templates/default/modules/_example/hosts.nix) and [standalone-homes](templates/default/modules/_example/homes.nix) definition.
-
-```nix
-# modules/den.nix -- reuse home in nixos & standalone.
-{
-  # $ nixos-rebuild switch --flake .#work-laptop
-  den.hosts.x86-64-linux.work-laptop.users.vic = {};
-  # $ home-manager switch --flake .#vic
-  den.homes.aarch64-darwin.vic = { };
-
-  # That's it! The rest is adding den.aspects.
-}
-```
-
-🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) dendritic modules ([example](templates/default/modules/_example/aspects.nix))
-
-```nix
-# modules/work-laptop.nix
-{ den, ... }:
-{
-  den.aspects.work-laptop = {
-    darwin = ...; # (see nix-darwin options)
-    nixos  = ...; # (see nixos options)
-    includes = with den.aspects; [ vpn office ];
-  };
-}
-
-# modules/vic.nix
-{ den, ... }:
-{
-  den.aspects.vic = {
-    homeManager = ...;
-    nixos = ...;
-    includes = with den.aspects; [ tiling-wm ];
-    provides.work-laptop = { host, user }: {
-      darwin.system.primaryUser = user.userName;
-      nixos.users.users.vic.isNormalUser = true;
-    };
-  };
-}
-```
-
-For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den)
-or this [search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
-
-Our [default](templates/default/modules/_profile/) template provides a quick-start layout.
+Our [default template](templates/default) provides a [layout](templates/default/modules/_profile/) for quickstart.
 
 </td>
 </tr>
 </table>
 
-## Aspect-Oriented Dendritic Nix
+You are done! You know everything there is to know about `den` for creating configurations with it.
 
-`den` promotes aspect-oriented design in Nix configurations. This approach encourages separation of concerns and modularity.
+However, if you want to learn more about how it works, I have tried to document some other topics in collapsible sections to avoid distraction from the introduction.
 
-- **Declarative & Composable**: Define system behaviors as independent aspects and compose them as needed.
-- **Batteries Included**: A collection of ready-to-use aspects for common configuration tasks are provided. They are opt-in and replaceable.
-- **Multi-Platform**: Manages configurations for NixOS, macOS (via `nix-darwin`), and user environments (via `home-manager`). It is extensible to any Nix-based configuration class.
-- **Parametric Configuration**: Aspects can be functions that receive context, allowing for configurations that adapt to their environment. This facilitates bidirectional configuration, where users can influence their host system and vice-versa.
-- **Modular**: The use of freeform attributes for hosts, users, and homes allows for passing custom metadata across any Nix configuration class, communicating values across nixos, home-manager or any other class not only in the same file but anywhere in the system.
+<details>
+<summary>
 
-## Core Concepts
+# Basic Concepts and Patterns.
 
-`den` separates the *what* (the systems and users) from the *how* (the configuration details), enabling a modular and reusable setup.
+> Learn about aspects, static and parametric. Default aspects and dependencies.
 
-### Hosts, Users, and Standalone Homes
+</summary>
 
-At the core of `den` is a clear separation of systems and their features definition. You declare your hosts, the users on those hosts, and any standalone `home-manager` configurations in a straightforward manner. This declaration is pure data, free of configuration concerns.
+There are two fundamental types of aspects in `den`, _static_ and _parametric_.
+
+<table>
+<tr>
+<td>
+
+#### **Static** aspects are just attribute sets
 
 ```nix
-# Declare your hosts and their users
-den.hosts.x86_64-linux.my-server.users.web = {};
-den.hosts.aarch64-darwin.my-laptop.users.vic = {};
+# An aspect is a collection of many
+# Nix configuration modules, each having
+# a different `class`.
+den.aspects.my-laptop = {
+  nixos  = { };
+  darwin = { };
+  homeManager = { };
+  nixVim = { };
+  nixDroid = { };
 
-# Declare standalone home-manager configurations
-den.homes.aarch64-darwin.dan = {
-  role = "designer"; # Custom metadata accessible anywhere
+  # aspects can be nested via `provides`
+  # forming a tree structure.
+  provides.gaming = {
+    nixos = { };
+    nixDroid = { };
+
+    # aspects can also `include` others
+    # forming a graph of dependencies
+    includes = [
+      # gaming.nixos module will mixin
+      # nvidia-gpu.nixos module if any.
+      den.aspects.nvidia-gpu
+    ];
+  };
+
 };
 ```
 
-This structure allows you to manage heterogeneous environments with clarity. The actual configuration is applied using standard tools like `nixos-rebuild`, `darwin-rebuild`, or `home-manager`. For the schema, see the [type definitions](modules/_types.nix).
+> NOTE: `_` is an alias for `provides`. In many examples you will see `foo._.bar._.baz` instead of `foo.provides.bar.provides.baz`.
 
-### Aspects: Composable Configuration Units
+</td>
+<td>
 
-Aspects are the building blocks of your system's configuration, powered by the [`flake-aspects`](https://github.com/vic/flake-aspects) library. Aspects are self-contained collections of modules that define a specific feature, they can be organized in a tree-like structure (via its `provides` attribute) and declare dependencies upon each other (via its `includes` attribute).
-
-`den` automatically creates aspects for each host, user, and home. It also wires the basic configuration dependencies between them. So you can then attach features to them.
+#### **Parametric** aspects are just functions.
 
 ```nix
-den.aspects.my-server = {
-  nixos.services.nginx.enable = true;
-  includes = [ den.aspects.security den.aspects.monitoring ];
+# The convention is to always use named args.
+# These required args is the **context** the
+# aspect needs to provide configuration.
+hostParametric = { host }: {
+  nixos.networking.hostName = host.hostName;
+
+  # A parametric aspect can also ask other
+  # aspects for context-aware configurations.
+  # Here, we ask two other parametric aspects
+  # given the `{ host, gaming }` context.
+  includes = let 
+    context.host = host;
+    context.gaming.emulators = [ "nes" ];
+  in map (f: f context) [
+    den.default
+    den.aspects.gaming-platform
+  ];
 };
 ```
 
-This promotes a clean separation of concerns. Dependencies between aspects are declared in [dependencies.nix](modules/aspects/dependencies.nix).
+#### Important **context** variants in `den`.
 
-### Default Aspects
+Den uses the following contexts by default.
 
-You can define default aspects that apply to all hosts, users, or standalone homes. This is useful for establishing a baseline configuration across your entire infrastructure.
+The aspect system is not limited to these,<br>
+but these are used to describe [dependencies](modules/aspects/dependencies.nix)<br>
+between hosts/users, homes and default configs.
 
-```nix
-# Static. Apply a baseline security aspect to all hosts
-den.default.host.includes = [ den.aspects.baseline-security ];
+- `{ host }` - For host _OS_ level configs.
+- `{ user, host }` - For user _Home_ level configs.
+- `{ home }` - For standalone _Home_ configs.
 
-# Parametric. Automatically configures at OS and home level
-den.default.user._.user.includes = [ den._.define-user ];
-```
+</td>
+</tr>
+</table>
 
-These defaults act as a foundation upon which more specific configurations can be built.
+### The Default aspect and default Dependencies
 
-### Parametric Aspects & Bidirectional Configuration
+Den has an special aspect at `den.default` that serves for global configuration. `den.default` is **included by default** in all *Hosts*, *Users* and *Homes*. For example a Home configuration invokes `den.default { inherit home; }`, to obtain the aggregated defaults for home contexts.
 
-Parametric aspects are functions that receive context (like `host`, `user` or `home`) and return an aspect. This allows for dynamic, context-aware configuration. This enables a pattern of **bidirectional configuration**, where hosts and users can influence each other's settings.
+<table>
+<tr>
+<td>
 
-#### User influencing the Host
-
-A user's aspect can contribute configuration to the host they reside on, conditional on the host's properties.
-
-```nix
-# Contributes configuration only on WSL hosts
-den.aspects.alice._.user.includes = [
-  ({ host, user }:
-    if host ? wsl
-    then { nixos.wsl.defaultUser = user.userName; }
-    else { })
-];
-```
-
-#### Host influencing its Users
-
-Conversely, a host can provide a common environment or set of tools to all its users.
+#### Registering defaults values
 
 ```nix
-# A host aspect that provides a common environment to all its users
-den.aspects.devserver._.common-user-env = { host, user }: {
-  homeManager.programs.vim.enable = true;
-};
+{
+  # you can assign static values directly.
+  den.default.nixos = {
+    system.stateVersion = "25.11";
+  };
+
+  # you can also include other aspects
+  den.default.includes = [
+    { darwin.system.stateVersion = 6; }
+  ]
+}
 ```
 
-This bidirectional capability allows for creating reusable and adaptable configurations that respect the boundaries between different system components.
-
-### Batteries Included: Common Aspects Ready to Use
-
-`den` comes with a set of pre-defined, replaceable aspects for common configuration tasks. These aspects are opt-in and replaceable, they also serve as examples for you to create your own.
-
-- [`home-manager`](modules/aspects/provides/home-manager.nix): Integrates `home-manager` configurations into your hosts.
-- [`unfree`](modules/aspects/provides/unfree.nix): Enables the use of unfree packages.
-- [`import-tree`](modules/aspects/provides/import-tree.nix): Provides a migration path for non-dendritic configurations.
-- [`primary-user`](modules/aspects/provides/primary-user.nix): Grants administrative privileges to a user.
-- [`define-user`](modules/aspects/provides/define-user.nix): Manages user account creation across different operating systems.
-- [`user-shell`](modules/aspects/provides/user-shell.nix): Sets the default shell for a user.
-
-You can find the implementation of these in the [provides directory](modules/aspects/provides/).
-
-### Custom Configuration Factories
-
-`den` allows you to specify custom builders for your configurations. This is useful for integrating new Nix configuration classes or for using different input channels (e.g., stable vs. unstable) on different parts of your system.
-
-For example, you can use a specific factory for a WSL host:
+It is possible to also register context-aware parametric aspects in `den.defaults`. This is how you can provide a default to all hosts or users that match a condition.
 
 ```nix
-den.hosts.x86_64-linux.wsl.instantiate = inputs.nixpkgs-stable.lib.nixosSystem;
+# This example is split to aid reading.
+let
+  hasOneUser = host:
+    length (attrNames host.users) == 1;
+  hasUser = host: user:
+    hasAttr user.name host.users;
+  makeAdmin = user: {
+    nixos.users.users.${user.name} = {
+      extraGroups = [ "wheel" ]; 
+    };
+  };
+
+  # IFF host has ONE user, make it admin
+  single-user-is-admin = { host, user }: 
+    if hasOneUser host && hasUser host user
+    then makeAdmin user else { };
+in
+{
+  den.default.includes = [
+    # will be called *ONLY* on when the
+    # `{ host, user }` context is used.
+    single-user-is-admin
+  ];
+}
 ```
 
-This gives fine-grained control over how your systems are built.
+#### Custom parametric providers.
 
-## 🧪 Testing & Examples
+The following is the code for how `den.default` is
+defined.
 
-The CI tests for `den` serve as a comprehensive set of usage examples. You can find them in the [`_example` directory](templates/default/modules/_example). These demonstrate patterns and showcase `den`'s capabilities.
+```nix
+{ den, ... }: {
+  den.default.__functor = den.lib.parametric true;
+}
+```
 
-For further inspiration, you can explore configurations using `den` on GitHub, such as [`vic/vix`](https://github.com/vic/vix/tree/den), or by [searching for repos](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
+You can do the very same for other aspects of you
+that can have context-aware aspects in their `.includes`.
 
-Join the [discussion](https://github.com/vic/discussions). Ask questions, feedback or share how you are using den to inspire others.
+```nix
+{ den, ...}: {
+  den.aspects.gaming.__functor = den.lib.parametric true;
+
+  # any other file can register gaming aspects
+  den.aspects.gaming.include = [
+    ({ emulation }: {
+      nixos = ...;
+      includes = [ den.aspects.steam ];
+    })
+
+    { nixos = ...; } # always included
+    ({ gpu }: { }) # non-match on my-laptop
+  ];
+
+  # then you can depend on the gaming aspect:
+  den.aspects.my-laptop.includes = [ 
+    (den.aspects.gaming { emulation = "neogeo"; })
+  ];
+
+}
+```
+
+For more examples on parametric aspects explore our [batteries](modules/aspects/provides/).
+
+> Use the source, Luke!
+
+</td>
+
+<td>
+
+#### Aspect dependencies
+
+Accessing an aspect module causes `flake-aspects` to resolve it
+by including the aspect's own class module and the same-class module
+of all its transitive includes.
+
+Aditional to this, `den` registers some special [dependencies](modules/aspects/dependencies.nix)
+designed to aid on Den particular use case: Host/Users, Homes.
+
+###### Host dependencies
+
+Host also include `den.aspects.<host> { inherit host; }` meaning
+all included parametric aspects have an opportunity to produce
+aditional configurations for the host.
+
+Also for each user, `den.aspects.<user> { inherit host user; }`
+is called. So `den.aspects.alice.nixos` can provide config to
+all hosts where alice lives. And also has the opportunity to
+register parametric aspects on `alice.provides` that inspect
+the host attribute to contionally produce other aspects.
+
+###### User dependencies
+
+User modules are read from [os-home](modules/aspects/provides/home-manager.nix) configurations.
+
+It basically invokes `den.aspects.<user> { inherit host user; }` but
+this time the host also contributes back generic configs to the users.
+If you are wondering how this is not recursive, the answer is by using
+our _contexts_, user-to-host dependencies start with a `{ host }` context,
+while host-to-user dependencies start with a `{ user, host }` context, and
+even when both are given to `den.aspects.<user> ctx` the results are
+non recursive.
+
+A user also depends on `den.default { inherit host user; }`.
+
+###### Home dependencies
+
+Home just uses its own module, its includes, and invokes `den.default { inherit home; }`.
+
+</td>
+
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary>
+
+# Aspect Organization Patterns
+
+> Learn about organizing patterns for reuse.
+
+</summary>
+
+No two nix configurations are the same. We all tend to organize things as we feel better.
+This section will try to outline some hints on possible ways to organize aspects, none
+of this is mandatory, and indeed you are encouraged to explore and [share](https://github.com/vic/den/discussions) your own patterns and insights.
+
+#### Having a _namespace_ of aspects.
+
+The first principle is using `.provides.` (aka [`._.`](https://github.com/vic/den/discussions/34)) to nest your aspects as they make sense for you.
+
+Unlike normal flake-parts, where modules are _flat_ and people tend to use names like `flake.modules.nixos."host/my-laptop"` or `nixos."feature/gaming"` to avoid collission, in `den` you have a proper tree structure.
+
+I (_vic_), use an aspect `vix` for all _features_ on my system, and from there I create sub-aspects.
+
+Because writing `den.aspects.vix._.gaming._.emulation` tends to be repetitive, I use the following `vix` alias as module argument.
+
+> This pattern is also shown in the default template, under [`_profile`](templates/default/modules/_profile/).
+
+<table>
+<tr>
+<td>
+
+```nix
+# modules/namespace.nix
+{ config, ... }:
+{
+  den.aspects.vix.provides = { };
+  _module.args.vix = # up to provides
+    config.den.aspects.vix.provides;
+}
+```
+
+</td>
+<td>
+
+```nix
+# modules/my-laptop.nix
+{ vix, ... }:
+{
+  vix.gaming = {
+    _.steam.includes = [ 
+      vix.gpu 
+      vix.performance-profile 
+    ];
+  };
+}
+```
+
+See [real-life example from vic/vix](https://github.com/vic/vix/blob/den/modules/hosts/nargun.nix)
+
+</td>
+</tr>
+</table>
+
+#### Using parametric aspects to route configurations.
+
+The following example routes configurations into the `vix` namespace.
+This is just an example of using parametric aspects to depend on other
+aspects in any part of the tree.
+
+<table>
+<tr>
+<td>
+
+```nix
+# modules/routes.nix
+{ den, ... }:
+let
+  noop = _: { };
+
+  by-platform-config = { host }:
+    vix.${host.system} or noop;
+
+  user-provides-host-config = { user, host }:
+    vix.${user.aspect}._.${host.aspect} or noop;
+
+  host-provides-host-config = { user, host }:
+    vix.${host.aspect}._.${user.aspect} or noop;
+
+  route = locator: { user, host }@ctx: 
+    (locator ctx) ctx;
+in 
+{
+  den.aspects.routes.__functor = 
+    den.lib.parametric true;
+  den.aspects.routes.includes = 
+    map route [
+      user-provides-host-config
+      host-provides-user-config
+      by-platform-config
+    ];
+}
+```
+
+</td>
+<td>
+
+```nix
+{
+  # for all darwin hardware
+  vix.aarch64-darwin = { host }: {
+    darwin = ...; 
+  };
+
+  # config bound to vic user 
+  # on my-laptop host.
+  vix.vic.provides.my-laptop = 
+    { host, user }: {
+      nixos = ...;
+    };
+}
+```
+
+Use your imagination, come up with
+an awesome Dendritic setup that suits you.
+
+</td>
+</tr>
+</table>
+
+> You made it to the end!, thanks for reading to this point.
+> I hope you enjoy using `den` as much as I have done writing it and have put dedication
+> on it for being high quality-nix for you. \<3.
+> I feel like den is now feature complete, and it will not likely change.
+
+</details>
+
+### Contributing.
+
+Yes, please, anything!. From fixing my bad english and typos, to sharing your ideas and experience with `den` in our discussion forums. Feel free to participate and be nice with everyone.
+
+PRs are more than welcome, the CI runs some checks that verify nothing (known) is broken. Any new feature needs a test in `_example/ci.nix`.
+
+If you need to run the test suite locally:
+
+```console
+$ nix flake check ./checkmate --override-input target .
+$ cd templates/default && nix flake check --override-input den ../..
+```
