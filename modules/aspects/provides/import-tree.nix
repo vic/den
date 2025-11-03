@@ -36,8 +36,7 @@
   '';
 
   den._.import-tree.__functor =
-    _:
-    root:
+    _: root:
     { class, ... }:
     let
       path = "${toString root}/_${class}";
@@ -47,10 +46,7 @@
 
   den._.import-tree.provides = {
     host = root: { host }: den._.import-tree "${toString root}/${host.name}";
-    user =
-      root:
-      { host, user }:
-      den._.import-tree "${toString root}/${user.name}@${host.name}";
+    user = root: { host, user }: den._.import-tree "${toString root}/${user.name}@${host.name}";
     home = root: { home }: den._.import-tree "${toString root}/${home.name}";
   };
 }

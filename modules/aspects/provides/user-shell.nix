@@ -11,8 +11,7 @@
     '';
 
     __functor =
-      _:
-      shell:
+      _: shell:
       { user, ... }:
       # deadnix: skip
       { class, ... }:

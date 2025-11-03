@@ -13,8 +13,7 @@
   '';
 
   den._.unfree.__functor =
-    _:
-    allow:
+    _: allow:
     { class, ... }:
     {
       ${class}.nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allow;
