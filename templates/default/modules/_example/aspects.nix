@@ -62,11 +62,11 @@ in
 
   # can uses unfree vscode.
   den.aspects.cam.homeManager.programs.vscode.enable = true;
-  den.aspects.cam.includes = [ (den._.unfree { allow = [ "vscode" ]; }) ];
+  den.aspects.cam.includes = [ (den._.unfree [ "vscode" ]) ];
 
   den.aspects.will._.user.includes = [
     # will has always loved red snappers
-    (den._.user-shell { shell = "fish"; })
+    (den._.user-shell "fish")
     # will is primary user in WSL NixOS.
     den._.primary-user
   ];

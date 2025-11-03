@@ -12,7 +12,7 @@
 
     __functor =
       _:
-      { shell }:
+      shell:
       { user, ... }:
       # deadnix: skip
       { class, ... }:

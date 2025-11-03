@@ -1,3 +1,4 @@
+{ lib, ... }:
 {
   den._.unfree.description = ''
     A class generic aspect that enables unfree packages by name.
@@ -6,20 +7,16 @@
 
     ## Usage
 
-      den.aspects.my-laptop.includes = [ (den._.unfree { allow = [ "code" ]; }) ];
+      den.aspects.my-laptop.includes = [ (den._.unfree [ "code" ]) ];
 
     It will dynamically provide a module for each class when accessed.
   '';
 
   den._.unfree.__functor =
     _:
-    { allow }:
+    allow:
     { class, ... }:
     {
-      ${class} =
-        { lib, ... }:
-        {
-          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allow;
-        };
+      ${class}.nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allow;
     };
 }
