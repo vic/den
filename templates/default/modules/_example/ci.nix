@@ -75,6 +75,10 @@
           !honeycrisp.config.programs.tmux.enable
         );
 
+        alice-hm-bat-enabled-if-host-vim-enabled = checkCond "home-manager is able to read os config" (
+          alice-at-rockhopper.programs.bat.enable
+        );
+
         will-always-love-you = checkCond "red-snapper fish is default shell" (
           "fish" == lib.getName adelie.config.users.users.will.shell
         );

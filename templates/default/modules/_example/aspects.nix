@@ -6,6 +6,7 @@
   inputs,
   lib,
   den,
+  config,
   ...
 }:
 let
@@ -36,6 +37,18 @@ let
       }
     else
       { };
+
+  # Example: alice enables home-managed bat if vim was OS enabled.
+  os-conditional =
+    { host, user }:
+    let
+      os = config.flake.${host.intoAttr}.${host.name} or { };
+      os-vim-enabled = os.config.programs.vim.enable or false;
+      aspect = {
+        homeManager.programs.bat.enable = true;
+      };
+    in
+    if os-vim-enabled then aspect else { };
 
 in
 {
@@ -74,6 +87,7 @@ in
   # Example: user provides host configuration.
   den.aspects.alice._.user.includes = [
     host-conditional
+    os-conditional
     # alice is always admin in all its hosts
     den._.primary-user
   ];
