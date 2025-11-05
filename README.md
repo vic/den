@@ -192,10 +192,6 @@ den.aspects.my-laptop = {
 > **TIP**
 > **`_`** is an alias for `provides`. In many examples you will see `foo._.bar._.baz` instead of `foo.provides.bar.provides.baz`.
 
-> **NOTE**
-> Den provides an [__angle-brackets__](https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world) **experimental feature** that allows even shorter syntax for deep `.provide.` access.
-> See [import-non-dendritic.nix](https://github.com/vic/den/pull/38/files) for an example usage.
-
 </td>
 <td>
 
@@ -406,6 +402,10 @@ I (_vic_), use an aspect `vix` for all _features_ on my system, and from there I
 Because writing `den.aspects.vix._.gaming._.emulation` tends to be repetitive, I use the following `vix` alias as module argument.
 
 > This pattern is also shown in the default template, under [`_profile`](templates/default/modules/_profile/).
+
+> **NOTE**:
+> `den` provides an [__angle brackets__](https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world) **experimental feature** that allows even shorter syntax for deep `.provide.` access.
+> See [import-non-dendritic.nix](templates/default/modules/_example/import-non-dendritic.nix) for an example usage.
 
 <table>
 <tr>
