@@ -34,7 +34,7 @@
 
 - Use your `stable`/`unstable` input channels.
 
-- _Freeform_ `host`/`user`/`host` schemas.<br>
+- _Freeform_ `host`/`user`/`host` [schemas](modules/_types.nix).<br>
   Avoid the need for using `specialArgs`.
 
 - Multi-platform, Multi-tenant hosts.
@@ -58,8 +58,10 @@ Join the community [discussion](https://github.com/vic/den/discussions). Ask que
 🏠 Concise definitions of
 [Hosts, Users](templates/default/modules/_example/hosts.nix) and [Standalone-Homes](templates/default/modules/_example/homes.nix).
 
+See [\_types.nix](modules/_types.nix) for complete schema.
+
 ```nix
-# modules/den.nix
+# modules/hosts.nix
 {
   # This example defines the following aspects:
   #  den.aspects.my-laptop and den.aspects.vic
