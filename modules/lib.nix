@@ -17,10 +17,25 @@ let
       { class, aspect-chain }: funk aspect param;
 
   aspects = inputs.flake-aspects.lib lib;
+
+  # EXPERIMENTAL.  __findFile to resolve deep aspects.
+  #   __findFile = angleBrackets den.aspects;
+  #   <foo/bar/baz> => den.aspects.foo.provides.bar.provides.baz
+  # inspired by https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world
+  angleBrackets =
+    den-ns: _nixPath: name:
+    lib.pipe name [
+      (lib.replaceString "/" ".provides.")
+      (lib.splitString ".")
+      (path: lib.getAttrFromPath path den-ns)
+    ];
 in
 {
   config.den.lib = {
-    inherit parametric aspects;
+    inherit parametric aspects angleBrackets;
+
+    # default angle brackets search from den.aspects
+    __findFile = angleBrackets config.den.aspects;
   };
   options.den.lib = lib.mkOption {
     readOnly = true;
