@@ -1,11 +1,13 @@
 # Profiles are just aspects whose only job is to include other aspects
 # based on the properties (context) of the host/user they are included in.
-{ den, pro, ... }:
+{ pro, ... }:
 {
 
   # install profiles as parametric aspects on all hosts/users
-  den.default.host._.host.includes = [ pro.by-host ];
-  den.default.user._.user.includes = [ pro.by-user ];
+  den.default.includes = [
+    pro.by-host
+    pro.by-user
+  ];
 
   # `by-host { host }`
   #
@@ -21,7 +23,7 @@
   # Also, remember that aspects can form a tree structure by using their
   # `provides` attribute, not all aspects need to exist at same level.
   pro.by-host =
-    { host }:
+    { host, ... }:
     {
       includes = [
         (pro.${host.system} or { })
@@ -34,10 +36,10 @@
   # a user can contribute modules to the host is part of, and also
   # define its own home-level configs.
   #
-  # this profile adds the following aspects if they exist:
+  #  - `den.aspects.<host>._.user { host, user }`: included on each user of a host.
+  #  - `den.aspects.<user>._.host { host, user }`: included on each host where a user exists.
   #
-  #  - `den.aspects.<host>._.common-user-env { host, user }`: included on each user of a host.
-  #  - `den.aspects.<user>._.common-host-env { host, user }`: included on each host where a user exists.
+  # this profile adds the following aspects if they exist:
   #
   #  - `den.aspects.profile._.single-user-is-admin { host, user }`
   #
@@ -49,14 +51,11 @@
     {
       includes =
         let
-          noop = _: { };
           apply = f: f { inherit host user; };
         in
         map apply [
-          (den.aspects.${host.name}._.common-user-env or noop)
-          (den.aspects.${user.name}._.common-host-env or noop)
-
           pro.single-user-is-admin
+          # TODO: add
         ];
     };
 

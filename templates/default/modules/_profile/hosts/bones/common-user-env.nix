@@ -1,22 +1,18 @@
-# An aspect that contributes to any user home on the bones hsot.
+# An aspect that contributes to any user home on the bones host.
 { ... }:
 let
   # private aspects can be let-bindings
   # more re-usable ones are better defined inside the `pro` namespace.
   host-contrib-to-user =
-    { ... }: # replace with { user, host }:
+    # { host, user }: # uncomment if needed
     {
-      homeManager = { };
+      homeManager.programs.vim.enable = true;
     };
 in
 {
-  den.aspects.bones._.common-user-env =
-    { host, user }:
-    {
-      includes = map (f: f { inherit host user; }) [
-        # add other aspects of yours that use host, user
-        # to conditionally add behaviour.
-        host-contrib-to-user
-      ];
-    };
+  den.aspects.bones.provides.user.includes = [
+    # add other aspects of yours that use host, user
+    # to conditionally add behaviour.
+    host-contrib-to-user
+  ];
 }

@@ -5,7 +5,7 @@
   ...
 }:
 let
-  den = config.den;
+  inherit (config) den;
 
   hostsOption = lib.mkOption {
     description = "den hosts definition";

@@ -1,7 +1,12 @@
-# example aspect dependencies for our hosts, checked at ci.nix
-# Feel free to remove it, adapt or split into modules.
-# see also: defaults.nix, compat-imports.nix, home-managed.nix
-# see den provided aspects: <den>/modules/aspects/provides
+# Feel free to remove this file, adapt or split into modules.
+#
+# NOTE: This file does not reflect best organization practices,
+# for that see the _profile directory.
+#
+# These examples exercice all den features, use them as reference
+# of usage.
+# See ci.nix for checks.
+# See defaults.nix, and other files in _example/*.nix
 {
   inputs,
   lib,
@@ -10,7 +15,7 @@
 }:
 let
 
-  # Example: An aspect for vm installers.
+  # Example: A static aspect for vm installers.
   vm-bootable = {
     nixos =
       { modulesPath, ... }:
@@ -26,7 +31,7 @@ let
       ${host.class}.networking.hostName = host.name;
     };
 
-  # Example: alice enables programs on non-darwin
+  # Example: configuration that depends on both host and user. provides to both.
   host-conditional =
     { host, user }:
     if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
@@ -51,17 +56,20 @@ let
 
 in
 {
-  # Example: static aspects on host
-  den.default.host.includes = [ vm-bootable ];
+  den.default.includes = [
+    # Example: static aspect
+    vm-bootable
+    # Example: parametric { host } aspect
+    set-host-name
+    # Example: parametric over { home } or { host, user } aspect.
+    den.provides.define-user
+  ];
 
-  # Example: parametric host aspects
-  den.default.host._.host.includes = [ set-host-name ];
+  # Example: user provides static config to all its nixos hosts.
+  den.aspects.alice.nixos.users.users.alice.description = "Alice Q. User";
 
-  # Example: parametric user aspect.
-  den.default.user._.user.includes = [ den._.define-user ];
-
-  # Example: parametric standalone-home aspect.
-  den.default.home._.home.includes = [ den._.define-user._.home ];
+  # Example: host provides static config to all its users hm.
+  den.aspects.rockhopper.homeManager.programs.direnv.enable = true;
 
   # Example: adelie host using github:nix-community/NixOS-WSL
   den.aspects.adelie.nixos = {
@@ -76,15 +84,15 @@ in
   den.aspects.cam.homeManager.programs.vscode.enable = true;
   den.aspects.cam.includes = [ (den._.unfree [ "vscode" ]) ];
 
-  den.aspects.will._.user.includes = [
+  den.aspects.will.includes = [
     # will has always loved red snappers
     (den._.user-shell "fish")
     # will is primary user in WSL NixOS.
     den._.primary-user
   ];
 
-  # Example: user provides host configuration.
-  den.aspects.alice._.user.includes = [
+  # Example: user provides parametric host configuration.
+  den.aspects.alice.includes = [
     host-conditional
     # alice is always admin in all its hosts
     den._.primary-user
@@ -93,7 +101,7 @@ in
   # Example: standalone-hm config depends on osConfig (non-recursive)
   # NOTE: this will only work for standalone hm, and not for hosted hm
   # since a hosted hm configuration cannot depend on the os configuration.
-  den.aspects.luke._.home.includes = [
+  den.aspects.luke.includes = [
     os-conditional-hm
   ];
 

@@ -1,9 +1,9 @@
 { lib, ... }:
 {
-  den._.unfree.description = ''
+  den.provides.unfree.description = ''
     A class generic aspect that enables unfree packages by name.
 
-    Works for any class (nixos/darwin/homeManager,etc).
+    Works for any class (nixos/darwin/homeManager,etc) on any host/user/home context.
 
     ## Usage
 
@@ -12,10 +12,11 @@
     It will dynamically provide a module for each class when accessed.
   '';
 
-  den._.unfree.__functor =
-    _: allow:
-    { class, ... }:
+  den.provides.unfree.__functor =
+    _self: allowed-names:
+    # deadnix: allow
+    { class, aspect-chain }:
     {
-      ${class}.nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allow;
+      ${class}.nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allowed-names;
     };
 }
