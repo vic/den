@@ -187,7 +187,12 @@ den.aspects.my-laptop = {
 };
 ```
 
-> NOTE: `_` is an alias for `provides`. In many examples you will see `foo._.bar._.baz` instead of `foo.provides.bar.provides.baz`.
+> **TIP**
+> **`_`** is an alias for `provides`. In many examples you will see `foo._.bar._.baz` instead of `foo.provides.bar.provides.baz`.
+
+> **NOTE**
+> Den provides an [__angle-brackets__](https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world) **experimental feature** that allows even shorter syntax for deep `.provide.` access.
+> See [import-non-dendritic.nix](https://github.com/vic/den/pull/38/files) for an example usage.
 
 </td>
 <td>
