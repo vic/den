@@ -465,7 +465,7 @@ let
   user-provides-host-config = { user, host }:
     vix.${user.aspect}._.${host.aspect} or noop;
 
-  host-provides-host-config = { user, host }:
+  host-provides-user-config = { user, host }:
     vix.${host.aspect}._.${user.aspect} or noop;
 
   route = locator: { user, host }@ctx: 
