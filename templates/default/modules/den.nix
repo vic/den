@@ -8,6 +8,6 @@
     (inputs.import-tree ./_example)
 
     # The _profile directory contains a minimal profile-based layout.
-    # (inputs.import-tree ./_profile) # Disabled, working on #45
+    (inputs.import-tree ./_profile)
   ];
 }

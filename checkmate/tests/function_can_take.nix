@@ -1,6 +1,11 @@
-{ lib, inputs, ... }:
+{
+  lib,
+  inputs,
+  config,
+  ...
+}:
 let
-  takes = (inputs.target.lib lib inputs).canTake;
+  takes = (inputs.target.lib { inherit inputs lib config; }).canTake;
 
   flake.tests."test function with no named arguments can take anything" = {
     expr = takes { } (x: x);

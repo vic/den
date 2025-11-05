@@ -14,7 +14,7 @@
       url = "github:nix-darwin/nix-darwin";
     };
     den = {
-      url = "github:vic/den";
+      url = "path:/home/vic/hk/den";
     };
     flake-aspects = {
       url = "github:vic/flake-aspects";

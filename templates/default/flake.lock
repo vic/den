@@ -22,17 +22,14 @@
     },
     "den": {
       "locked": {
-        "lastModified": 1762483837,
-        "narHash": "sha256-4rFMMbyZdzxPduljpUB2eEB4VHNLcF2pM2K6KxWK37k=",
-        "owner": "vic",
-        "repo": "den",
-        "rev": "c1a0d345c4484faba4a146d60c746b12c5fce9e6",
-        "type": "github"
+        "lastModified": 1762501715,
+        "narHash": "sha256-ynnkGe7wBqQLZM+R4mwh/N7nFn5mh870wRe6tyiZfQY=",
+        "path": "/home/vic/hk/den",
+        "type": "path"
       },
       "original": {
-        "owner": "vic",
-        "repo": "den",
-        "type": "github"
+        "path": "/home/vic/hk/den",
+        "type": "path"
       }
     },
     "flake-aspects": {
