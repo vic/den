@@ -36,7 +36,7 @@
 
 - Use your `stable`/`unstable` input channels.
 
-- _Freeform_ `host`/`user`/`host` [schemas](modules/_types.nix).<br>
+- _Freeform_ `host`/`user`/`home` [schemas](modules/_types.nix).<br>
   Avoid the need for using `specialArgs`.
 
 - Multi-platform, Multi-tenant hosts.
@@ -90,7 +90,7 @@ See [\_types.nix](modules/_types.nix) for complete schema.
       # my parametric { host } => aspect
       den.aspects.vpn # setups firewall/daemons
       # opt-in, replaceable batteries included
-      den.provides.home-manager
+      den._.home-manager
     ];
     # provide same features at any OS/platform
     nixos  = ...; # (see nixos options)
@@ -110,7 +110,7 @@ See [\_types.nix](modules/_types.nix) for complete schema.
     includes = [ 
       den.aspects.tiling-wm 
       # parametric { user, host } => aspect
-      den.provides.primary-user # vic is admin
+      den._.primary-user # vic is admin
     ];
   };
 }
@@ -168,14 +168,11 @@ den.aspects.my-laptop = {
   nixos  = { };
   darwin = { };
   homeManager = { };
-  nixVim = { };
-  nixDroid = { };
 
-  # aspects can be nested via `provides`
+  # aspects can be nested via `_` (`provides`)
   # forming a tree structure.
-  provides.gaming = {
+  _.gaming = {
     nixos = { };
-    nixDroid = { };
 
     # aspects can also `include` others
     # forming a graph of dependencies
@@ -306,7 +303,7 @@ that can have context-aware aspects in their `.includes`.
   den.aspects.gaming.__functor = den.lib.parametric true;
 
   # any other file can register gaming aspects
-  den.aspects.gaming.include = [
+  den.aspects.gaming.includes = [
     ({ emulation }: {
       nixos = ...;
       includes = [ den.aspects.steam ];
@@ -338,7 +335,7 @@ Accessing an aspect module causes `flake-aspects` to resolve it
 by including the aspect's own class module and the same-class module
 of all its transitive includes.
 
-Aditional to this, `den` registers some special [dependencies](modules/aspects/dependencies.nix)
+Additional to this, `den` registers some special [dependencies](modules/aspects/dependencies.nix)
 designed to aid on Den particular use case: Host/Users, Homes.
 
 ###### Host dependencies
@@ -404,7 +401,7 @@ Because writing `den.aspects.vix._.gaming._.emulation` tends to be repetitive, I
 > This pattern is also shown in the default template, under [`_profile`](templates/default/modules/_profile/).
 
 > **NOTE**:
-> `den` provides an [__angle brackets__](https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world) **experimental feature** that allows even shorter syntax for deep `.provide.` access.
+> `den` provides an [__angle brackets__](https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world) **experimental feature** that allows even shorter syntax for deep `.provides.` access.
 > See [import-non-dendritic.nix](templates/default/modules/_example/import-non-dendritic.nix) for an example usage.
 
 <table>
@@ -415,9 +412,8 @@ Because writing `den.aspects.vix._.gaming._.emulation` tends to be repetitive, I
 # modules/namespace.nix
 { config, ... }:
 {
-  den.aspects.vix.provides = { };
-  _module.args.vix = # up to provides
-    config.den.aspects.vix.provides;
+  den.aspects.vix = { };
+  _module.args.vix = config.den.aspects.vix._;
 }
 ```
 
