@@ -92,6 +92,17 @@
           luke.config.programs.bat.enable
         );
 
+        alice-hello-enabled-by-default = checkCond "added hello at user packages" (
+          let
+            progs = rockhopper.config.users.users.alice.packages;
+            expr.len = lib.length progs;
+            expr.name = lib.getName (lib.head progs);
+            expected.len = 1;
+            expected.name = "hello";
+          in
+          expr == expected
+        );
+
       };
 
       checks.aarch64-darwin = {

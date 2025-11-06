@@ -1,85 +1,64 @@
-# create aspect dependencies from hosts/users
 {
-  lib,
   den,
   ...
 }:
 let
-  # creates den.aspects.${host.aspect}
-  hostAspect =
-    host:
-    { aspects, ... }:
-    {
-      ${host.aspect} = {
-        ${host.class} = { };
-        includes = [
-          den.default
-          (userContribsToHost aspects)
-        ];
-        __functor = den.lib.parametric { inherit host; };
-      };
-    };
+  inherit (den.lib) owned statics;
 
-  # creates aspects.${user.aspect}
-  userAspect =
-    user:
-    { aspects, ... }:
-    {
-      ${user.aspect} = {
-        ${user.class} = { };
-        includes = [
-          den.default
-          (hostContribsToUser aspects)
-        ];
-        __functor = den.lib.parametric true;
-      };
-    };
+  dependencies = [
+    # owned attributes: <aspect>.<class>
+    ({ home }: owned home.class den.aspects.${home.aspect})
+    ({ host }: owned host.class den.aspects.${host.aspect})
+    ({ user, host }: owned user.class den.aspects.${user.aspect})
 
-  # creates den.aspects.${home.aspect}
-  homeAspect = home: {
-    ${home.aspect} = {
-      ${home.class} = { };
-      includes = [ den.default ];
-      __functor = den.lib.parametric { inherit home; };
-    };
-  };
+    # defaults: owned from den.default.<class>
+    ({ home }: owned home.class den.default)
+    ({ host }: owned host.class den.default)
+    ({ user, host }: owned user.class den.default)
 
-  userContribsToHost =
-    aspects:
+    # static (non-parametric) from <aspect>.includes
+    ({ home }: statics den.aspects.${home.aspect})
+    ({ host }: statics den.aspects.${host.aspect})
+    ({ user, host }: statics den.aspects.${user.aspect})
+
+    # user-to-host context
+    ({ fromUser, toHost }: owned toHost.class den.aspects.${fromUser.aspect})
+    # host-to-user context
+    ({ fromHost, toUser }: owned toUser.class den.aspects.${fromHost.aspect})
+
+    # { host } => [ { fromUser, toHost } ]
+    (hostIncludesFromUsers)
+
+    # { user, host } => { fromHost, toUser }
+    (userIncludesFromHost)
+  ];
+
+  hostIncludesFromUsers =
     { host }:
     {
       includes =
         let
-          users = lib.attrValues host.users;
-          userContribs = user: aspects.${user.aspect} { inherit host user; };
+          users = builtins.attrValues host.users;
+          context = user: {
+            fromUser = user;
+            toHost = host;
+          };
+          contrib = user: den.aspects.${user.aspect} (context user);
         in
-        map userContribs users;
+        map contrib users;
     };
 
-  hostContribsToUser =
-    aspects:
-    # deadnix: skip
+  userIncludesFromHost =
     { user, host }:
-    aspects.${host.aspect}
-    // {
-      __functor = den.lib.parametric { inherit user host; };
+    {
+      includes = den.aspects.${host.aspect}.includes;
+      __functor = den.lib.parametric {
+        fromHost = host;
+        toUser = user;
+      };
     };
-
-  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues den.hosts));
-  homes = lib.flatten (map builtins.attrValues (builtins.attrValues den.homes));
-
-  homeDeps = map homeAspect homes;
-  hostDeps = map hostAspect hosts;
-  userDeps = lib.pipe hosts [
-    (map (h: builtins.attrValues h.users))
-    (lib.flatten)
-    (lib.unique)
-    (map userAspect)
-  ];
-
-  deps = hostDeps ++ userDeps ++ homeDeps;
 
 in
 {
-  config.den.aspects = lib.mkMerge (lib.flatten deps);
+  den.default.includes = dependencies;
 }
