@@ -1,15 +1,14 @@
-lib:
+_lib: fnCanTake:
 let
-  is-fn = f: (builtins.isFunction f) || (f ? __functor);
-  can-take = import ./fn-can-take.nix lib;
+  isFn = f: (builtins.isFunction f) || (f ? __functor);
   apply =
     param: f:
-    if !is-fn f then
+    if !isFn f then
       f
-    else if can-take param f then
+    else if fnCanTake param f then
       f param
     else if
-      can-take {
+      fnCanTake {
         class = null;
         aspect-chain = [ ];
       } f

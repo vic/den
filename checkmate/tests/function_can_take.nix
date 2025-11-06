@@ -1,6 +1,6 @@
 { lib, inputs, ... }:
 let
-  takes = import "${inputs.target}/nix/fn-can-take.nix" lib;
+  takes = (inputs.target.lib lib inputs).fnCanTake;
 
   flake.tests."test function with no named arguments can take anything" = {
     expr = takes { } (x: x);

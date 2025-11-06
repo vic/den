@@ -1,6 +1,6 @@
 { lib, inputs, ... }:
 let
-  __functor = import "${inputs.target}/nix/aspect-functor.nix" lib;
+  __functor = (inputs.target.lib lib inputs).funk;
 
   tail = out: { includes = lib.drop 1 out.includes; };
 

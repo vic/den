@@ -1,7 +1,9 @@
 lib: inputs:
 let
+  fnCanTake = import ./fn-can-take.nix lib;
+
   # "Just Give 'Em One of These" -  Moe Szyslak
-  funk = import ./aspect-functor.nix lib;
+  funk = import ./aspect-functor.nix lib fnCanTake;
 
   parametric =
     param: aspect:
@@ -10,6 +12,8 @@ let
     else
       # deadnix: skip
       { class, aspect-chain }: funk aspect param;
+
+  dependencies = import ./dependencies.nix { inherit parametric; };
 
   aspects = inputs.flake-aspects.lib lib;
 
@@ -27,5 +31,12 @@ let
 
 in
 {
-  inherit parametric aspects angleBrackets;
+  inherit
+    fnCanTake
+    funk
+    parametric
+    aspects
+    angleBrackets
+    dependencies
+    ;
 }
