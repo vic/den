@@ -17,20 +17,20 @@ let
     else
       { };
 
-  static = aspect: {
-    __functor =
-      _:
-      # deadnix: skip
-      { class, aspect-chain }:
-      {
-        ${class} = aspect.${class} or { };
-      };
-  };
+  # static = aspect: {
+  #   __functor =
+  #     _:
+  #     # deadnix: skip
+  #     { class, aspect-chain }:
+  #     {
+  #       ${class} = aspect.${class} or { };
+  #     };
+  # };
 
   parametric = aspect: param: map (apply param) aspect.includes;
 
   __functor = aspect: param: {
-    includes = [ (static aspect) ] ++ (parametric aspect param);
+    includes = (parametric aspect param);
   };
 in
 __functor

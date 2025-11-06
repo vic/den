@@ -1,4 +1,4 @@
-{ parametric }:
+parametric: den:
 let
   # creates den.aspects.${host.aspect}
   hostAspect =
@@ -8,8 +8,8 @@ let
       ${host.aspect} = {
         ${host.class} = { };
         includes = [
-          den.default
-          (userContribsToHost aspects)
+          # den.default
+          # (userContribsToHost aspects)
         ];
         __functor = parametric { inherit host; };
       };
@@ -23,8 +23,8 @@ let
       ${user.aspect} = {
         ${user.class} = { };
         includes = [
-          den.default
-          (hostContribsToUser aspects)
+          # ({ host, user }: den.default)
+          # (hostContribsToUser aspects)
         ];
         __functor = parametric true;
       };

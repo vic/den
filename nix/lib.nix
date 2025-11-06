@@ -13,7 +13,7 @@ let
       # deadnix: skip
       { class, aspect-chain }: funk aspect param;
 
-  dependencies = import ./dependencies.nix { inherit parametric; };
+  dependencies = import ./dependencies.nix parametric;
 
   aspects = inputs.flake-aspects.lib lib;
 

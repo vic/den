@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (den.lib.dependencies) homeAspect hostAspect userAspect;
+  inherit (den.lib.dependencies den) homeAspect hostAspect userAspect;
 
   hosts = lib.flatten (map builtins.attrValues (builtins.attrValues den.hosts));
   homes = lib.flatten (map builtins.attrValues (builtins.attrValues den.homes));
@@ -20,7 +20,6 @@ let
   ];
 
   deps = hostDeps ++ userDeps ++ homeDeps;
-
 in
 {
   config.den.aspects = lib.mkMerge (lib.flatten deps);
