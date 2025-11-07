@@ -103,6 +103,7 @@ For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den) or
 **❄️ Try it now!**
 
 Launch our template VM:
+
 ```console
 nix run github:vic/den
 ```
