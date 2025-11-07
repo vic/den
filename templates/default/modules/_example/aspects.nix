@@ -31,12 +31,32 @@ let
       ${host.class}.networking.hostName = host.name;
     };
 
-  # Example: configuration that depends on both host and user. provides to both.
-  host-conditional =
-    { host, user }:
-    if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
+  # Example: installed on den.defaults for each user contribute into host.
+  one-hello-package-for-each-user =
+    { fromUser, toHost }:
+    {
+      ${toHost.class} =
+        { pkgs, ... }:
+        {
+          users.users.${fromUser.userName}.packages = [ pkgs.hello ];
+        };
+    };
+
+  # Example: configuration that depends on both host and user. provides to the host.
+  user-to-host-conditional =
+    { fromUser, toHost }:
+    if fromUser.userName == "alice" && !lib.hasSuffix "darwin" toHost.system then
       {
         nixos.programs.tmux.enable = true;
+      }
+    else
+      { };
+
+  # Example: configuration that depends on both host and user. provides to the host.
+  host-to-user-conditional =
+    { fromHost, toUser }:
+    if toUser.userName == "alice" && !lib.hasSuffix "darwin" fromHost.system then
+      {
         homeManager.programs.git.enable = true;
       }
     else
@@ -59,9 +79,14 @@ in
   den.default.includes = [
     # Example: static aspect
     vm-bootable
+
     # Example: parametric { host } aspect
     set-host-name
-    # Example: parametric over { home } or { host, user } aspect.
+
+    # Example: parametric { fromUser, toHost } aspect.
+    one-hello-package-for-each-user
+
+    # Example: parametric over many contexts: { home }, { host, user }, { fromUser, toHost }
     den.provides.define-user
   ];
 
@@ -91,9 +116,14 @@ in
     den._.primary-user
   ];
 
+  # Example: host provides parametric user configuration.
+  den.aspects.rockhopper.includes = [
+    host-to-user-conditional
+  ];
+
   # Example: user provides parametric host configuration.
   den.aspects.alice.includes = [
-    host-conditional
+    user-to-host-conditional
     # alice is always admin in all its hosts
     den._.primary-user
   ];

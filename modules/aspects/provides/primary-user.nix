@@ -13,15 +13,16 @@ let
 
   '';
 
-  osConfig =
-    { user, host }:
+  userToHostContext =
+    { fromUser, toHost }:
     let
-      on-wsl.nixos.wsl.defaultUser = user.userName;
+      on-wsl.nixos.wsl.defaultUser = fromUser.userName;
     in
     {
-      includes = lib.optionals (host ? wsl) [ on-wsl ];
-      darwin.system.primaryUser = user.userName;
-      nixos.users.users.${user.userName} = {
+      inherit description;
+      includes = lib.optionals (toHost ? wsl) [ on-wsl ];
+      darwin.system.primaryUser = fromUser.userName;
+      nixos.users.users.${fromUser.userName} = {
         isNormalUser = true;
         extraGroups = [
           "wheel"
@@ -32,8 +33,5 @@ let
 
 in
 {
-  den.provides.primary-user = {
-    inherit description;
-    __functor = _self: osConfig;
-  };
+  den.provides.primary-user = userToHostContext;
 }
