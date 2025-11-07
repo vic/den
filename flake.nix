@@ -3,7 +3,11 @@
     flakeModule = ./nix/flakeModule.nix;
     templates.default = {
       path = ./templates/default;
-      description = "Minimal nixos configuration";
+      description = "Example configuration";
+    };
+    templates.minimal = {
+      path = ./templates/minimal;
+      description = "Minimal configuration";
     };
     packages = import ./nix/template-packages.nix;
     namespace = import ./nix/namespace.nix;
