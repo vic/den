@@ -72,8 +72,8 @@ Any module can contribute configurations to aspects.
 { den, ... }: {
   den.aspects.my-laptop = {
     includes = [
-      den.aspects.vpn # { host } => config
-      den._.home-manager # battery
+      den.aspects.workplace-vpn
+      den.provides.home-manager
     ];
     nixos  = { /* NixOS options */ };
     darwin = { /* nix-darwin options */ };
@@ -294,9 +294,14 @@ in
 
 </details>
 
+<details>
+<summary>
+
 ### Contributing
 
-Contributions are welcome! Feel free to fix typos, improve documentation, or share ideas in our [discussions](https://github.com/vic/den/discussions).
+> Contributions are welcome! Feel free to fix typos, improve documentation, or share ideas in our [discussions](https://github.com/vic/den/discussions).
+
+</summary>
 
 All PRs are checked against the CI. New features should include a test in `_example/ci.nix`.
 
@@ -304,5 +309,25 @@ To run tests locally:
 
 ```console
 nix flake check ./checkmate --override-input target .
-cd templates/default && nix flake check --override-input den ../..
+nix flake check ./templates/default --override-input den .
 ```
+
+Ensure code is formatted:
+
+```console
+nix run ./checkmate#fmt --override-input target .
+```
+
+If you have found a bug, please open a discussion (issues are for agreed, actionable items).
+
+We provide a [`bogus`](templates/bogus/) template you can use
+to create a minimal bug reproduction repository. Please share your repo.
+
+```console
+mkdir bogus && cd bogus
+nix flake init -t github:vic/den#bogus
+nix flake update den
+nix flake check
+```
+
+</details>
