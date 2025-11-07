@@ -1,10 +1,11 @@
 {
   lib,
   inputs,
+  config,
   ...
 }:
 {
-  config.den.lib = inputs.den.lib lib inputs;
+  config.den.lib = inputs.den.lib { inherit inputs lib config; };
   options.den.lib = lib.mkOption {
     internal = true;
     visible = false;

@@ -1,4 +1,9 @@
-lib: inputs:
+{
+  inputs,
+  lib,
+  config,
+  ...
+}:
 let
   isFn = f: (builtins.isFunction f) || (f ? __functor);
   canTake = import ./fn-can-take.nix lib;
@@ -55,23 +60,13 @@ let
 
   aspects = inputs.flake-aspects.lib lib;
 
-  # EXPERIMENTAL.  __findFile to resolve deep aspects.
-  #   __findFile = angleBrackets den.aspects;
-  #   <foo/bar/baz> => den.aspects.foo.provides.bar.provides.baz
-  # inspired by https://fzakaria.com/2025/08/10/angle-brackets-in-a-nix-flake-world
-  angleBrackets =
-    den-ns: _nixPath: name:
-    lib.pipe name [
-      (lib.replaceString "/" ".provides.")
-      (lib.splitString ".")
-      (path: lib.getAttrFromPath path den-ns)
-    ];
+  __findFile = import ./den-brackets.nix { inherit lib config; };
 
   den-lib = {
     inherit
       parametric
       aspects
-      angleBrackets
+      __findFile
       statics
       owned
       isFn

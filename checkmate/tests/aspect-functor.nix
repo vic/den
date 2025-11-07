@@ -1,6 +1,11 @@
-{ lib, inputs, ... }:
+{
+  lib,
+  inputs,
+  config,
+  ...
+}:
 let
-  __functor = (inputs.target.lib lib inputs).parametric true;
+  __functor = (inputs.target.lib { inherit lib inputs config; }).parametric true;
 
   aspect-example = {
     inherit __functor;
