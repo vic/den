@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        template: [default]
+        template: [default, bogus, minimal]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
@@ -24,18 +24,16 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#${{matrix.template}}
       - run: |
-          set -uveo pipefail
-          mkdir templated; cd templated
-          nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#default
           cat <<-EOF > modules/ci-runtime.nix
+          { lib, ... }:
           {
-            flake-file.inputs.den.url = "github:$GITHUB_REPOSITORY/$GITHUB_SHA";
-            _module.args.ci-os = "${{matrix.os}}";
+            flake-file.inputs.den.url = lib.mkForce "github:$GITHUB_REPOSITORY/$GITHUB_SHA";
           }
           EOF
-          nix run .#write-flake --override-input den "github:$GITHUB_REPOSITORY/$GITHUB_SHA"
-          nix flake update den
-          nix run .#write-flake
-          nix flake metadata
-          nix flake check
+      - run: nix run .#write-flake --override-input den "github:$GITHUB_REPOSITORY/$GITHUB_SHA"
+      - run: nix flake update den
+      - run: nix run .#write-flake
+      - run: nix flake metadata
+      - run: nix flake check
