@@ -28,7 +28,7 @@
 
     __functor =
       _:
-      { host }:
+      { host, ... }:
       { class, aspect-chain }:
       let
         hmUsers = builtins.filter (u: u.class == "homeManager") (lib.attrValues host.users);

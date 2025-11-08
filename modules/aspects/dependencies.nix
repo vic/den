@@ -7,19 +7,19 @@ let
 
   dependencies = [
     # owned attributes: <aspect>.<class>
-    ({ home }: owned home.class den.aspects.${home.aspect})
-    ({ host }: owned host.class den.aspects.${host.aspect})
-    ({ user, host }: owned user.class den.aspects.${user.aspect})
+    ({ home, ... }: owned home.class den.aspects.${home.aspect})
+    ({ host, ... }: owned host.class den.aspects.${host.aspect})
+    ({ user, ... }: owned user.class den.aspects.${user.aspect})
 
     # defaults: owned from den.default.<class>
-    ({ home }: owned home.class den.default)
-    ({ host }: owned host.class den.default)
-    ({ user, host }: owned user.class den.default)
+    ({ home, ... }: owned home.class den.default)
+    ({ host, ... }: owned host.class den.default)
+    ({ user, ... }: owned user.class den.default)
 
     # static (non-parametric) from <aspect>.includes
-    ({ home }: statics den.aspects.${home.aspect})
-    ({ host }: statics den.aspects.${host.aspect})
-    ({ user, host }: statics den.aspects.${user.aspect})
+    ({ home, ... }: statics den.aspects.${home.aspect})
+    ({ host, ... }: statics den.aspects.${host.aspect})
+    ({ user, ... }: statics den.aspects.${user.aspect})
 
     # user-to-host context
     ({ fromUser, toHost }: owned toHost.class den.aspects.${fromUser.aspect})
@@ -34,7 +34,7 @@ let
   ];
 
   hostIncludesFromUsers =
-    { host }:
+    { host, ... }:
     {
       includes =
         let
