@@ -14,15 +14,16 @@ let
   '';
 
   userToHostContext =
-    { fromUser, toHost }:
+    { userToHost, ... }:
     let
-      on-wsl.nixos.wsl.defaultUser = fromUser.userName;
+      inherit (userToHost) host user;
+      on-wsl.nixos.wsl.defaultUser = user.userName;
     in
     {
       inherit description;
-      includes = lib.optionals (toHost ? wsl) [ on-wsl ];
-      darwin.system.primaryUser = fromUser.userName;
-      nixos.users.users.${fromUser.userName} = {
+      includes = lib.optionals (host ? wsl) [ on-wsl ];
+      darwin.system.primaryUser = user.userName;
+      nixos.users.users.${user.userName} = {
         isNormalUser = true;
         extraGroups = [
           "wheel"

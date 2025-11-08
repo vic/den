@@ -3,7 +3,8 @@
 { pro, ... }:
 let
   fido-at-host =
-    { fromUser, toHost }: if fromUser.name != "fido" then { } else pro.fido._.${toHost.name};
+    { userToHost, ... }:
+    if userToHost.user.name != "fido" then { } else pro.fido._.${userToHost.host.name};
 in
 {
   den.default.includes = [

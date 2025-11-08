@@ -21,13 +21,14 @@ let
 
   userToHostContext =
     { shell }:
-    { fromUser, toHost }:
+    { userToHost, ... }:
     let
+      inherit (userToHost) user;
       nixos =
         { pkgs, ... }:
         {
           programs.${shell}.enable = true;
-          users.users.${fromUser.userName}.shell = pkgs.${shell};
+          users.users.${user.userName}.shell = pkgs.${shell};
         };
       darwin = nixos;
     in
