@@ -61,7 +61,8 @@
 
   den._.import-tree.__functor =
     _: root:
-    { class, ... }:
+    # deadnix: skip
+    { class, aspect-chain }:
     let
       path = "${toString root}/_${class}";
       aspect.${class}.imports = [ (inputs.import-tree path) ];
@@ -69,8 +70,8 @@
     if builtins.pathExists path then aspect else { };
 
   den._.import-tree.provides = {
-    host = root: { host }: den._.import-tree "${toString root}/${host.name}";
-    user = root: { host, user }: den._.import-tree "${toString root}/${user.name}@${host.name}";
-    home = root: { home }: den._.import-tree "${toString root}/${home.name}";
+    host = root: { host, ... }: den._.import-tree "${toString root}/${host.name}";
+    home = root: { home, ... }: den._.import-tree "${toString root}/${home.name}";
+    user = root: { host, user, ... }: den._.import-tree "${toString root}/${user.name}@${host.name}";
   };
 }

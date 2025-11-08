@@ -26,7 +26,7 @@ let
 
   # Example: parametric host aspect to automatically set hostName on any host.
   set-host-name =
-    { host }:
+    { host, ... }:
     {
       ${host.class}.networking.hostName = host.name;
     };

@@ -40,7 +40,7 @@ let
             nixos.user-only = user;
           }
         else
-          { }
+          { nixos.user-only = false; }
       )
       (
         { home, ... }:
@@ -100,6 +100,7 @@ let
     );
     expected = {
       includes = [
+        { nixos.home = 2; }
         { nixos.any = 10; }
       ];
     };
@@ -129,12 +130,15 @@ let
     );
     expected = {
       includes = [
+        { nixos.host = 1; }
         {
           nixos.host-user = [
             1
             2
           ];
         } # host user
+        { nixos.user = 2; }
+        { nixos.user-only = false; }
         { nixos.any = 10; }
       ];
     };

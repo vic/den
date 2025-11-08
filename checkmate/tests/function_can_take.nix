@@ -62,7 +62,7 @@ let
             user
           ]
         );
-    expected = false;
+    expected = true;
   };
 
 in
