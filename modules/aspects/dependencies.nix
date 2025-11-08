@@ -22,14 +22,14 @@ let
     ({ user, ... }: statics den.aspects.${user.aspect})
 
     # user-to-host context
-    ({ fromUser, toHost }: owned toHost.class den.aspects.${fromUser.aspect})
+    ({ userToHost, ... }: owned userToHost.host.class den.aspects.${userToHost.user.aspect})
     # host-to-user context
-    ({ fromHost, toUser }: owned toUser.class den.aspects.${fromHost.aspect})
+    ({ hostToUser, ... }: owned hostToUser.user.class den.aspects.${hostToUser.host.aspect})
 
-    # { host } => [ { fromUser, toHost } ]
+    # { host } => [ { userToHost } ]
     (hostIncludesFromUsers)
 
-    # { user, host } => { fromHost, toUser }
+    # { user, host } => { hostToUser }
     (userIncludesFromHost)
   ];
 
@@ -40,8 +40,9 @@ let
         let
           users = builtins.attrValues host.users;
           context = user: {
-            fromUser = user;
-            toHost = host;
+            userToHost = {
+              inherit user host;
+            };
           };
           contrib = user: den.aspects.${user.aspect} (context user);
         in
@@ -53,8 +54,9 @@ let
     {
       includes = den.aspects.${host.aspect}.includes;
       __functor = den.lib.parametric {
-        fromHost = host;
-        toUser = user;
+        hostToUser = {
+          inherit host user;
+        };
       };
     };
 

@@ -19,11 +19,20 @@ let
         }
       )
       (
-        { host, user }:
+        { host, user, ... }:
         {
           nixos.host-user = [
             host
             user
+          ];
+        }
+      )
+      (
+        { userToHost, ... }:
+        {
+          nixos.user-to-host = [
+            userToHost.host
+            userToHost.user
           ];
         }
       )
@@ -136,9 +145,31 @@ let
             1
             2
           ];
-        } # host user
+        }
         { nixos.user = 2; }
         { nixos.user-only = false; }
+        { nixos.any = 10; }
+      ];
+    };
+  };
+
+  flake.tests."test functor applied with userToHost" = {
+    expr = (
+      aspect-example {
+        userToHost = {
+          user = 2;
+          host = 1;
+        };
+      }
+    );
+    expected = {
+      includes = [
+        {
+          nixos.user-to-host = [
+            1
+            2
+          ];
+        }
         { nixos.any = 10; }
       ];
     };

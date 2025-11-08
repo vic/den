@@ -33,19 +33,19 @@ let
 
   # Example: installed on den.defaults for each user contribute into host.
   one-hello-package-for-each-user =
-    { fromUser, toHost }:
+    { userToHost, ... }:
     {
-      ${toHost.class} =
+      ${userToHost.host.class} =
         { pkgs, ... }:
         {
-          users.users.${fromUser.userName}.packages = [ pkgs.hello ];
+          users.users.${userToHost.user.userName}.packages = [ pkgs.hello ];
         };
     };
 
   # Example: configuration that depends on both host and user. provides to the host.
   user-to-host-conditional =
-    { fromUser, toHost }:
-    if fromUser.userName == "alice" && !lib.hasSuffix "darwin" toHost.system then
+    { userToHost, ... }:
+    if userToHost.user.userName == "alice" && !lib.hasSuffix "darwin" userToHost.host.system then
       {
         nixos.programs.tmux.enable = true;
       }
@@ -54,8 +54,8 @@ let
 
   # Example: configuration that depends on both host and user. provides to the host.
   host-to-user-conditional =
-    { fromHost, toUser }:
-    if toUser.userName == "alice" && !lib.hasSuffix "darwin" fromHost.system then
+    { hostToUser, ... }:
+    if hostToUser.user.userName == "alice" && !lib.hasSuffix "darwin" hostToUser.host.system then
       {
         homeManager.programs.git.enable = true;
       }

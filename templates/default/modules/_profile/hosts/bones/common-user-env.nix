@@ -4,8 +4,8 @@ let
   # private aspects can be let-bindings
   # more re-usable ones are better defined inside the `pro` namespace.
   host-contrib-to-user =
-    { fromHost, toUser }:
-    if fromHost.name == "bones" || toUser.name == "fido" then
+    { hostToUser, ... }:
+    if hostToUser.host.name == "bones" || hostToUser.user.name == "fido" then
       {
         homeManager.programs.vim.enable = true;
       }
