@@ -19,7 +19,7 @@ let
     ${host.aspect} = {
       ${host.class} = { };
       includes = [ den.default ];
-      __functor = den.lib.parametric { inherit host; };
+      __functor = den.lib.parametric { OS = { inherit host; }; };
     };
   };
 

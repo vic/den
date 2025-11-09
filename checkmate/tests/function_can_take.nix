@@ -5,7 +5,21 @@
   ...
 }:
 let
-  takes = (inputs.target.lib { inherit inputs lib config; }).canTake;
+  den.lib = inputs.target.lib { inherit inputs lib config; };
+  takes = den.lib.canTake;
+
+  flake.tests."test exactly fails" = {
+    expr = takes.exactly {
+      a = 1;
+      b = 2;
+    } ({ a }: a);
+    expected = false;
+  };
+
+  flake.tests."test exactly succeeds" = {
+    expr = takes.exactly { a = 1; } ({ a }: a);
+    expected = true;
+  };
 
   flake.tests."test function with no named arguments can take anything" = {
     expr = takes { } (x: x);

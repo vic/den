@@ -14,9 +14,8 @@ let
   '';
 
   userToHostContext =
-    { userToHost, ... }:
+    { user, host, ... }:
     let
-      inherit (userToHost) host user;
       on-wsl.nixos.wsl.defaultUser = user.userName;
     in
     {

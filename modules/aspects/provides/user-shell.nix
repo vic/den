@@ -12,18 +12,9 @@ let
       ];
   '';
 
-  userContext =
-    { shell }:
-    { host }:
-    {
-      homeManager.programs.${shell}.enable = true;
-    };
-
-  userToHostContext =
-    { shell }:
-    { userToHost, ... }:
+  userShell =
+    shell: user:
     let
-      inherit (userToHost) user;
       nixos =
         { pkgs, ... }:
         {
@@ -31,9 +22,10 @@ let
           users.users.${user.userName}.shell = pkgs.${shell};
         };
       darwin = nixos;
+      homeManager.programs.${shell}.enable = true;
     in
     {
-      inherit nixos darwin;
+      inherit nixos darwin homeManager;
     };
 
 in
@@ -41,9 +33,9 @@ in
   den.provides.user-shell = shell: {
     inherit description;
     __functor = den.lib.parametric true;
-    includes = map (f: f { inherit shell; }) [
-      userContext
-      userToHostContext
+    includes = [
+      ({ user, ... }: userShell shell user)
+      ({ home, ... }: userShell shell home)
     ];
   };
 }
