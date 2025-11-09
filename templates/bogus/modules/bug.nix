@@ -16,10 +16,13 @@
       tux = inputs.self.nixosConfigurations.igloo.config.users.users.tux;
 
       expr.len = lib.length tux.packages;
-      expr.name = lib.getName (lib.head tux.packages);
+      expr.names = map lib.getName tux.packages;
 
-      expected.len = 1;
-      expected.name = "hello";
+      expected.len = 2;
+      expected.names = [
+        "hello"
+        "hello"
+      ];
     in
     {
       inherit expr expected;

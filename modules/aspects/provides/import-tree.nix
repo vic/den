@@ -50,7 +50,7 @@
           # load from ./hosts/<host>/_nixos
           den.default.includes = [ (den._.import-tree._.host ./hosts) ];
 
-          # load from ./users/<user>@<host>/{_homeManager, _nixos}
+          # load from ./users/<user>/{_homeManager, _nixos}
           den.default.includes = [ (den._.import-tree._.user ./users) ];
 
           # load from ./homes/<home>/_homeManager
@@ -72,6 +72,6 @@
   den._.import-tree.provides = {
     host = root: { host, ... }: den._.import-tree "${toString root}/${host.name}";
     home = root: { home, ... }: den._.import-tree "${toString root}/${home.name}";
-    user = root: { host, user, ... }: den._.import-tree "${toString root}/${user.name}@${host.name}";
+    user = root: { user, ... }: den._.import-tree "${toString root}/${user.name}";
   };
 }

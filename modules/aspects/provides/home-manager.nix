@@ -4,42 +4,48 @@
   den,
   ...
 }:
+let
+  description = ''
+    integrates home-manager into nixos/darwin OS classes.
+
+    usage:
+
+      for using home-manager in just a particular host:
+
+        den.aspects.my-laptop.includes = [ den._.home-manager ];
+
+      for enabling home-manager by default on all hosts:
+
+        den.default.includes = [ den._.home-manager ];
+
+    Does nothing for hosts that have no users with `homeManager` class.
+    Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
+    it is the home-manager.{nixos/darwin}Modules.home-manager.
+
+    For each user resolves den.aspects.''${user.aspect} and imports its homeManager class module.
+  '';
+in
 {
   den.provides.home-manager = {
-    description = ''
-      integrates home-manager into nixos/darwin OS classes.
-
-      usage:
-
-        for using home-manager in just a particular host:
-
-          den.aspects.my-laptop.includes = [ den._.home-manager ];
-
-        for enabling home-manager by default on all hosts:
-
-          den.default.includes = [ den._.home-manager ];
-
-      Does nothing for hosts that have no users with `homeManager` class.
-      Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
-      it is the home-manager.{nixos/darwin}Modules.home-manager.
-
-      For each user resolves den.aspects.''${user.aspect} and imports its homeManager class module.
-    '';
+    inherit description;
 
     __functor =
       _:
       { host, ... }:
       { class, aspect-chain }:
       let
-        hmUsers = builtins.filter (u: u.class == "homeManager") (lib.attrValues host.users);
+        hmClass = "homeManager";
+        hmUsers = builtins.filter (u: u.class == hmClass) (lib.attrValues host.users);
 
         hmUserModule =
           user:
           let
-            aspect = den.aspects.${user.aspect} { inherit user host; };
             ctx = {
               inherit aspect-chain;
-              class = user.class;
+              class = hmClass;
+            };
+            aspect = den.aspects.${user.aspect} {
+              HM = { inherit host user; };
             };
           in
           aspect.resolve ctx;

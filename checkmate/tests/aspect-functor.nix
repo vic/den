@@ -5,10 +5,12 @@
   ...
 }:
 let
-  __functor = (inputs.target.lib { inherit lib inputs config; }).parametric true;
+  den.lib = inputs.target.lib { inherit lib inputs config; };
+
+  inherit (den.lib) parametric canTake;
 
   aspect-example = {
-    inherit __functor;
+    __functor = parametric true;
     nixos.foo = 99;
     includes = [
       { nixos.static = 100; }
@@ -28,11 +30,17 @@ let
         }
       )
       (
-        { userToHost, ... }:
         {
-          nixos.user-to-host = [
-            userToHost.host
-            userToHost.user
+          OS,
+          user,
+          host,
+          ...
+        }:
+        {
+          nixos.os-user-host = [
+            OS
+            user
+            host
           ];
         }
       )
@@ -44,7 +52,7 @@ let
       )
       (
         { user, ... }@ctx:
-        if builtins.length (builtins.attrNames ctx) == 1 then
+        if canTake.exactly ctx ({ user }: user) then
           {
             nixos.user-only = user;
           }
@@ -153,23 +161,32 @@ let
     };
   };
 
-  flake.tests."test functor applied with userToHost" = {
+  flake.tests."test functor applied with host/user/OS" = {
     expr = (
       aspect-example {
-        userToHost = {
-          user = 2;
-          host = 1;
-        };
+        OS = 0;
+        user = 2;
+        host = 1;
       }
     );
     expected = {
       includes = [
+        { nixos.host = 1; }
         {
-          nixos.user-to-host = [
+          nixos.host-user = [
             1
             2
           ];
         }
+        {
+          nixos.os-user-host = [
+            0
+            2
+            1
+          ];
+        }
+        { nixos.user = 2; }
+        { nixos.user-only = false; }
         { nixos.any = 10; }
       ];
     };

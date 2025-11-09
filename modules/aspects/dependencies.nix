@@ -1,65 +1,74 @@
 {
   den,
+  lib,
   ...
 }:
 let
-  inherit (den.lib) owned statics;
+  inherit (den.lib)
+    owned
+    statics
+    parametric
+    take
+    ;
 
   dependencies = [
-    # owned attributes: <aspect>.<class>
-    ({ home, ... }: owned home.class den.aspects.${home.aspect})
-    ({ host, ... }: owned host.class den.aspects.${host.aspect})
-    ({ user, ... }: owned user.class den.aspects.${user.aspect})
-
-    # defaults: owned from den.default.<class>
-    ({ home, ... }: owned home.class den.default)
-    ({ host, ... }: owned host.class den.default)
-    ({ user, ... }: owned user.class den.default)
-
-    # static (non-parametric) from <aspect>.includes
-    ({ home, ... }: statics den.aspects.${home.aspect})
-    ({ host, ... }: statics den.aspects.${host.aspect})
-    ({ user, ... }: statics den.aspects.${user.aspect})
-
-    # user-to-host context
-    ({ userToHost, ... }: owned userToHost.host.class den.aspects.${userToHost.user.aspect})
-    # host-to-user context
-    ({ hostToUser, ... }: owned hostToUser.user.class den.aspects.${hostToUser.host.aspect})
-
-    # { host } => [ { userToHost } ]
-    (hostIncludesFromUsers)
-
-    # { user, host } => { hostToUser }
-    (userIncludesFromHost)
+    ({ home, ... }: baseDeps home)
+    ({ host, ... }: baseDeps host)
+    ({ user, ... }: baseDeps user)
+    (os osIncludesFromUsers)
+    (hm hmIncludesFromHost)
   ];
 
-  hostIncludesFromUsers =
-    { host, ... }:
+  # deadnix: skip # exact { OS } to avoid recursion
+  os = fn: { OS, ... }@ctx: take.exactly ctx fn;
+  # deadnix: skip # exact { HM } to avoid recursion
+  hm = fn: { HM, ... }@ctx: take.exactly ctx fn;
+
+  baseDeps =
+    from:
+    let
+      exists = from ? aspect && builtins.hasAttr from.aspect den.aspects;
+      aspect = den.aspects.${from.aspect};
+    in
     {
-      includes =
-        let
-          users = builtins.attrValues host.users;
-          context = user: {
-            userToHost = {
-              inherit user host;
-            };
-          };
-          contrib = user: den.aspects.${user.aspect} (context user);
-        in
-        map contrib users;
+      includes = lib.optionals exists [
+        (statics den.default)
+        (statics aspect)
+        (owned den.default)
+        (owned aspect)
+      ];
     };
 
-  userIncludesFromHost =
-    { user, host }:
+  osIncludesFromUsers =
+    { OS }:
+    let
+      inherit (OS) host;
+      users = builtins.attrValues host.users;
+      userDeps = user: parametric { inherit OS user host; } den.aspects.${user.aspect};
+      userContribs.includes = map userDeps users;
+      hostDeps = user: parametric { inherit user host; } den.aspects.${host.aspect};
+      hostContribs.includes = map hostDeps users;
+    in
     {
-      includes = den.aspects.${host.aspect}.includes;
-      __functor = den.lib.parametric {
-        hostToUser = {
-          inherit host user;
-        };
-      };
+      includes = [
+        hostContribs
+        userContribs
+      ];
     };
 
+  hmIncludesFromHost =
+    { HM }:
+    let
+      inherit (HM) user host;
+      userDeps = parametric { inherit HM user host; } den.aspects.${user.aspect};
+      hostDeps = parametric { inherit HM user host; } den.aspects.${host.aspect};
+    in
+    {
+      includes = [
+        userDeps
+        hostDeps
+      ];
+    };
 in
 {
   den.default.includes = dependencies;

@@ -22,22 +22,14 @@ let
     host: user:
     if lib.hasSuffix "darwin" host.system then "/Users/${user.userName}" else "/home/${user.userName}";
 
-  userToHostContext =
-    { userToHost, ... }:
-    let
-      inherit (userToHost) host user;
-    in
+  userContext =
+    { host, user, ... }:
     {
       nixos.users.users.${user.userName}.isNormalUser = true;
       darwin.users.users.${user.userName} = {
         name = user.userName;
         home = homeDir host user;
       };
-    };
-
-  userContext =
-    { host, user }:
-    {
       homeManager = {
         home.username = user.userName;
         home.homeDirectory = homeDir host user;
@@ -45,7 +37,7 @@ let
     };
 
   hmContext =
-    { home }:
+    { home, ... }:
     userContext {
       host.system = home.system;
       user.userName = home.userName;
@@ -55,7 +47,6 @@ in
   den.provides.define-user = {
     inherit description;
     includes = [
-      userToHostContext
       userContext
       hmContext
     ];

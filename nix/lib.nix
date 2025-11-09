@@ -5,58 +5,81 @@
   ...
 }:
 let
+
+  # "Just Give 'Em One of These" -  Moe Szyslak
+  # A __functor that applies context to parametric includes (functions)
+  funk =
+    apply: aspect:
+    aspect
+    // {
+      __functor = self: ctx: {
+        includes = builtins.filter (x: x != { }) (map (apply ctx) (builtins.filter isFn self.includes));
+      };
+    };
+
   isFn = f: (builtins.isFunction f) || (f ? __functor);
   canTake = import ./fn-can-take.nix lib;
-  inCtx = ctx: f: isFn f && canTake ctx f;
-
-  isAspect = canTake {
-    class = "";
-    aspect-chain = [ ];
-  };
 
   # creates an aspect that inherits class from fromAspect.
-  owned = class: fromAspect: { ${class} = fromAspect.${class} or { }; };
+  owned =
+    aspect:
+    aspect
+    // {
+      includes = [ ];
+      __functor =
+        self:
+        # deadnix: skip
+        { class, aspect-chain }:
+        self;
+    };
 
   # only static includes from an aspect.
   statics =
     aspect:
-    # deadnix: skip
-    { class, aspect-chain }:
-    {
-      includes =
-        let
-          include =
-            f:
-            if !isFn f then
-              f
-            else if isAspect f then
-              f { inherit class aspect-chain; }
-            else
-              { };
-        in
-        map include aspect.includes;
+    aspect
+    // {
+      __functor =
+        self:
+        # deadnix: skip
+        { class, aspect-chain }@ctx:
+        funk applyStatics self ctx;
     };
 
-  # "Just Give 'Em One of These" -  Moe Szyslak
-  # a __functor that **only** considers parametric includes
-  # that **exactly** match the given context.
-  funk =
-    aspect: ctx:
-    let
-      fns = builtins.filter (inCtx ctx) aspect.includes;
-      includes = map (f: f ctx) fns;
-    in
-    {
-      inherit includes;
-    };
-
-  parametric =
-    param: aspect:
-    if param == true then
-      funk aspect
+  applyStatics =
+    ctx: f:
+    if isStatic f then
+      f ctx
+    else if !isFn f then
+      f
     else
-      # deadnix: skip
-      { class, aspect-chain }: funk aspect param;
+      { };
+
+  isStatic = canTake {
+    class = "";
+    aspect-chain = [ ];
+  };
+
+  take.unused = _unused: used: used;
+  take.exactly = take canTake.exactly;
+  take.atLeast = take canTake.atLeast;
+  take.__functor =
+    _: takes: ctx: fn:
+    if takes ctx fn then fn ctx else { };
+
+  parametric.atLeast = funk take.atLeast;
+  parametric.exactly = funk take.exactly;
+  parametric.context = lib.flip parametric.atLeast;
+  parametric.expands = attrs: funk (ctx: take.atLeast (attrs // ctx));
+  parametric.__functor =
+    self: ctx:
+    if ctx == true then
+      self.atLeast
+    else if ctx == false then
+      self.exactly
+    else if isFn ctx then
+      funk ctx
+    else
+      self.context ctx;
 
   aspects = inputs.flake-aspects.lib lib;
 
@@ -71,6 +94,7 @@ let
       owned
       isFn
       canTake
+      take
       ;
   };
 in

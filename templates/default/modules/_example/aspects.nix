@@ -31,36 +31,48 @@ let
       ${host.class}.networking.hostName = host.name;
     };
 
-  # Example: installed on den.defaults for each user contribute into host.
-  one-hello-package-for-each-user =
-    { userToHost, ... }:
-    {
-      ${userToHost.host.class} =
-        { pkgs, ... }:
-        {
-          users.users.${userToHost.user.userName}.packages = [ pkgs.hello ];
-        };
-    };
-
-  # Example: configuration that depends on both host and user. provides to the host.
+  # Example: configuration that depends on both host and user. provides anytime { user, host } is in context.
   user-to-host-conditional =
-    { userToHost, ... }:
-    if userToHost.user.userName == "alice" && !lib.hasSuffix "darwin" userToHost.host.system then
+    { user, host, ... }:
+    if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
       {
         nixos.programs.tmux.enable = true;
       }
     else
       { };
 
-  # Example: configuration that depends on both host and user. provides to the host.
+  # Example: adds hello into each user. provides only to OS.
+  one-hello-package-for-each-user =
+    {
+      OS,
+      user,
+      host,
+      ...
+    }:
+    den.lib.take.unused [ OS ] {
+      ${host.class} =
+        { pkgs, ... }:
+        {
+          users.users.${user.userName}.packages = [ pkgs.hello ];
+        };
+    };
+
+  # Example: configuration that depends on both host and user. provides only to HM.
   host-to-user-conditional =
-    { hostToUser, ... }:
-    if hostToUser.user.userName == "alice" && !lib.hasSuffix "darwin" hostToUser.host.system then
-      {
-        homeManager.programs.git.enable = true;
-      }
-    else
-      { };
+    {
+      HM,
+      user,
+      host,
+      ...
+    }:
+    den.lib.take.unused [ HM ] (
+      if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
+        {
+          homeManager.programs.git.enable = true;
+        }
+      else
+        { }
+    );
 
   # Example: luke standalone home-manager has access to rockhopper osConfig specialArg.
   os-conditional-hm =
