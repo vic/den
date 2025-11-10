@@ -1,18 +1,30 @@
 on:
-  pull_request:
   push:
     branches: [main]
+  pull_request:
+    types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  flag:
+    runs-on: ubuntu-latest
+    outputs:
+      flag: ${{steps.flag.outputs.flag}}
+    steps:
+      - id: flag
+        run: echo "flag=${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}" >> $GITHUB_OUTPUT
   flake-check:
+    needs: [flag]
+    if: needs.flag.outputs.flag == 'true'
     name: nix flake check
     runs-on: ubuntu-latest
     steps:
       - uses: cachix/install-nix-action@v30
       - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
   template:
+    needs: [flag]
+    if: needs.flag.outputs.flag == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
