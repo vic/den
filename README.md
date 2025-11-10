@@ -214,6 +214,141 @@ A key feature of `den` is its management of aspect dependencies. When an aspect 
 <details>
 <summary>
 
+### Aspects as functions.
+
+> Learn about the functor pattern in aspects, powering Den's contextual adaptation.
+
+</summary>
+
+In the `flake-aspects` library, every aspect has a [`__functor`](https://github.com/vic/flake-aspects/blob/main/nix/types.nix#L72) attribute. `den` uses these functors to implement [parametric aspects](https://github.com/vic/den/blob/main/nix/lib.nix#L73) and related APIs for adapting the context upon which aspects provide their configurations.
+
+
+<table>
+<tr>
+<td>
+
+##### The `__functor` concept.
+
+In Nix, any attribute set that has a `__functor` can be __applied__ as if it was a function.
+
+```nix
+# You can apply (times 3) => 6
+# as if `times` was a function itself.
+times = {
+  a = 2;
+  __functor = self: b: self.a * b;
+}
+```
+
+##### `__functor` in aspects.
+
+The following is how `flake-aspects` default `__functor` looks like. It is just a function that returns `self`, that is, the aspect that was applied as a function.
+
+```nix
+{
+  nixos = ...;
+  darwin = ...;
+  __functor = self: context: self;
+}
+```
+
+A functor allows an aspect to inspect the **context** (argument) it is [being used on](https://github.com/vic/flake-aspects/blob/main/nix/types.nix#L94). And based on `context` it can return another aspect where configuation is to be read specifically for that context.
+
+This is the underlying principle behind Den's context-aware aspects.
+
+##### The `den.lib.canTake` API
+
+[`canTake`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix) provides two functions: `atLeast` and `exactly`. Both let you test if a given context is sufficient and can be used to call a function.
+
+```nix
+let
+  context = { a = 1; b = 2; };
+  function = ({ a, ... }: 42);
+in
+# true, since the function ignores 
+  atLeast context function
+
+# false, since b is not an expected argument.
+  exactly context function
+```
+
+</td>
+<td>
+
+Den exposes a couple of APIs that allow to define how aspects *apply* to their context.
+
+> Feel free to explore the source for [`den.lib`](https://github.com/vic/den/tree/main/nix) functions.
+
+##### Den's Core: The [__funk__](https://github.com/vic/den/blob/main/nix/lib.nix#L9)-tor aspect.
+
+The signature of `funk : apply -> aspect -> context -> aspect` says that `funk` takes an `apply` function, a base `aspect` and when `context` is finally given, `funk` returns a new-aspect that `.includes` each result of `apply`ing `ctx` to every function in the original `aspect`'s includes. The code is shorter and easier to read than this description.
+
+
+##### The `den.lib.parametric` API
+
+Let's explore `parametric.*` functions via some aspect examples:
+
+> An aspect that can be applied like:<br>
+>   `aspect { hello = "world"; }`<br>
+> It will return an aspect with only foo = false;
+
+```nix
+{
+  nixos.foo = true;
+  __functor = den.lib.parametric.atLeast;
+  includes = [
+    ({ hello, ... }: { nixos.foo = false; })
+  ];
+}
+```
+
+> In this example, functions need exact context.
+>   `aspect { hello = "world"; mundo = 43; }`<br>
+> will return an aspect with empty configs.
+
+```nix
+{
+  nixos.foo = true;
+  __functor = den.lib.parametric.exactly;
+  includes = [
+    ({ hello, ... }: { nixos.foo = false; })
+  ];
+}
+```
+
+##### Curried context aspects
+
+Sometimes it is useful to define an aspect that already knows the context it will use.
+
+For example, given an `home` object from `den.homes`, this is how the homeAspect is defined with a context that already contains a `home` context:
+
+```nix
+homeAspect = home: {
+  # Any function, or parametric aspect 
+  # like `den.default` will be called
+  # with the `{ home }` context.  
+  includes = [ den.default ];
+  __functor = den.parametric { inherit home; };
+};
+```
+
+
+##### Context adaptation on existing aspects
+
+If you have an existing aspect, you can change
+the context it currently uses.
+
+This is for example how the home-manager integration searches for 
+
+</td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary>
+
 ### Organization Patterns
 
 > Learn patterns for organizing and reusing aspects.
