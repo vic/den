@@ -10,6 +10,5 @@
     # these defaults are set for checking with CI.
     nixos.programs.vim.enable = true;
     darwin.programs.zsh.enable = true;
-    homeManager.programs.fish.enable = true;
   };
 }
