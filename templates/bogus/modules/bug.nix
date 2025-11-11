@@ -18,11 +18,8 @@
       expr.len = lib.length tux.packages;
       expr.names = map lib.getName tux.packages;
 
-      expected.len = 2;
-      expected.names = [
-        "hello"
-        "hello"
-      ];
+      expected.len = 1;
+      expected.names = [ "hello" ];
     in
     {
       inherit expr expected;

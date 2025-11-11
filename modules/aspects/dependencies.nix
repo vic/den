@@ -8,21 +8,17 @@ let
     owned
     statics
     parametric
-    take
     ;
 
-  dependencies = [
-    ({ home, ... }: baseDeps home)
-    ({ host, ... }: baseDeps host)
-    ({ user, ... }: baseDeps user)
-    (os osIncludesFromUsers)
-    (hm hmIncludesFromHost)
-  ];
+  inherit (den.lib.take) exactly;
 
-  # deadnix: skip # exact { OS } to avoid recursion
-  os = fn: { OS, ... }@ctx: take.exactly ctx fn;
-  # deadnix: skip # exact { HM } to avoid recursion
-  hm = fn: { HM, ... }@ctx: take.exactly ctx fn;
+  dependencies = [
+    (exactly ({ home }: baseDeps home))
+    (exactly ({ host }: baseDeps host))
+    (exactly ({ user }: baseDeps user))
+    (exactly osDependencies)
+    (exactly hmDependencies)
+  ];
 
   baseDeps =
     from:
@@ -39,35 +35,57 @@ let
       ];
     };
 
-  osIncludesFromUsers =
+  from = o: (lib.flip parametric) den.aspects.${o.aspect};
+
+  osDependencies =
     { OS }:
     let
       inherit (OS) host;
       users = builtins.attrValues host.users;
-      userDeps = user: parametric { inherit OS user host; } den.aspects.${user.aspect};
-      userContribs.includes = map userDeps users;
-      hostDeps = user: parametric { inherit user host; } den.aspects.${host.aspect};
-      hostContribs.includes = map hostDeps users;
+      hostIncludes = [
+        (from host { inherit host; })
+        (from host {
+          inherit OS host;
+          fromHost = host;
+        })
+      ];
+      userIncludes = user: [
+        (from user { inherit user; })
+        (from user {
+          inherit OS user host;
+          fromUser = user;
+        })
+        (from host {
+          inherit OS user host;
+          fromHost = host;
+        })
+      ];
     in
     {
-      includes = [
-        hostContribs
-        userContribs
-      ];
+      includes = hostIncludes ++ (map (u: { includes = userIncludes u; }) users);
     };
 
-  hmIncludesFromHost =
+  hmDependencies =
     { HM }:
     let
       inherit (HM) user host;
-      userDeps = parametric { inherit HM user host; } den.aspects.${user.aspect};
-      hostDeps = parametric { inherit HM user host; } den.aspects.${host.aspect};
+      hostIncludes = [
+        (from host { inherit host; })
+        (from host {
+          inherit HM user host;
+          fromHost = host;
+        })
+      ];
+      userIncludes = [
+        (from user { inherit user; })
+        (from user {
+          inherit HM user host;
+          fromUser = user;
+        })
+      ];
     in
     {
-      includes = [
-        userDeps
-        hostDeps
-      ];
+      includes = hostIncludes ++ userIncludes;
     };
 in
 {

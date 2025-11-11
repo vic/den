@@ -63,13 +63,13 @@ let
   take.exactly = take canTake.exactly;
   take.atLeast = take canTake.atLeast;
   take.__functor =
-    _: takes: ctx: fn:
+    _: takes: fn: ctx:
     if takes ctx fn then fn ctx else { };
 
-  parametric.atLeast = funk take.atLeast;
-  parametric.exactly = funk take.exactly;
+  parametric.atLeast = funk (lib.flip take.atLeast);
+  parametric.exactly = funk (lib.flip take.exactly);
   parametric.context = lib.flip parametric.atLeast;
-  parametric.expands = attrs: funk (ctx: take.atLeast (attrs // ctx));
+  parametric.expands = attrs: funk (ctx: (lib.flip take.atLeast) (attrs // ctx));
   parametric.__functor =
     self: ctx:
     if ctx == true then

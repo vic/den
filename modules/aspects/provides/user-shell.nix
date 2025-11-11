@@ -28,14 +28,16 @@ let
       inherit nixos darwin homeManager;
     };
 
+  inherit (den.lib.take) exactly;
+
 in
 {
   den.provides.user-shell = shell: {
     inherit description;
     __functor = den.lib.parametric true;
     includes = [
-      ({ user, ... }: userShell shell user)
-      ({ home, ... }: userShell shell home)
+      (exactly ({ user }: userShell shell user))
+      (exactly ({ home }: userShell shell home))
     ];
   };
 }

@@ -95,12 +95,14 @@
         alice-hello-enabled-by-default = checkCond "added hello at user packages" (
           let
             progs = rockhopper.config.users.users.alice.packages;
-            expr.len = lib.length progs;
-            expr.name = lib.getName (lib.head progs);
-            expected.len = 1;
-            expected.name = "hello";
+            expr = map lib.getName progs;
+            expected = [ "hello" ];
           in
           expr == expected
+        );
+
+        rockhopper-names-single-entry = checkCond "custom nixos array option set once" (
+          rockhopper.config.names == [ "tux" ]
         );
 
       };

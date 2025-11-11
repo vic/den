@@ -14,6 +14,9 @@
   ...
 }:
 let
+  # A custom `nixos` class module that defines an option `names`.
+  # Used to test that we are not duplicating values from owned configs.
+  nixosNames.options.names = lib.mkOption { type = lib.types.listOf lib.types.str; };
 
   # Example: A static aspect for vm installers.
   vm-bootable = {
@@ -42,14 +45,15 @@ let
       { };
 
   # Example: adds hello into each user. provides only to OS.
-  one-hello-package-for-each-user =
+  hello-package-for-user =
     {
       OS,
+      fromUser,
       user,
       host,
       ...
     }:
-    den.lib.take.unused [ OS ] {
+    den.lib.take.unused [ OS fromUser ] {
       ${host.class} =
         { pkgs, ... }:
         {
@@ -95,8 +99,8 @@ in
     # Example: parametric { host } aspect
     set-host-name
 
-    # Example: parametric { fromUser, toHost } aspect.
-    one-hello-package-for-each-user
+    # Example: parametric { OS, fromUser } aspect.
+    hello-package-for-user
 
     # Example: parametric over many contexts: { home }, { host, user }, { fromUser, toHost }
     den.provides.define-user
@@ -128,8 +132,11 @@ in
     den._.primary-user
   ];
 
-  # Example: host provides parametric user configuration.
+  den.aspects.rockhopper.nixos.names = [ "tux" ];
   den.aspects.rockhopper.includes = [
+    # Example: importing a third-party nixos module.
+    { nixos.imports = [ nixosNames ]; }
+    # Example: host provides parametric user configuration.
     host-to-user-conditional
   ];
 
