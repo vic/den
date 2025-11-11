@@ -61,33 +61,22 @@
           };
       };
 
-    # This one can be included on igloo host to make USB/VM installers.
+    # This one can be included on a host to make USB/VM installers.
     vm-bootable =
-      { host, ... }:
+      { ... }:
       {
         nixos =
           { modulesPath, ... }:
           {
-            networking.hostName = host.hostName;
             imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-graphical-base.nix") ];
           };
       };
   };
 
-  den.aspects.igloo.includes =
-    let
-      # an small parametric aspect that needs access to contextual host data.
-      hostname =
-        { host, ... }:
-        {
-          nixos.networking.hostName = host.name;
-        };
-    in
-    [
-      hostname
-      den.aspects.common._.vm-bootable
-      den.aspects.common._.xfce-desktop
-    ];
+  den.aspects.igloo.includes = [
+    den.aspects.common._.vm-bootable
+    den.aspects.common._.xfce-desktop
+  ];
 
   # NixOS configuration for igloo.
   den.aspects.igloo.nixos =
@@ -144,6 +133,22 @@
 
     # Disable booting when running on CI on all NixOS hosts.
     (if config ? _module.args.CI then den.aspects.ci-no-boot else { })
+
+    # NOTE: be cautious when adding fully parametric functions to defaults.
+    # defaults are included on EVERY host/user/home, and IF you are not careful
+    # you could be duplicating config values. For example:
+    #
+    #  # This will append 42 into foo option for the {host} and for EVERY {host,user}
+    #  ({ host, ... }: { nixos.foo = [ 42 ]; }) # DO-NOT-DO-THIS.
+    #
+    #  # Instead try to be explicit if a function is intended for ONLY { host }.
+    (den.lib.take.exactly (
+      { host }:
+      {
+        nixos.networking.hostName = host.hostName;
+      }
+    ))
+
   ];
 
   den.aspects.ci-no-boot = {
