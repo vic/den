@@ -1,0 +1,27 @@
+on:
+  pull_request:
+  push:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  flake-check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    name: Nix flake check ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+        if: matrix.os == 'ubuntu-latest'
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: actions/checkout@v5
+      - run: nix flake metadata
+      - run: |
+          cat <<-EOF > modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+      - run: nix flake check

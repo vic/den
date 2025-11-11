@@ -309,7 +309,7 @@ To run tests locally:
 
 ```console
 nix flake check ./checkmate --override-input target .
-nix flake check ./templates/default --override-input den .
+nix flake check ./templates/examples --override-input den .
 ```
 
 Ensure code is formatted:

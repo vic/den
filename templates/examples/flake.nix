@@ -5,6 +5,14 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
   inputs = {
+    darwin = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs";
+        };
+      };
+      url = "github:nix-darwin/nix-darwin";
+    };
     den = {
       url = "github:vic/den";
     };
@@ -30,6 +38,14 @@
       };
       url = "github:nix-community/home-manager";
     };
+    home-manager-stable = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs-stable";
+        };
+      };
+      url = "github:nix-community/home-manager/release-25.05";
+    };
     import-tree = {
       url = "github:vic/import-tree";
     };
@@ -41,11 +57,25 @@
       };
       url = "github:fzakaria/nix-auto-follow";
     };
+    nixos-wsl = {
+      inputs = {
+        flake-compat = {
+          follows = "";
+        };
+        nixpkgs = {
+          follows = "nixpkgs-stable";
+        };
+      };
+      url = "github:nix-community/nixos-wsl";
+    };
     nixpkgs = {
       url = "github:nixos/nixpkgs/nixpkgs-unstable";
     };
     nixpkgs-lib = {
       follows = "nixpkgs";
+    };
+    nixpkgs-stable = {
+      url = "github:nixos/nixpkgs/release-25.05";
     };
     systems = {
       url = "github:nix-systems/default";
