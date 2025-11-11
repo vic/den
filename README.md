@@ -24,7 +24,7 @@
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
-- [Share](templates/default/modules/_profile/namespace.nix) aspects across systems & repos.
+- [Share](templates/examples/modules/_profile/namespace.nix) aspects across systems & repos.
 
 - Bidirectional [dependencies](modules/aspects/dependencies.nix): user/host contributions.
 
@@ -38,7 +38,7 @@
 
 - [Batteries](modules/aspects/provides/): Opt-in, replaceable aspects.
 
-- [Well-tested](templates/default/modules/_example/ci.nix) with an [example suite](templates/default/modules/).
+- [Well-tested](templates/examples/modules/_example/ci) with [examples](templates/examples).
 
 Need more batteries? See [vic/denful](https://github.com/vic/denful).
 
@@ -46,7 +46,7 @@ Need more batteries? See [vic/denful](https://github.com/vic/denful).
 </td>
 <td>
 
-🏠 Define [Hosts, Users](templates/default/modules/_example/hosts.nix) & [Homes](templates/default/modules/_example/homes.nix) concisely.
+🏠 Define [Hosts, Users](templates/examples/modules/_example/hosts.nix) & [Homes](templates/examples/modules/_example/homes.nix) concisely.
 
 See schema in [`_types.nix`](modules/_types.nix).
 
@@ -61,7 +61,7 @@ See schema in [`_types.nix`](modules/_types.nix).
 }
 ```
 
-🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) incremental features. ([example](templates/default/modules/_example/aspects.nix))
+🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) incremental features. ([example](templates/default/modules/den.nix))
 
 Any module can contribute configurations to aspects.
 
@@ -114,7 +114,7 @@ nix flake update den
 nix run .#vm
 ```
 
-Our [default template](templates/default) provides a [profile-based layout](templates/default/modules/_profile/) for a quick start.
+Our [default template](templates/default) provides an annotated quick-start.
 
 </td>
 </tr>
@@ -122,7 +122,7 @@ Our [default template](templates/default) provides a [profile-based layout](temp
 
 You are done! You know everything to start creating configurations with `den`.
 
-Feel free to to __explore__ the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/default/modules/_example).
+Feel free to to __explore__ the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/examples/modules/_example/ci).
 
 ## Learn more at our [documentation website](https://vic.github.io/den)
 

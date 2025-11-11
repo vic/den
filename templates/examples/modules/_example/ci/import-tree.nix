@@ -17,4 +17,12 @@
     (<den/import-tree/home> ./_non_dendritic/homes)
   ];
 
+  # tests
+  perSystem =
+    { checkCond, rockhopper, ... }:
+    {
+      checks.import-tree = checkCond "auto-imported from rockhopper/_nixos" (
+        rockhopper.config.auto-imported
+      );
+    };
 }
