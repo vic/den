@@ -8,4 +8,6 @@
       tests = map (file: "${./checkmate/tests}/${file}") nixes;
     in
     tests;
+
+  perSystem.treefmt.settings.global.excludes = [ ".github/*/*.md" ];
 }

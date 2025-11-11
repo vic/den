@@ -1,4 +1,4 @@
-______________________________________________________________________
+---
 
 name: Bug report
 about: Issues are testable/actionable tasks. Use Discussions for questions, feature-requests, problem solving.
@@ -6,7 +6,7 @@ title: 'BUG: '
 labels: 'bug'
 assignees: ''
 
-______________________________________________________________________
+---
 
 If you have found a bug, please share a reproduction repository with us.
 
