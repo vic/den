@@ -3,9 +3,9 @@
     flakeModule = ./nix/flakeModule.nix;
     templates = {
       default.path = ./templates/default;
-      default.description = "Example configuration";
-      minimal.path = ./templates/minimal;
-      minimal.description = "Minimal configuration";
+      default.description = "Minimal configuration";
+      examples.path = ./templates/examples;
+      examples.description = "API examples and CI";
       bogus.path = ./templates/bogus;
       bogus.description = "For bug reproduction";
     };

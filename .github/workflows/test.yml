@@ -7,28 +7,23 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  flag:
+  non-draft:
     runs-on: ubuntu-latest
-    outputs:
-      flag: ${{steps.flag.outputs.flag}}
     steps:
-      - id: flag
-        run: echo "flag=${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}" >> $GITHUB_OUTPUT
+      - run: test "true" = "${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}"
   flake-check:
-    needs: [flag]
-    if: needs.flag.outputs.flag == 'true'
+    needs: [non-draft]
     name: nix flake check
     runs-on: ubuntu-latest
     steps:
       - uses: cachix/install-nix-action@v30
       - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
   template:
-    needs: [flag]
-    if: needs.flag.outputs.flag == 'true'
+    needs: [non-draft]
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        template: [default, bogus, minimal]
+        template: [default, bogus, examples]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
@@ -42,6 +37,7 @@ jobs:
           { lib, ... }:
           {
             flake-file.inputs.den.url = lib.mkForce "github:$GITHUB_REPOSITORY/$GITHUB_SHA";
+            _module.args.CI = true;
           }
           EOF
       - run: nix run .#write-flake --override-input den "github:$GITHUB_REPOSITORY/$GITHUB_SHA"
