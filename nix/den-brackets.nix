@@ -27,7 +27,8 @@ let
       readFromAspects = lib.getAttrFromPath path config.den.aspects;
 
       headIsDenful = lib.hasAttrByPath [ "ful" head ] config.den;
-      readFromDenful = lib.getAttrFromPath tail config.den.ful;
+      denfulTail = if lib.head tail == "provides" then lib.tail tail else tail;
+      readFromDenful = lib.getAttrFromPath ([ head ] ++ denfulTail) config.den.ful;
 
       found =
         if headIsDen then

@@ -1,4 +1,4 @@
-{ den, eg, ... }:
+{ eg, ... }:
 {
   den.aspects.igloo = {
     # igloo host provides some home-manager defaults to its users.

@@ -1,7 +1,8 @@
 {
-  den,
-  eg,
   config,
+  # deadnix: skip # enable <den/brackets> syntax for demo.
+  __findFile ? __findFile,
+  den,
   ...
 }:
 {
@@ -16,13 +17,13 @@
   # These are functions that produce configs
   den.default.includes = [
     # Enable home-manager on all hosts.
-    den.provides.home-manager
+    <den/home-manager>
 
     # Automatically create the user on host.
-    den.provides.define-user
+    <den/define-user>
 
     # Disable booting when running on CI on all NixOS hosts.
-    (if config ? _module.args.CI then eg.ci-no-boot else { })
+    (if config ? _module.args.CI then <eg/ci-no-boot> else { })
 
     # NOTE: be cautious when adding fully parametric functions to defaults.
     # defaults are included on EVERY host/user/home, and IF you are not careful
