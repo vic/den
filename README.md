@@ -18,15 +18,17 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- Dendritic: same concern, different classes and context-aware.
+- Dendritic: each module configures **same** concern over **different** Nix classes.
 
-- Small, [DRY](modules/aspects/provides/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
+- Create [DRY](modules/aspects/provides/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
-- [Share](templates/examples/modules/_profile/namespace.nix) aspects across systems & repos.
+- [Share](templates/default/modules/namespace.nix) aspects across systems & repos.
 
-- Bidirectional [dependencies](modules/aspects/dependencies.nix): user/host contributions.
+- Context-aware [dependencies](modules/aspects/dependencies.nix): user/host contributions.
+
+- [Routable](templates/default/modules/aspects/eg/routes.nix) configurations.
 
 - Custom factories for any Nix `class`.
 
@@ -38,7 +40,11 @@
 
 - [Batteries](modules/aspects/provides/): Opt-in, replaceable aspects.
 
-- [Well-tested](templates/examples/modules/_example/ci) with [examples](templates/examples).
+- Opt-in [`<angle/brackets>`](https://vic.github.io/den/angle-brackets.html) aspect resolution.
+
+- Templates [tested](templates/default/modules/tests.nix) along [examples](templates/examples/modules/_example/ci).
+
+- Concepts [documented](https://vic.github.io/den).
 
 Need more batteries? See [vic/denful](https://github.com/vic/denful).
 
@@ -52,13 +58,19 @@ See schema in [`_types.nix`](modules/_types.nix).
 
 ```nix
 # modules/hosts.nix
-# OS & standalone homes share 'vic' aspect.
-# $ nixos-rebuild switch --flake .#my-laptop
-# $ home-manager switch --flake .#vic
 {
-  den.hosts.x86-64-linux.laptop.users.vic = {};
+  # same home-manager vic configuration
+  # over laptop, macbook and standalone-hm
+  den.hosts.x86_64-linux.lap.users.vic = {};
+  den.hosts.aarch64-darwin.mac.users.vic = {};
   den.homes.aarch64-darwin.vic = {};
 }
+```
+
+```console
+$ nixos-rebuild  switch --flake .#lap
+$ darwin-rebuild switch --flake .#mac
+$ home-manager   switch --flake .#vic
 ```
 
 🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) incremental features. ([example](templates/default/modules/den.nix))
@@ -87,7 +99,7 @@ Any module can contribute configurations to aspects.
     # User contribs to host
     nixos.users.users = {
       vic.description = "oeiuwq";
-    }
+    };
     includes = [ 
       den.aspects.tiling-wm 
       den._.primary-user 

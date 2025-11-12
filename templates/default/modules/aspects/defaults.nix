@@ -16,6 +16,9 @@
 
   # These are functions that produce configs
   den.default.includes = [
+    # ${user}.provides.${host} and ${host}.provides.${user}
+    <eg/routes>
+
     # Enable home-manager on all hosts.
     <den/home-manager>
 

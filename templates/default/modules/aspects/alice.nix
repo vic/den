@@ -30,5 +30,12 @@
       {
         home.packages = [ pkgs.htop ];
       };
+
+    # <user>.provides.<host>, via eg/routes.nix
+    provides.igloo =
+      { host, ... }:
+      {
+        nixos.programs.nh.enable = host.name == "igloo";
+      };
   };
 }

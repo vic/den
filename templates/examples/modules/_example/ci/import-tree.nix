@@ -1,7 +1,7 @@
 # configures class-automatic module auto imports for hosts/users/homes.
 # See documentation at modules/aspects/provides/import-tree.nix
 {
-  # deadnix: skip # see _profile/den-brackets.nix
+  # deadnix: skip
   __findFile ? __findFile,
   ...
 }:
