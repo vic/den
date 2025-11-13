@@ -1,16 +1,13 @@
-{ den, ... }:
 let
 
   # Example: adds hello into each user. provides only to OS.
   hello-package-for-user =
     {
-      OS,
-      fromUser,
       user,
       host,
       ...
     }:
-    den.lib.take.unused [ OS fromUser ] {
+    {
       ${host.class} =
         { pkgs, ... }:
         {
@@ -21,10 +18,7 @@ let
 in
 {
 
-  den.default.includes = [
-    # Example: parametric { OS, fromUser } aspect.
-    hello-package-for-user
-  ];
+  den.default.includes = [ hello-package-for-user ];
 
   perSystem =
     {
