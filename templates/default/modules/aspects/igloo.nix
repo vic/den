@@ -1,4 +1,3 @@
-{ eg, ... }:
 {
   den.aspects.igloo = {
     # igloo host provides some home-manager defaults to its users.
@@ -10,12 +9,6 @@
       {
         environment.systemPackages = [ pkgs.hello ];
       };
-
-    # Include aspects from the eg namespace
-    includes = [
-      eg.vm-bootable
-      eg.xfce-desktop
-    ];
 
     # <host>.provides.<user>, via eg/routes.nix
     provides.alice =

@@ -37,7 +37,8 @@
     #
     #  # Instead try to be explicit if a function is intended for ONLY { host }.
     (den.lib.take.exactly (
-      { host }:
+      # deadnix: skip
+      { OS, host }:
       {
         nixos.networking.hostName = host.hostName;
       }
