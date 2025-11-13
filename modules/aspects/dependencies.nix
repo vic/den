@@ -30,7 +30,7 @@ let
           includes =
             let
               users = builtins.attrValues host.users;
-              contrib = osUserDependencies OS host;
+              contrib = osUserDependencies { inherit OS host; };
             in
             map contrib users;
         }
@@ -38,54 +38,45 @@ let
     };
 
   osUserDependencies =
-    OS: host: user:
+    { OS, host }:
+    user:
     let
       USR = den.aspects.${user.aspect};
-      ctx = { inherit OS host user; };
     in
     {
       includes = [
         (owned USR)
         (statics USR)
-        (USR ctx)
+        (USR { inherit OS host; })
       ];
     };
 
-  # from home-manager integration.
+  # from OS home-managed integration.
   hmUserDependencies =
     {
-      HM,
+      OS-HM,
       host,
       user,
     }:
+    let
+      inherit (OS-HM) OS HM;
+    in
     {
       includes = [
         (owned den.default)
         (statics den.default)
         (owned HM)
         (statics HM)
-        (hmOsDependencies HM host user)
-      ];
-    };
-
-  hmOsDependencies =
-    HM: host: user:
-    let
-      OS = den.aspects.${host.aspect};
-      newCtx = {
-        inherit
-          HM
-          OS
-          host
-          user
-          ;
-      };
-    in
-    {
-      includes = [
         (owned OS)
         (statics OS)
-        (parametric newCtx OS)
+        (parametric {
+          inherit
+            OS
+            HM
+            user
+            host
+            ;
+        } OS)
       ];
     };
 

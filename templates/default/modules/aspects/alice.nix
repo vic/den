@@ -7,8 +7,16 @@
       let
         # deadnix: skip # demo: enable <> on lexical scope
         inherit (den.lib) __findFile;
+
+        customVim.homeManager =
+          { pkgs, ... }:
+          {
+            programs.vim.enable = true;
+            programs.vim.package = pkgs.neovim;
+          };
       in
       [
+        customVim
         <eg/autologin>
         <den/primary-user> # alice is admin always.
         (<den/user-shell> "fish") # default user shell
