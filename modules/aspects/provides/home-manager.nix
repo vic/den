@@ -44,11 +44,11 @@ in
               inherit aspect-chain;
               class = hmClass;
             };
-            aspect = den.aspects.${user.aspect} {
-              HM = { inherit host user; };
-            };
+            HM = den.aspects.${user.aspect};
+            aspect = HM { inherit HM host; };
+            module = aspect.resolve ctx;
           in
-          aspect.resolve ctx;
+          module;
 
         users = map (user: {
           name = user.userName;

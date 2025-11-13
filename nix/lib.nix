@@ -69,7 +69,7 @@ let
   parametric.atLeast = funk (lib.flip take.atLeast);
   parametric.exactly = funk (lib.flip take.exactly);
   parametric.context = lib.flip parametric.atLeast;
-  parametric.expands = attrs: funk (ctx: (lib.flip take.atLeast) (attrs // ctx));
+  parametric.expands = attrs: funk (ctx: (lib.flip take.atLeast) (ctx // attrs));
   parametric.__functor =
     self: ctx:
     if ctx == true then

@@ -1,21 +1,18 @@
-{ den, lib, ... }:
+{ lib, ... }:
 let
   # Example: configuration that depends on both host and user. provides only to HM.
   host-to-user-conditional =
     {
-      HM,
       user,
       host,
       ...
     }:
-    den.lib.take.unused [ HM ] (
-      if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
-        {
-          homeManager.programs.git.enable = true;
-        }
-      else
-        { }
-    );
+    if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
+      {
+        homeManager.programs.git.enable = true;
+      }
+    else
+      { };
 in
 {
 

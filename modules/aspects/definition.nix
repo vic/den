@@ -5,12 +5,14 @@
   ...
 }:
 let
+  inherit (den.lib) parametric;
+
   # creates den.aspects.${home.aspect}
   homeAspect = home: {
     ${home.aspect} = {
       ${home.class} = { };
       includes = [ den.default ];
-      __functor = den.lib.parametric { inherit home; };
+      __functor = HM: parametric { inherit HM home; } HM;
     };
   };
 
@@ -19,7 +21,7 @@ let
     ${host.aspect} = {
       ${host.class} = { };
       includes = [ den.default ];
-      __functor = den.lib.parametric { OS = { inherit host; }; };
+      __functor = OS: parametric { inherit OS host; } OS;
     };
   };
 
@@ -28,7 +30,7 @@ let
     ${user.aspect} = {
       ${user.class} = { };
       includes = [ den.default ];
-      __functor = den.lib.parametric true;
+      __functor = parametric.expands { inherit user; };
     };
   };
 

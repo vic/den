@@ -2,7 +2,7 @@ let
 
   # Example: luke standalone home-manager has access to rockhopper osConfig specialArg.
   os-conditional-hm =
-    { home }:
+    { home, ... }:
     {
       # access osConfig, wired via extraSpecialArgs in homes.nix.
       homeManager =

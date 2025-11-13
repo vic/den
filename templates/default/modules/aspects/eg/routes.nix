@@ -13,41 +13,18 @@
     let
       inherit (den.lib) parametric;
 
-      os-from-user =
+      # eg, `<user>._.<host>` and `<host>._.<user>`
+      mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
+
+      routes =
+        { host, user, ... }@ctx:
         {
-          user,
-          host,
-          # deadnix: skip
-          OS,
-          # deadnix: skip
-          fromUser,
-        }:
-        parametric { inherit user host; } (mutual user host);
-
-      hm-from-host =
-        {
-          user,
-          host,
-          # deadnix: skip
-          HM,
-          # deadnix: skip
-          fromHost,
-        }:
-        parametric { inherit user host; } (mutual host user);
-
-      mutual = from: to: {
-        includes = [
-          # eg, `<user>._.<host>` and `<host>._.<user>`
-          (den.aspects.${from.aspect}._.${to.aspect} or { })
-        ];
-      };
-
+          __functor = parametric ctx;
+          includes = [
+            (mutual user host)
+            (mutual host user)
+          ];
+        };
     in
-    {
-      __functor = parametric.exactly;
-      includes = [
-        os-from-user
-        hm-from-host
-      ];
-    };
+    routes;
 }

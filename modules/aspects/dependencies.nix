@@ -13,80 +13,93 @@ let
   inherit (den.lib.take) exactly;
 
   dependencies = [
-    (exactly ({ home }: baseDeps home))
-    (exactly ({ host }: baseDeps host))
-    (exactly ({ user }: baseDeps user))
     (exactly osDependencies)
-    (exactly hmDependencies)
+    (exactly hmUserDependencies)
+    (exactly hmStandaloneDependencies)
   ];
 
-  baseDeps =
-    from:
-    let
-      exists = from ? aspect && builtins.hasAttr from.aspect den.aspects;
-      aspect = den.aspects.${from.aspect};
-    in
-    {
-      includes = lib.optionals exists [
-        (statics den.default)
-        (statics aspect)
-        (owned den.default)
-        (owned aspect)
-      ];
-    };
-
-  from = o: (lib.flip parametric) den.aspects.${o.aspect};
-
   osDependencies =
-    { OS }:
-    let
-      inherit (OS) host;
-      users = builtins.attrValues host.users;
-      hostIncludes = [
-        (from host { inherit host; })
-        (from host {
-          inherit OS host;
-          fromHost = host;
-        })
-      ];
-      userIncludes = user: [
-        (from user { inherit user; })
-        (from user {
-          inherit OS user host;
-          fromUser = user;
-        })
-        (from host {
-          inherit OS user host;
-          fromHost = host;
-        })
-      ];
-    in
+    { OS, host }:
     {
-      includes = hostIncludes ++ (map (u: { includes = userIncludes u; }) users);
+      includes = [
+        (owned den.default)
+        (statics den.default)
+        (owned OS)
+        (statics OS)
+        {
+          includes =
+            let
+              users = builtins.attrValues host.users;
+              contrib = osUserDependencies OS host;
+            in
+            map contrib users;
+        }
+      ];
     };
 
-  hmDependencies =
-    { HM }:
+  osUserDependencies =
+    OS: host: user:
     let
-      inherit (HM) user host;
-      hostIncludes = [
-        (from host { inherit host; })
-        (from host {
-          inherit HM user host;
-          fromHost = host;
-        })
-      ];
-      userIncludes = [
-        (from user { inherit user; })
-        (from user {
-          inherit HM user host;
-          fromUser = user;
-        })
-      ];
+      USR = den.aspects.${user.aspect};
+      ctx = { inherit OS host user; };
     in
     {
-      includes = hostIncludes ++ userIncludes;
+      includes = [
+        (owned USR)
+        (statics USR)
+        (USR ctx)
+      ];
     };
+
+  # from home-manager integration.
+  hmUserDependencies =
+    {
+      HM,
+      host,
+      user,
+    }:
+    {
+      includes = [
+        (owned den.default)
+        (statics den.default)
+        (owned HM)
+        (statics HM)
+        (hmOsDependencies HM host user)
+      ];
+    };
+
+  hmOsDependencies =
+    HM: host: user:
+    let
+      OS = den.aspects.${host.aspect};
+      newCtx = {
+        inherit
+          HM
+          OS
+          host
+          user
+          ;
+      };
+    in
+    {
+      includes = [
+        (owned OS)
+        (statics OS)
+        (parametric newCtx OS)
+      ];
+    };
+
+  hmStandaloneDependencies =
+    { HM, home }:
+    {
+      includes = [
+        (owned den.default)
+        (statics den.default)
+        (owned HM)
+        (statics HM)
+      ];
+    };
+
 in
 {
   den.default.includes = dependencies;
