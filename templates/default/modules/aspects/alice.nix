@@ -1,11 +1,14 @@
-{ den, ... }:
+{ den, eg, ... }:
 {
   den.aspects.alice = {
-    # You can include other aspects, in this case some
-    # den included batteries that provide common configs.
+
+    # Alice can include other aspects.
+    # For small, private one-shot aspects, use let-bindings like here.
+    # for more complex or re-usable ones, define on their own modules,
+    # as part of any aspect-subtree.
     includes =
       let
-        # deadnix: skip # demo: enable <> on lexical scope
+        # deadnix: skip # not required, showcasing angle-brackets syntax.
         inherit (den.lib) __findFile;
 
         customEmacs.homeManager =
@@ -16,8 +19,14 @@
           };
       in
       [
+        # from local bindings.
         customEmacs
-        <eg/autologin>
+        # from the aspect tree, cooper example is defined bellow
+        den.aspects.cooper
+        den.aspects.setHost
+        # from the `eg` namespace.
+        eg.autologin
+        # den included batteries that provide common configs.
         <den/primary-user> # alice is admin always.
         (<den/user-shell> "fish") # default user shell
       ];
@@ -26,10 +35,7 @@
     nixos =
       { pkgs, ... }:
       {
-        users.users.alice = {
-          description = "Alice Cooper";
-          packages = [ pkgs.vim ];
-        };
+        users.users.alice.packages = [ pkgs.vim ];
       };
 
     # Alice home-manager.
@@ -46,4 +52,19 @@
         nixos.programs.nh.enable = host.name == "igloo";
       };
   };
+
+  # This is a context-aware aspect, that emits configurations
+  # **anytime** at least the `user` data is in context.
+  # read more at https://vic.github.io/den/context-aware.html
+  den.aspects.cooper =
+    { user, ... }:
+    {
+      nixos.users.users.${user.userName}.description = "Alice Cooper";
+    };
+
+  den.aspects.setHost =
+    { host, ... }:
+    {
+      networking.hostName = host.hostName;
+    };
 }
