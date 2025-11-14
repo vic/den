@@ -22,7 +22,7 @@
       checks.alice-custom-emacs = checkCond "set uniquely via a static includes" (
         let
           expr = lib.getName alice-at-rockhopper.programs.emacs.package;
-          expected = builtins.break "emacs-nox";
+          expected = "emacs-nox";
         in
         expr == expected
       );
