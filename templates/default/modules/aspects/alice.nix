@@ -7,8 +7,16 @@
       let
         # deadnix: skip # demo: enable <> on lexical scope
         inherit (den.lib) __findFile;
+
+        customEmacs.homeManager =
+          { pkgs, ... }:
+          {
+            programs.emacs.enable = true;
+            programs.emacs.package = pkgs.emacs30-nox;
+          };
       in
       [
+        customEmacs
         <eg/autologin>
         <den/primary-user> # alice is admin always.
         (<den/user-shell> "fish") # default user shell

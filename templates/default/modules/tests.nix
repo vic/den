@@ -3,7 +3,12 @@
 { inputs, ... }:
 {
   perSystem =
-    { pkgs, self', ... }:
+    {
+      pkgs,
+      self',
+      lib,
+      ...
+    }:
     let
       checkCond = name: cond: pkgs.runCommandLocal name { } (if cond then "touch $out" else "");
       apple = inputs.self.darwinConfigurations.apple.config;
@@ -21,5 +26,9 @@
       checks."alice enabled igloo nh" = checkCond "alice.provides.igloo" igloo.programs.nh.enable;
       checks."igloo enabled alice helix" =
         checkCond "igloo.provides.alice" alice-at-igloo.programs.helix.enable;
+
+      checks."alice-custom-emacs" = checkCond "hm.programs.emacs.package" (
+        "emacs-nox" == lib.getName alice-at-igloo.programs.emacs.package
+      );
     };
 }
