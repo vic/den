@@ -85,12 +85,11 @@ let
               .${config.class};
           };
           mainModule = lib.mkOption {
-            description = ''
-              Defaults to: den.modules.<class>.<aspect>
-              Can be set in order to access a module in a different place.
-            '';
+            internal = true;
+            visible = false;
+            readOnly = true;
             type = lib.types.deferredModule;
-            default = den.modules.${config.class}.${config.aspect};
+            default = mainModule config "OS" "host";
           };
         };
       }
@@ -179,17 +178,27 @@ let
               .${config.class};
           };
           mainModule = lib.mkOption {
-            description = ''
-              Defaults to: den.modules.<class>.<aspect>
-              Can be set in order to access a module in a different place.
-            '';
+            internal = true;
+            visible = false;
+            readOnly = true;
             type = lib.types.deferredModule;
-            default = den.modules.${config.class}.${config.aspect};
+            default = mainModule config "HM" "home";
           };
         };
       }
     );
 
+  mainModule =
+    from: intent: name:
+    let
+      asp = den.aspects.${from.aspect};
+      ctx = {
+        ${intent} = asp;
+        ${name} = from;
+      };
+      mod = (asp ctx).resolve { inherit (from) class; };
+    in
+    mod;
 in
 {
   inherit hostsOption homesOption;

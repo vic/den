@@ -7,48 +7,28 @@
 let
   inherit (den.lib) parametric;
 
-  # creates den.aspects.${home.aspect}
-  homeAspect = home: {
-    ${home.aspect} = {
-      ${home.class} = { };
+  makeAspect = from: {
+    ${from.aspect} = {
+      ${from.class} = { };
       includes = [ den.default ];
-      __functor = HM: parametric { inherit HM home; } HM;
+      __functor = parametric.atLeast;
     };
   };
 
-  # creates den.aspects.${host.aspect}
-  hostAspect = host: {
-    ${host.aspect} = {
-      ${host.class} = { };
-      includes = [ den.default ];
-      __functor = OS: parametric { inherit OS host; } OS;
-    };
-  };
+  hosts = map builtins.attrValues (builtins.attrValues den.hosts);
+  homes = map builtins.attrValues (builtins.attrValues den.homes);
+  aspectClass = from: { inherit (from) aspect class; };
 
-  # creates aspects.${user.aspect}
-  userAspect = user: {
-    ${user.aspect} = {
-      ${user.class} = { };
-      includes = [ den.default ];
-      __functor = parametric.expands { inherit user; };
-    };
-  };
-
-  hosts = lib.flatten (map builtins.attrValues (builtins.attrValues den.hosts));
-  homes = lib.flatten (map builtins.attrValues (builtins.attrValues den.homes));
-
-  homeDeps = map homeAspect homes;
-  hostDeps = map hostAspect hosts;
-  userDeps = lib.pipe hosts [
-    (map (h: builtins.attrValues h.users))
+  deps = lib.pipe hosts [
     (lib.flatten)
+    (map (h: builtins.attrValues h.users))
+    (users: users ++ hosts ++ homes)
+    (lib.flatten)
+    (map aspectClass)
     (lib.unique)
-    (map userAspect)
+    (map makeAspect)
   ];
-
-  deps = hostDeps ++ userDeps ++ homeDeps;
-
 in
 {
-  den.aspects = lib.mkMerge (lib.flatten deps);
+  den.aspects = lib.mkMerge deps;
 }
