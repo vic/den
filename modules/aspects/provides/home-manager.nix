@@ -41,7 +41,7 @@ let
           };
           HM = den.aspects.${user.aspect};
           aspect = HM {
-            inherit host;
+            inherit host user;
             OS-HM = { inherit OS HM; };
           };
           module = aspect.resolve ctx;

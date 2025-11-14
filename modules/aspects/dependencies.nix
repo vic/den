@@ -47,7 +47,7 @@ let
       includes = [
         (owned USR)
         (statics USR)
-        (USR { inherit OS host; })
+        (USR { inherit OS host user; })
       ];
     };
 
