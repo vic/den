@@ -10,7 +10,7 @@ let
   inherit (den.lib) parametric canTake;
 
   aspect-example = {
-    __functor = parametric true;
+    __functor = parametric.atLeast;
     nixos.foo = 99;
     includes = [
       { nixos.static = 100; }

@@ -50,6 +50,6 @@ in
       userContext
       hmContext
     ];
-    __functor = den.lib.parametric true;
+    __functor = den.lib.parametric.atLeast;
   };
 }
