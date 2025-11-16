@@ -49,6 +49,26 @@
 
 Need more batteries? See [vic/denful](https://github.com/vic/denful).
 
+For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den) or this [GH search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
+
+**❄️ Try it now!**
+
+Launch our template VM:
+
+```console
+nix run github:vic/den
+```
+
+Or, initialize a project:
+
+```console
+nix flake init -t github:vic/den
+nix flake update den
+nix run .#vm
+```
+
+Our [default template](templates/default) provides an annotated quick-start.
+
 </div>
 </td>
 <td>
@@ -80,16 +100,47 @@ Any module can contribute configurations to aspects.
 
 ```nix
 # modules/my-laptop.nix
-{ den, ... }: {
+{ den, inputs, ... }: {
+
+  # Example: enhance the my-laptop aspect.
+  # This can be done from any file, multiple times.
   den.aspects.my-laptop = {
+
+    # this aspect includes configurations
+    # available from other aspects
     includes = [
+      # your own parametric aspects
       den.aspects.workplace-vpn
+      # den's opt-in batteries includes.
       den.provides.home-manager
     ];
-    nixos  = { /* NixOS options */ };
-    darwin = { /* nix-darwin options */ };
+
+    # any file can contribute to this module, so
+    # best practice is to keep concerns separated
+    # each on their own file, instead of huge
+    # modules in here.
+
+    # any NixOS configuration
+    nixos  = { 
+      # This is a nixos module, see nixos options.
+      # import third-party NixOS modules
+      imports = [ 
+        inputs.disko.nixosModules.disko
+      ];
+      disko.devices = { /* ... */ };
+    };
+    # any nix-darwin configuration
+    darwin = { 
+      # This is a nix-darwin module.
+      # import third-party Darwin modules
+      imports = [ 
+        inputs.nix-homebrew.darwinModules.nix-homebrew 
+      ];
+      nix-homebrew.enableRosetta = true;
+    };
     # For all users of my-laptop
     homeManager.programs.vim.enable = true;
+
   };
 }
 
@@ -108,26 +159,6 @@ Any module can contribute configurations to aspects.
   };
 }
 ```
-
-For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den) or this [GH search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
-
-**❄️ Try it now!**
-
-Launch our template VM:
-
-```console
-nix run github:vic/den
-```
-
-Or, initialize a project:
-
-```console
-nix flake init -t github:vic/den
-nix flake update den
-nix run .#vm
-```
-
-Our [default template](templates/default) provides an annotated quick-start.
 
 </td>
 </tr>
