@@ -1,6 +1,7 @@
 <p align="right">
   <a href="https://github.com/sponsors/vic"><img src="https://img.shields.io/badge/sponsor-vic-white?logo=githubsponsors&logoColor=white&labelColor=%23FF0000" alt="Sponsor Vic"/>
   </a>
+  <a href="https://github.com/vic/den/releases"><img src="https://img.shields.io/github/v/release/vic/den?style=plastic&logo=github&color=purple"/></a>
   <a href="https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries"> <img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/> </a>
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
   <a href="https://github.com/vic/den/actions">
@@ -61,7 +62,7 @@ See schema in [`_types.nix`](modules/_types.nix).
 {
   # same home-manager vic configuration
   # over laptop, macbook and standalone-hm
-  den.hosts.x86_64-linux.lap.users.vic = {};
+  den.hosts.x86-64-linux.lap.users.vic = {};
   den.hosts.aarch64-darwin.mac.users.vic = {};
   den.homes.aarch64-darwin.vic = {};
 }
