@@ -30,12 +30,13 @@ let
 
 in
 {
-  den.provides.user-shell = shell: {
-    inherit description;
-    __functor = den.lib.parametric.atLeast;
-    includes = [
-      ({ user, ... }: userShell shell user)
-      ({ home, ... }: userShell shell home)
-    ];
-  };
+  den.provides.user-shell =
+    shell:
+    den.lib.parametric {
+      inherit description;
+      includes = [
+        ({ user, ... }: userShell shell user)
+        ({ home, ... }: userShell shell home)
+      ];
+    };
 }

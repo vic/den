@@ -21,10 +21,8 @@ in
   ];
   den.aspects.rockhopper.nixos.fwd.c = "host owned C";
 
-  # this is an `atLeast` parametric aspect that also includes
-  # its owned configs and static (non-functional) includes.
-  # Usage: just call `parametric` with an aspect.
-  # or alternatively, set `__functor = den.lib.parametric;`
+  # this aspect will take any context and also forward it
+  # into any includes function that can take same context.
   den.aspects.fwd._.first = parametric {
     nixos.fwd.a = "First owned A";
     includes = [

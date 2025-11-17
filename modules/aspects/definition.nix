@@ -8,10 +8,9 @@ let
   inherit (den.lib) parametric;
 
   makeAspect = from: {
-    ${from.aspect} = {
+    ${from.aspect} = parametric.atLeast {
       ${from.class} = { };
       includes = [ den.default ];
-      __functor = parametric.atLeast;
     };
   };
 

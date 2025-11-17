@@ -44,12 +44,11 @@ let
     };
 in
 {
-  den.provides.define-user = {
+  den.provides.define-user = den.lib.parametric {
     inherit description;
     includes = [
       userContext
       hmContext
     ];
-    __functor = den.lib.parametric.atLeast;
   };
 }

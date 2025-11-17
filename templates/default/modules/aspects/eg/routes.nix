@@ -25,8 +25,7 @@
 
       routes =
         { host, user, ... }@ctx:
-        {
-          __functor = parametric.fixedTo ctx;
+        parametric.fixedTo ctx {
           includes = [
             (mutual user host)
             (mutual host user)
