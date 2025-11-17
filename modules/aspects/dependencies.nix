@@ -60,6 +60,14 @@ let
     }:
     let
       inherit (OS-HM) OS HM;
+      context = {
+        inherit
+          OS
+          HM
+          user
+          host
+          ;
+      };
     in
     {
       includes = [
@@ -69,14 +77,7 @@ let
         (statics HM)
         (owned OS)
         (statics OS)
-        (parametric {
-          inherit
-            OS
-            HM
-            user
-            host
-            ;
-        } OS)
+        (parametric.fixedTo context OS)
       ];
     };
 
