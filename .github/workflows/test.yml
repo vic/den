@@ -16,7 +16,7 @@ jobs:
     name: nix flake check
     runs-on: ubuntu-latest
     steps:
-      - uses: cachix/install-nix-action@v30
+      - uses: cachix/install-nix-action@v31
       - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
   template:
     needs: [non-draft]
@@ -29,8 +29,8 @@ jobs:
     steps:
       - uses: wimpysworld/nothing-but-nix@main
         if: matrix.os == 'ubuntu-latest'
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#${{matrix.template}}
       - run: |
           cat <<-EOF > modules/ci-runtime.nix
