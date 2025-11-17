@@ -115,14 +115,14 @@ Any module can contribute configurations to aspects.
       den.provides.home-manager
     ];
 
-    # any file can contribute to this module, so
-    # best practice is to keep concerns separated
-    # each on their own file, instead of huge
-    # modules in here.
+    # any file can contribute to this aspect, so
+    # best practice is to keep concerns separated,
+    # each on their own file, instead of having huge
+    # modules in a single file:
 
     # any NixOS configuration
     nixos  = { 
-      # This is a nixos module, see nixos options.
+      # A nixos class module, see NixOS options.
       # import third-party NixOS modules
       imports = [ 
         inputs.disko.nixosModules.disko
@@ -131,7 +131,6 @@ Any module can contribute configurations to aspects.
     };
     # any nix-darwin configuration
     darwin = { 
-      # This is a nix-darwin module.
       # import third-party Darwin modules
       imports = [ 
         inputs.nix-homebrew.darwinModules.nix-homebrew 
