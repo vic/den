@@ -85,8 +85,7 @@ let
         ];
       };
     };
-  parametric.__functor =
-    _: parametric.withOwn parametric.atLeast;
+  parametric.__functor = _: parametric.withOwn parametric.atLeast;
 
   aspects = inputs.flake-aspects.lib lib;
 
