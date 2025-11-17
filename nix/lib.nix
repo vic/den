@@ -67,15 +67,17 @@ let
 
   parametric.atLeast = funk (lib.flip take.atLeast);
   parametric.exactly = funk (lib.flip take.exactly);
-  parametric.fixedTo = lib.flip parametric.atLeast;
-  parametric.expands = attrs: funk (ctx: (lib.flip take.atLeast) (ctx // attrs));
+  parametric.fixedTo = lib.flip (parametric.withOwn parametric.atLeast);
+  parametric.expands =
+    attrs: aspect: ctx:
+    parametric.fixedTo (ctx // attrs) aspect;
   parametric.withOwn =
-    aspect:
+    functor: aspect:
     aspect
     // {
       __functor = self: ctx: {
         includes = [
-          (parametric.atLeast self ctx)
+          (functor self ctx)
           (owned self)
           ({
             includes = map (applyStatics ctx) self.includes;
@@ -84,13 +86,13 @@ let
       };
     };
   parametric.__functor =
-    self: arg:
+    _: arg:
     if arg == true then
-      self.atLeast
+      parametric.atLeast
     else if arg == false then
-      self.exactly
+      parametric.exactly
     else if builtins.isAttrs arg then
-      self.withOwn arg
+      parametric.withOwn parametric.atLeast arg
     else
       funk arg;
 

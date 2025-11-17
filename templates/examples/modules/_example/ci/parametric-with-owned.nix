@@ -6,8 +6,12 @@ let
     b = strOpt;
     c = strOpt;
     d = strOpt;
+    e = strOpt;
+    f = strOpt;
   };
   strOpt = lib.mkOption { type = lib.types.str; };
+
+  inherit (den.lib) parametric;
 in
 {
 
@@ -21,12 +25,13 @@ in
   # its owned configs and static (non-functional) includes.
   # Usage: just call `parametric` with an aspect.
   # or alternatively, set `__functor = den.lib.parametric;`
-  den.aspects.fwd._.first = den.lib.parametric {
+  den.aspects.fwd._.first = parametric {
     nixos.fwd.a = "First owned A";
     includes = [
       den.aspects.fwd._.second
       { nixos.fwd.d = "First static includes D"; }
       den.aspects.fwd._.never
+      den.aspects.fwd._.fourth
     ];
   };
 
@@ -34,8 +39,25 @@ in
   # the first aspect forwards whatever context it receives.
   den.aspects.fwd._.second =
     { host, ... }:
-    {
+    parametric.fixedTo { third = "Impact"; } {
       nixos.fwd.b = "Second owned B for ${host.name}";
+      includes = [ den.aspects.fwd._.third ];
+    };
+
+  den.aspects.fwd._.third =
+    { third, ... }:
+    {
+      nixos.fwd.e = "Third ${third}";
+    };
+
+  den.aspects.fwd._.fourth = parametric.expands { planet = "Earth"; } {
+    includes = [ den.aspects.fwd._.fifth ];
+  };
+
+  den.aspects.fwd._.fifth =
+    { host, planet, ... }:
+    {
+      nixos.fwd.f = "Fifth ${planet} ${host.name}";
     };
 
   den.aspects.fwd._.never =
@@ -52,6 +74,8 @@ in
         && rockhopper.config.fwd.b == "Second owned B for rockhopper"
         && rockhopper.config.fwd.c == "host owned C"
         && rockhopper.config.fwd.d == "First static includes D"
+        && rockhopper.config.fwd.e == "Third Impact"
+        && rockhopper.config.fwd.f == "Fifth Earth rockhopper"
       );
     };
 
