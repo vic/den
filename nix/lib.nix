@@ -20,18 +20,17 @@ let
   isFn = f: (builtins.isFunction f) || (f ? __functor);
   canTake = import ./fn-can-take.nix lib;
 
-  # creates an aspect that inherits class from fromAspect.
-  owned =
-    aspect:
-    aspect
-    // {
-      includes = [ ];
-      __functor =
-        self:
-        # deadnix: skip
-        { class, aspect-chain }:
-        self;
-    };
+  empty = {
+    includes = [ ];
+    __functor =
+      self:
+      # deadnix: skip
+      { class, aspect-chain }:
+      self;
+  };
+
+  # an aspect producing only owned configs
+  owned = aspect: aspect // empty;
 
   # only static includes from an aspect.
   statics =
@@ -47,14 +46,14 @@ let
 
   applyStatics =
     ctx: f:
-    if isStatic f then
-      f ctx
-    else if !isFn f then
+    if !isFn f then
       f
+    else if isStatic f && ctx ? class then
+      f ctx
     else
       { };
 
-  isStatic = canTake {
+  isStatic = canTake.atLeast {
     class = "";
     aspect-chain = [ ];
   };
@@ -70,16 +69,30 @@ let
   parametric.exactly = funk (lib.flip take.exactly);
   parametric.fixedTo = lib.flip parametric.atLeast;
   parametric.expands = attrs: funk (ctx: (lib.flip take.atLeast) (ctx // attrs));
+  parametric.withOwn =
+    aspect:
+    aspect
+    // {
+      __functor = self: ctx: {
+        includes = [
+          (parametric.atLeast self ctx)
+          (owned self)
+          ({
+            includes = map (applyStatics ctx) self.includes;
+          })
+        ];
+      };
+    };
   parametric.__functor =
-    self: ctx:
-    if ctx == true then
+    self: arg:
+    if arg == true then
       self.atLeast
-    else if ctx == false then
+    else if arg == false then
       self.exactly
-    else if isFn ctx then
-      funk ctx
+    else if builtins.isAttrs arg then
+      self.withOwn arg
     else
-      self.fixedTo ctx;
+      funk arg;
 
   aspects = inputs.flake-aspects.lib lib;
 
