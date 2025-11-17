@@ -86,15 +86,7 @@ let
       };
     };
   parametric.__functor =
-    _: arg:
-    if arg == true then
-      parametric.atLeast
-    else if arg == false then
-      parametric.exactly
-    else if builtins.isAttrs arg then
-      parametric.withOwn parametric.atLeast arg
-    else
-      funk arg;
+    _: parametric.withOwn parametric.atLeast;
 
   aspects = inputs.flake-aspects.lib lib;
 
