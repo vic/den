@@ -8,6 +8,9 @@ let
     d = strOpt;
     e = strOpt;
     f = strOpt;
+    # unlike strings, pkgs cannot be duplicated, we use this to
+    # ensure no-dups are created from parametric owned modules.
+    pkg = lib.mkOption { type = lib.types.package; };
   };
   strOpt = lib.mkOption { type = lib.types.str; };
 
@@ -24,7 +27,12 @@ in
   # this aspect will take any context and also forward it
   # into any includes function that can take same context.
   den.aspects.fwd._.first = parametric {
-    nixos.fwd.a = "First owned A";
+    nixos =
+      { pkgs, ... }:
+      {
+        fwd.a = "First owned A";
+        fwd.pkg = pkgs.hello;
+      };
     includes = [
       den.aspects.fwd._.second
       { nixos.fwd.d = "First static includes D"; }
@@ -67,14 +75,15 @@ in
   perSystem =
     { checkCond, rockhopper, ... }:
     {
-      checks.parametric-fwd = checkCond "forwarding ctx with owned" (
-        rockhopper.config.fwd.a == "First owned A"
-        && rockhopper.config.fwd.b == "Second owned B for rockhopper"
-        && rockhopper.config.fwd.c == "host owned C"
-        && rockhopper.config.fwd.d == "First static includes D"
-        && rockhopper.config.fwd.e == "Third Impact"
-        && rockhopper.config.fwd.f == "Fifth Earth rockhopper"
+      checks.parametric-fwd-a = checkCond "fwd-a" (rockhopper.config.fwd.a == "First owned A");
+      checks.parametric-fwd-b = checkCond "fwd-b" (
+        rockhopper.config.fwd.b == "Second owned B for rockhopper"
       );
+      checks.parametric-fwd-c = checkCond "fwd-c" (rockhopper.config.fwd.c == "host owned C");
+      checks.parametric-fwd-d = checkCond "fwd-d" (rockhopper.config.fwd.d == "First static includes D");
+      checks.parametric-fwd-e = checkCond "fwd-e" (rockhopper.config.fwd.e == "Third Impact");
+      checks.parametric-fwd-f = checkCond "fwd-f" (rockhopper.config.fwd.f == "Fifth Earth rockhopper");
+      checks.parametric-fwd-pkg = checkCond "fwd-pkg" (lib.getName rockhopper.config.fwd.pkg == "hello");
     };
 
 }
