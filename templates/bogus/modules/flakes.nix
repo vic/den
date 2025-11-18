@@ -7,27 +7,21 @@
 # IF you make any change to this file, use:
 #   `nix run .#write-flake`
 #
-# We provide nix-unit and home-manager for common
-# usage.
+# We provide nix-darwin and home-manager for common usage.
 { inputs, ... }:
 {
   # change "main" with a commit where bug is present
   flake-file.inputs.den.url = "github:vic/den/main";
 
-  flake-file.inputs.nix-unit = {
-    url = "github:nix-community/nix-unit";
-    inputs.nixpkgs.follows = "nixpkgs";
-    inputs.flake-parts.follows = "flake-parts";
-    inputs.treefmt-nix.follows = "treefmt-nix";
-  };
-
+  # included so we can test HM integrations.
   flake-file.inputs.home-manager = {
     url = "github:nix-community/home-manager";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  imports = [
-    inputs.nix-unit.modules.flake.default
-  ];
-
+  # included for testing darwin hosts.
+  darwin = {
+    url = "github:nix-darwin/nix-darwin";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
 }
