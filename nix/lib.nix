@@ -20,17 +20,11 @@ let
   isFn = f: (builtins.isFunction f) || (f ? __functor);
   canTake = import ./fn-can-take.nix lib;
 
-  empty = {
-    includes = [ ];
-    __functor =
-      self:
-      # deadnix: skip
-      { class, aspect-chain }:
-      self;
-  };
-
   # an aspect producing only owned configs
-  owned = aspect: aspect // empty;
+  owned = (lib.flip builtins.removeAttrs) [
+    "includes"
+    "__functor"
+  ];
 
   # only static includes from an aspect.
   statics =
@@ -57,6 +51,10 @@ let
     class = "";
     aspect-chain = [ ];
   };
+  isCtxStatic = (lib.flip canTake.exactly) (
+    # deadnix: skip
+    { class, aspect-chain }: true
+  );
 
   take.unused = _unused: used: used;
   take.exactly = take canTake.exactly;
@@ -67,10 +65,18 @@ let
 
   parametric.atLeast = funk (lib.flip take.atLeast);
   parametric.exactly = funk (lib.flip take.exactly);
-  parametric.fixedTo = lib.flip (parametric.withOwn parametric.atLeast);
   parametric.expands =
     attrs: aspect: ctx:
     parametric.fixedTo (ctx // attrs) aspect;
+  parametric.fixedTo =
+    ctx: aspect:
+    { class, aspect-chain }:
+    {
+      includes = [
+        (parametric.atLeast aspect ctx)
+        (parametricStatics aspect { inherit class aspect-chain; })
+      ];
+    };
   parametric.withOwn =
     functor: aspect:
     aspect
@@ -78,14 +84,20 @@ let
       __functor = self: ctx: {
         includes = [
           (functor self ctx)
-          (owned self)
-          ({
-            includes = map (applyStatics ctx) self.includes;
-          })
+          (parametricStatics self ctx)
         ];
       };
     };
   parametric.__functor = _: parametric.withOwn parametric.atLeast;
+
+  parametricStatics = self: ctx: {
+    includes = lib.optionals (isCtxStatic ctx) [
+      (owned self)
+      {
+        includes = map (applyStatics ctx) self.includes;
+      }
+    ];
+  };
 
   aspects = inputs.flake-aspects.lib lib;
 
