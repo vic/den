@@ -8,7 +8,6 @@
 #   `nix run .#write-flake`
 #
 # We provide nix-darwin and home-manager for common usage.
-{ inputs, ... }:
 {
   # change "main" with a commit where bug is present
   flake-file.inputs.den.url = "github:vic/den/main";
