@@ -42,7 +42,7 @@ let
     ctx: f:
     if !isFn f then
       f
-    else if isStatic f && ctx ? class then
+    else if isStatic f && isCtxStatic ctx then
       f ctx
     else
       { };
