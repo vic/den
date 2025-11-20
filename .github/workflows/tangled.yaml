@@ -1,0 +1,11 @@
+on:
+  workflow_dispatch:
+  push:
+concurrency:
+  group: tangled
+  cancel-in-progress: true
+jobs:
+  tangled:
+    uses: vic/vic/.github/workflows/tangled.yml@main
+    secrets:
+      TANGLED_SSH_KEY: ${{secrets.TANGLED_SSH_KEY}}
