@@ -5,6 +5,14 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
   inputs = {
+    darwin = {
+      inputs = {
+        nixpkgs = {
+          follows = "nixpkgs";
+        };
+      };
+      url = "github:nix-darwin/nix-darwin";
+    };
     den = {
       url = "github:vic/den/main";
     };
@@ -48,9 +56,6 @@
         };
         nixpkgs = {
           follows = "nixpkgs";
-        };
-        treefmt-nix = {
-          follows = "treefmt-nix";
         };
       };
       url = "github:nix-community/nix-unit";

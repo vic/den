@@ -6,7 +6,6 @@
     url = "github:nix-community/nix-unit";
     inputs.nixpkgs.follows = "nixpkgs";
     inputs.flake-parts.follows = "flake-parts";
-    inputs.treefmt-nix.follows = "treefmt-nix";
   };
 
   imports = [
