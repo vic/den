@@ -75,8 +75,6 @@ let
         (statics den.default)
         (owned HM)
         (statics HM)
-        (owned OS)
-        (statics OS)
         (parametric.fixedTo context OS)
       ];
     };

@@ -17,7 +17,7 @@ let
       };
     };
 
-  isFn = f: (builtins.isFunction f) || (f ? __functor);
+  isFn = f: (builtins.isFunction f) || (builtins.isAttrs f && f ? __functor);
   canTake = import ./fn-can-take.nix lib;
 
   # an aspect producing only owned configs
@@ -33,9 +33,10 @@ let
     // {
       __functor =
         self:
-        # deadnix: skip
-        { class, aspect-chain }@ctx:
-        funk applyStatics self ctx;
+        { class, aspect-chain }:
+        {
+          includes = map (applyStatics { inherit class aspect-chain; }) self.includes;
+        };
     };
 
   applyStatics =
@@ -51,10 +52,7 @@ let
     class = "";
     aspect-chain = [ ];
   };
-  isCtxStatic = (lib.flip canTake.exactly) (
-    # deadnix: skip
-    { class, aspect-chain }: true
-  );
+  isCtxStatic = (lib.flip canTake.exactly) ({ class, aspect-chain }: class aspect-chain);
 
   take.unused = _unused: used: used;
   take.exactly = take canTake.exactly;
@@ -66,38 +64,38 @@ let
   parametric.atLeast = funk (lib.flip take.atLeast);
   parametric.exactly = funk (lib.flip take.exactly);
   parametric.expands =
-    attrs: aspect: ctx:
-    parametric.fixedTo (ctx // attrs) aspect;
+    attrs: parametric.withOwn (aspect: ctx: parametric.atLeast aspect (ctx // attrs));
   parametric.fixedTo =
-    ctx: aspect:
-    { class, aspect-chain }:
-    {
-      includes = [
-        (parametric.atLeast aspect ctx)
-        (parametricStatics aspect { inherit class aspect-chain; })
-      ];
+    attrs: aspect:
+    aspect
+    // {
+      __functor =
+        self:
+        { class, aspect-chain }:
+        {
+          includes = [
+            (owned self)
+            (statics self { inherit class aspect-chain; })
+            (parametric.atLeast self attrs)
+          ];
+        };
     };
   parametric.withOwn =
     functor: aspect:
     aspect
     // {
       __functor = self: ctx: {
-        includes = [
-          (functor self ctx)
-          (parametricStatics self ctx)
-        ];
+        includes =
+          if isCtxStatic ctx then
+            [
+              (owned self)
+              (statics self ctx)
+            ]
+          else
+            [ (functor self ctx) ];
       };
     };
   parametric.__functor = _: parametric.withOwn parametric.atLeast;
-
-  parametricStatics = self: ctx: {
-    includes = lib.optionals (isCtxStatic ctx) [
-      (owned self)
-      {
-        includes = map (applyStatics ctx) self.includes;
-      }
-    ];
-  };
 
   aspects = inputs.flake-aspects.lib lib;
 
