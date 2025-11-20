@@ -47,9 +47,7 @@
 
 - Concepts [documented](https://vic.github.io/den).
 
-Need more batteries? See [vic/denful](https://github.com/vic/denful).
-
-For real-world examples, see [`vic/vix`](https://github.com/vic/vix/tree/den) or this [GH search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
+Need more __batteries__? See [vic/denful](https://github.com/vic/denful).
 
 **❄️ Try it now!**
 
@@ -67,7 +65,18 @@ nix flake update den
 nix run .#vm
 ```
 
-Our [default template](templates/default) provides an annotated quick-start.
+**Real-world examples for inspiration**
+
+- [`vic/vix`](https://github.com/vic/vix/tree/den)
+- [`belsanti.xyz/nixconfig`](https://tangled.org/belsanti.xyz/nixconfig/tree/den)
+- [GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
+
+**Available templates**
+
+- [`default`](templates/default) batteries-included layout.
+- [`minimal`](templates/minimal) truly minimalistic start.
+- [`examples`](templates/examples) tests for all features.
+- [`bogus`](templates/bogus) reproduce and report bugs.
 
 </div>
 </td>
@@ -82,7 +91,7 @@ See schema in [`_types.nix`](modules/_types.nix).
 {
   # same home-manager vic configuration
   # over laptop, macbook and standalone-hm
-  den.hosts.x86-64-linux.lap.users.vic = {};
+  den.hosts.x86_64-linux.lap.users.vic = {};
   den.hosts.aarch64-darwin.mac.users.vic = {};
   den.homes.aarch64-darwin.vic = {};
 }
