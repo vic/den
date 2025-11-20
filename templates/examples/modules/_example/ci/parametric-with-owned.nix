@@ -44,7 +44,7 @@ in
     homeManager =
       { pkgs, ... }:
       {
-        fwd.pkg = builtins.break pkgs.vim;
+        fwd.pkg = pkgs.vim;
       };
     includes = [
       den.aspects.fwd._.second
