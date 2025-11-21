@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, den, ... }:
 {
   den.provides.unfree.description = ''
     A class generic aspect that enables unfree packages by name.
@@ -14,9 +14,8 @@
 
   den.provides.unfree.__functor =
     _self: allowed-names:
-    # deadnix: allow
     { class, aspect-chain }:
-    {
+    den.lib.take.unused aspect-chain {
       ${class}.nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) allowed-names;
     };
 }

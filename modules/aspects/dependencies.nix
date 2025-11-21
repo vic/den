@@ -1,6 +1,5 @@
 {
   den,
-  lib,
   ...
 }:
 let
@@ -81,7 +80,7 @@ let
 
   hmStandaloneDependencies =
     { HM, home }:
-    {
+    den.lib.take.unused home {
       includes = [
         (owned den.default)
         (statics den.default)
