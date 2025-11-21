@@ -61,10 +61,9 @@
 
   den._.import-tree.__functor =
     _: root:
-    # deadnix: skip
     { class, aspect-chain }:
     let
-      path = "${toString root}/_${class}";
+      path = den.lib.take.unused aspect-chain "${toString root}/_${class}";
       aspect.${class}.imports = [ (inputs.import-tree path) ];
     in
     if builtins.pathExists path then aspect else { };

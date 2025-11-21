@@ -47,7 +47,7 @@
 
 - Concepts [documented](https://vic.github.io/den).
 
-Need more __batteries__? See [vic/denful](https://github.com/vic/denful).
+Need more **batteries**? See [vic/denful](https://github.com/vic/denful).
 
 **❄️ Try it now!**
 
@@ -130,19 +130,19 @@ Any module can contribute configurations to aspects.
     # modules in a single file:
 
     # any NixOS configuration
-    nixos  = { 
+    nixos  = {
       # A nixos class module, see NixOS options.
       # import third-party NixOS modules
-      imports = [ 
+      imports = [
         inputs.disko.nixosModules.disko
       ];
       disko.devices = { /* ... */ };
     };
     # any nix-darwin configuration
-    darwin = { 
+    darwin = {
       # import third-party Darwin modules
-      imports = [ 
-        inputs.nix-homebrew.darwinModules.nix-homebrew 
+      imports = [
+        inputs.nix-homebrew.darwinModules.nix-homebrew
       ];
       nix-homebrew.enableRosetta = true;
     };
@@ -160,9 +160,9 @@ Any module can contribute configurations to aspects.
     nixos.users.users = {
       vic.description = "oeiuwq";
     };
-    includes = [ 
-      den.aspects.tiling-wm 
-      den._.primary-user 
+    includes = [
+      den.aspects.tiling-wm
+      den._.primary-user
     ];
   };
 }
@@ -174,7 +174,7 @@ Any module can contribute configurations to aspects.
 
 You are done! You know everything to start creating configurations with `den`.
 
-Feel free to to __explore__ the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/examples/modules/_example/ci).
+Feel free to to **explore** the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/examples/modules/_example/ci).
 
 ## Learn more at our [documentation website](https://vic.github.io/den)
 

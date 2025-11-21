@@ -7,7 +7,7 @@
 #
 # For our template, we enable home-manager and nix-darwin by default, but
 # you are free to remove them if not being used by you.
-{ inputs, ... }:
+{ ... }:
 {
 
   flake-file.inputs = {

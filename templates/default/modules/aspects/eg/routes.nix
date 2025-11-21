@@ -13,7 +13,7 @@
 # Be sure to read: https://vic.github.io/den/dependencies.html
 # See usage at: defaults.nix, alice.nix, igloo.nix
 #
-{ den, eg, ... }:
+{ den, ... }:
 {
   # Usage: `den.default.includes [ eg.routes ]`
   eg.routes =

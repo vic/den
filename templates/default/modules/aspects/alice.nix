@@ -8,8 +8,9 @@
     # as part of any aspect-subtree.
     includes =
       let
-        # deadnix: skip # not required, showcasing angle-brackets syntax.
-        inherit (den.lib) __findFile;
+        # hack for nixf linter to keep findFile :/
+        unused = den.lib.take.unused __findFile;
+        __findFile = unused den.lib.__findFile;
 
         customEmacs.homeManager =
           { pkgs, ... }:

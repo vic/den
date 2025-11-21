@@ -23,7 +23,8 @@ let
       aspectsPath = [
         "den"
         "aspects"
-      ] ++ path;
+      ]
+      ++ path;
       readFromAspects = lib.getAttrFromPath aspectsPath config;
 
       headIsDenful = lib.hasAttrByPath [ "ful" head ] config.den;
@@ -32,7 +33,8 @@ let
         "den"
         "ful"
         head
-      ] ++ denfulTail;
+      ]
+      ++ denfulTail;
       readFromDenful = lib.getAttrFromPath denfulPath config;
 
       found =
@@ -51,5 +53,5 @@ in
 lib.pipe name [
   (lib.strings.replaceStrings [ "/" ] [ ".provides." ])
   (lib.strings.splitString ".")
-  (findAspect)
+  findAspect
 ]
