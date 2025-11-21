@@ -1,0 +1,12 @@
+when:
+  - event: ["push"]
+    branch: ["*"]
+engine: "nixery"
+clone:
+  skip: true
+dependencies:
+  nixpkgs:
+    - gh
+steps:
+  - name: mirror
+    command: gh -R vic/vic issue comment 3 -b den
