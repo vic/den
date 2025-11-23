@@ -1,29 +1,36 @@
-name: input:
+name: sources:
 { config, lib, ... }:
 let
-  isLocal = !builtins.isAttrs input;
-  isOutput = isLocal && input == true;
+  from = lib.flatten [ sources ];
+  isOutput = builtins.any (x: x == true) from;
+  denfuls = map (lib.getAttrFromPath [
+    "denful"
+    name
+  ]) (builtins.filter builtins.isAttrs from);
+
+  sourceModule = {
+    config.den.ful.${name} = lib.mkMerge denfuls;
+  };
 
   aliasModule = lib.mkAliasOptionModule [ name ] [ "den" "ful" name ];
 
   type = lib.types.attrsOf config.den.lib.aspects.types.providerType;
 
-  source = if isLocal then { } else input.denful.${name};
-  output =
+  outputModule =
     if isOutput then
       {
         config.flake.denful.${name} = config.den.ful.${name};
-        options.flake.denful.${name} = lib.mkOption { inherit type; };
+        options.flake.denful.${name} = lib.mkOption { type = lib.types.raw; };
       }
     else
       { };
 in
 {
   imports = [
+    sourceModule
     aliasModule
-    output
+    outputModule
   ];
   config._module.args.${name} = config.den.ful.${name};
-  config.den.ful.${name} = source;
   options.den.ful.${name} = lib.mkOption { inherit type; };
 }

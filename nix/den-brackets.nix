@@ -28,7 +28,8 @@ let
       readFromAspects = lib.getAttrFromPath aspectsPath config;
 
       headIsDenful = lib.hasAttrByPath [ "ful" head ] config.den;
-      denfulTail = if lib.head tail == "provides" then lib.tail tail else tail;
+      denfulTail =
+        if builtins.length tail > 0 && lib.head tail == "provides" then lib.tail tail else tail;
       denfulPath = [
         "den"
         "ful"

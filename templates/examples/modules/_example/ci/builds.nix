@@ -22,6 +22,6 @@
       };
     in
     {
-      checks = checks.${pkgs.system} or { };
+      checks = checks.${pkgs.stdenv.hostPlatform.system} or { };
     };
 }
