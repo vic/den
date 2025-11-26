@@ -26,8 +26,8 @@ in
     (
       let
         # NOTE: here we simulate inputA and inputB are flakes.
-        inputA.denful.sim.ul._.a._.tion.nixos.sims = [ "from inputA" ];
-        inputB.denful.sim.ul._.a._.tion.nixos.sims = [ "from inputB" ];
+        inputA.denful.sim.ul._.a._.tion.nixos.sims = [ "inputA simulation" ];
+        inputB.denful.sim.ul._.a._.tion.nixos.sims = [ "inputB simulation" ];
         exposeToFlake = true;
       in
       inputs.den.namespace "sim" [
@@ -40,11 +40,11 @@ in
 
   # define nested aspects in local namespace
   eg.foo.provides.bar.provides.baz = {
-    nixos.sims = [ "local <eg/foo/bar/baz>" ];
+    nixos.sims = [ "local namespace" ];
   };
 
   # augment aspects on a mounted namespace
-  sim.ul._.a._.tion.nixos.sims = [ "augmented <sim/ul/a/tion>" ];
+  sim.ul._.a._.tion.nixos.sims = [ "local simulation" ];
 
   den.aspects.rockhopper.includes = [
     simsModule
@@ -67,10 +67,10 @@ in
       checks.namespace-sim-merged = checkCond "merges from all sources" (
         let
           expected = [
-            "augmented <sim/ul/a/tion>"
-            "from inputA"
-            "from inputB"
-            "local <eg/foo/bar/baz>"
+            "inputA simulation"
+            "inputB simulation"
+            "local namespace"
+            "local simulation"
           ];
           actual = lib.sort (a: b: a < b) rockhopper.config.sims;
         in

@@ -14,13 +14,10 @@ let
 
   aliasModule = lib.mkAliasOptionModule [ name ] [ "den" "ful" name ];
 
-  type = lib.types.attrsOf config.den.lib.aspects.types.providerType;
-
   outputModule =
     if isOutput then
       {
         config.flake.denful.${name} = config.den.ful.${name};
-        options.flake.denful.${name} = lib.mkOption { type = lib.types.raw; };
       }
     else
       { };
@@ -32,5 +29,4 @@ in
     outputModule
   ];
   config._module.args.${name} = config.den.ful.${name};
-  options.den.ful.${name} = lib.mkOption { inherit type; };
 }
