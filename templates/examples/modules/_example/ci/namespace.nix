@@ -17,6 +17,17 @@ in
   # enable <angle/bracket> syntax for finding aspects.
   _module.args.__findFile = den.lib.__findFile;
 
+  # example "external" flake to import some aspects from.
+  flake-file.inputs.theirs = {
+    url = "path:./modules/_example/ci/_theirs";
+    inputs.nixpkgs.follows = "nixpkgs";
+    inputs.flake-parts.follows = "flake-parts";
+    inputs.import-tree.follows = "import-tree";
+    inputs.flake-aspects.follows = "flake-aspects";
+    inputs.den.follows = "den";
+  };
+
+
   imports = [
     # create a local namespace and output at flake.denful.eg
     (inputs.den.namespace "eg" true)
@@ -34,6 +45,7 @@ in
         inputA
         inputB
         exposeToFlake
+        inputs.theirs
       ]
     )
   ];
@@ -74,7 +86,7 @@ in
           ];
           actual = lib.sort (a: b: a < b) rockhopper.config.sims;
         in
-        expected == actual
+        expected == (builtins.trace actual actual)
       );
 
     };

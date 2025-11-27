@@ -210,7 +210,8 @@
           "nixpkgs"
         ],
         "nixpkgs-stable": "nixpkgs-stable",
-        "systems": "systems"
+        "systems": "systems",
+        "theirs": "theirs"
       }
     },
     "systems": {
@@ -227,6 +228,34 @@
         "repo": "default",
         "type": "github"
       }
+    },
+    "theirs": {
+      "inputs": {
+        "den": [
+          "den"
+        ],
+        "flake-aspects": [
+          "flake-aspects"
+        ],
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "import-tree": [
+          "import-tree"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./modules/_example/ci/_theirs",
+        "type": "path"
+      },
+      "original": {
+        "path": "./modules/_example/ci/_theirs",
+        "type": "path"
+      },
+      "parent": []
     }
   },
   "root": "root",
