@@ -22,11 +22,11 @@
     },
     "den": {
       "locked": {
-        "lastModified": 1763707606,
-        "narHash": "sha256-l9v3NNdKj3GJvV5LhzsWDs4Sl2bg0tuKNFFkMeFvUWo=",
+        "lastModified": 1766081768,
+        "narHash": "sha256-8Ea1DW3YZHifezfdEFHWEIpZBNKvEL+3iFOEcl3eFBU=",
         "owner": "vic",
         "repo": "den",
-        "rev": "8164e0d89c59839d67757bc9a1fb61770dc6e8b7",
+        "rev": "7271da18c60ab4d7c275ecaab480d29729f05d17",
         "type": "github"
       },
       "original": {
@@ -251,7 +251,8 @@
           "nixpkgs"
         ],
         "nixpkgs-stable": "nixpkgs-stable",
-        "systems": "systems"
+        "systems": "systems",
+        "theirs": "theirs"
       }
     },
     "systems": {
@@ -268,6 +269,34 @@
         "repo": "default",
         "type": "github"
       }
+    },
+    "theirs": {
+      "inputs": {
+        "den": [
+          "den"
+        ],
+        "flake-aspects": [
+          "flake-aspects"
+        ],
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "import-tree": [
+          "import-tree"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./modules/_example/ci/_theirs",
+        "type": "path"
+      },
+      "original": {
+        "path": "./modules/_example/ci/_theirs",
+        "type": "path"
+      },
+      "parent": []
     }
   },
   "root": "root",

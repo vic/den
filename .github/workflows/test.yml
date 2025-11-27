@@ -44,4 +44,4 @@ jobs:
       - run: nix flake update den
       - run: nix run .#write-flake
       - run: nix flake metadata
-      - run: nix flake check
+      - run: nix flake check -L

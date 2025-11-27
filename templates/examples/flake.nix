@@ -43,6 +43,16 @@
     nixpkgs-lib.follows = "nixpkgs";
     nixpkgs-stable.url = "github:nixos/nixpkgs/release-25.05";
     systems.url = "github:nix-systems/default";
+    theirs = {
+      inputs = {
+        den.follows = "den";
+        flake-aspects.follows = "flake-aspects";
+        flake-parts.follows = "flake-parts";
+        import-tree.follows = "import-tree";
+        nixpkgs.follows = "nixpkgs";
+      };
+      url = "path:./modules/_example/ci/_theirs";
+    };
   };
 
 }
