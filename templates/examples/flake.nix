@@ -25,6 +25,13 @@
       url = "github:nix-community/home-manager/release-25.05";
     };
     import-tree.url = "github:vic/import-tree";
+    neovim-nightly-overlay = {
+      inputs = {
+        flake-parts.follows = "flake-parts";
+        nixpkgs.follows = "nixpkgs";
+      };
+      url = "github:nix-community/neovim-nightly-overlay";
+    };
     nixos-wsl = {
       inputs = {
         flake-compat.follows = "";
