@@ -3,18 +3,26 @@
   den.provides.inputs' = den.lib.parametric {
     description = ''
       Provides the `flake-parts` `inputs'` (the flake's `inputs` with system pre-selected)
-      as a top-level module argument. This allows modules to access per-system
-      flake outputs without needing `pkgs.stdenv.hostPlatform.system`.
+      as a top-level module argument.
+
+      This allows modules to access per-system flake outputs without needing
+      `pkgs.stdenv.hostPlatform.system`.
 
       ## Usage
 
-          # makes inputs' available to modules in my-aspect
-          den.aspects.my-aspect.includes = [ den._.inputs' ];
+      **Global (Recommended):**
+      Apply to all hosts, users, and homes.
 
-          # module implementation
-          { inputs', ... }: {
-            # use inputs' as needed
-          }
+          den.default.includes = [ den._.inputs' ];
+
+      **Specific:**
+      Apply only to a specific host, user, or home aspect.
+
+          den.aspects.my-laptop.includes = [ den._.inputs' ];
+          den.aspects.alice.includes = [ den._.inputs' ];
+
+      **Note:** If specified in a user aspect (e.g., `alice`) that is integrated into a host (not standalone),
+      `inputs'` will be available to **both** the user's Home Manager configuration and the **Host's** configuration.
     '';
 
     includes = [
