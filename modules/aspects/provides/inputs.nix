@@ -1,6 +1,6 @@
 { den, withSystem, ... }:
 {
-  den.provides.inputs' = den.lib.parametric {
+  den.provides.inputs' = den.lib.parametric.exactly {
     description = ''
       Provides the `flake-parts` `inputs'` (the flake's `inputs` with system pre-selected)
       as a top-level module argument.
@@ -21,29 +21,55 @@
           den.aspects.my-laptop.includes = [ den._.inputs' ];
           den.aspects.alice.includes = [ den._.inputs' ];
 
-      **Note:** If specified in a user aspect (e.g., `alice`) that is integrated into a host (not standalone),
-      `inputs'` will be available to **both** the user's Home Manager configuration and the **Host's** configuration.
+      **Note:** This aspect is contextual. When included in a `host` aspect, it
+      configures `inputs'` for the host's OS. When included in a `user` or `home`
+      aspect, it configures `inputs'` for the corresponding Home Manager configuration.
     '';
 
     includes = [
       (
-        { host, user, ... }:
-        (withSystem host.system (
+        { OS, host }:
+        let
+          unused = den.lib.take.unused OS;
+        in
+        withSystem host.system (
           { inputs', ... }:
           {
-            ${host.class}._module.args.inputs' = inputs';
-            ${user.class or null}._module.args.inputs' = inputs';
+            ${host.class}._module.args.inputs' = unused inputs';
           }
-        ))
+        )
       )
       (
-        { home, ... }:
-        (withSystem home.system (
+        {
+          OS,
+          HM,
+          user,
+          host,
+        }:
+        let
+          unused = den.lib.take.unused [
+            OS
+            HM
+          ];
+        in
+        withSystem host.system (
           { inputs', ... }:
           {
-            ${home.class}._module.args.inputs' = inputs';
+            ${user.class}._module.args.inputs' = unused inputs';
           }
-        ))
+        )
+      )
+      (
+        { HM, home }:
+        let
+          unused = den.lib.take.unused HM;
+        in
+        withSystem home.system (
+          { inputs', ... }:
+          {
+            ${home.class}._module.args.inputs' = unused inputs';
+          }
+        )
       )
     ];
   };
