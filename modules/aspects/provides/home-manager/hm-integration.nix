@@ -26,25 +26,28 @@ let
   '';
 
   homeManager =
-    { OS, host }:
-    { class, aspect-chain }:
+    { HM-OS-HOST }:
     let
+      inherit (HM-OS-HOST) OS host;
+
       hmClass = "homeManager";
       hmUsers = builtins.filter (u: u.class == hmClass) (lib.attrValues host.users);
 
       hmUserModule =
         user:
         let
-          ctx = {
-            inherit aspect-chain;
-            class = hmClass;
-          };
           HM = den.aspects.${user.aspect};
           aspect = HM {
-            inherit host user;
-            OS-HM = { inherit OS HM; };
+            HM-OS-USER = {
+              inherit
+                OS
+                HM
+                host
+                user
+                ;
+            };
           };
-          module = aspect.resolve ctx;
+          module = aspect.resolve { class = hmClass; };
         in
         module;
 
@@ -53,19 +56,14 @@ let
         value.imports = [ (hmUserModule user) ];
       }) hmUsers;
 
-      hmModule = host.hm-module or inputs.home-manager."${class}Modules".home-manager;
-      aspect.${class} = {
+      hmModule = host.hm-module or inputs.home-manager."${host.class}Modules".home-manager;
+      aspect.${host.class} = {
         imports = [ hmModule ];
         home-manager.users = lib.listToAttrs users;
       };
 
-      supportedOS = builtins.elem class [
-        "nixos"
-        "darwin"
-      ];
-      enabled = supportedOS && builtins.length hmUsers > 0;
     in
-    if enabled then aspect else { };
+    aspect;
 
 in
 {
