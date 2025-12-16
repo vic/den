@@ -6,15 +6,11 @@ let
   inherit (den.lib)
     owned
     statics
-    parametric
+    take
     ;
 
-  inherit (den.lib.take) exactly;
-
   dependencies = [
-    (exactly osDependencies)
-    (exactly hmUserDependencies)
-    (exactly hmStandaloneDependencies)
+    (take.exactly osDependencies)
   ];
 
   osDependencies =
@@ -47,45 +43,6 @@ let
         (owned USR)
         (statics USR)
         (USR { inherit OS host user; })
-      ];
-    };
-
-  # from OS home-managed integration.
-  hmUserDependencies =
-    {
-      OS-HM,
-      host,
-      user,
-    }:
-    let
-      inherit (OS-HM) OS HM;
-      context = {
-        inherit
-          OS
-          HM
-          user
-          host
-          ;
-      };
-    in
-    {
-      includes = [
-        (owned den.default)
-        (statics den.default)
-        (owned HM)
-        (statics HM)
-        (parametric.fixedTo context OS)
-      ];
-    };
-
-  hmStandaloneDependencies =
-    { HM, home }:
-    den.lib.take.unused home {
-      includes = [
-        (owned den.default)
-        (statics den.default)
-        (owned HM)
-        (statics HM)
       ];
     };
 

@@ -22,8 +22,11 @@ in
       homeManager.imports = [ (topLevel host.name) ];
     };
 
-  den.aspects.alice.includes = [
+  den.aspects.rockhopper.includes = [
     den.aspects.toplevel-host
+  ];
+
+  den.aspects.alice.includes = [
     den.aspects.toplevel-user
   ];
 
