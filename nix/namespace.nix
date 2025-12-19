@@ -4,16 +4,19 @@ let
   from = lib.flatten [ sources ];
   isOutput = builtins.any (x: x == true) from;
   attrs = builtins.filter builtins.isAttrs from;
-  
+
   # Strip module system metadata to get clean raw values
-  stripMeta = value:
+  stripMeta =
+    value:
     if builtins.isFunction value then
       # drop functions - they represent parametric/aspect functors that
       # cause re-evaluation and duplication when merged as raw values
       { }
     else if builtins.isList value then
-      let cleanedList = map stripMeta value;
-      in builtins.filter (x: x != { }) cleanedList
+      let
+        cleanedList = map stripMeta value;
+      in
+      builtins.filter (x: x != { }) cleanedList
     else if builtins.isAttrs value then
       let
         # Remove module system special attributes that should not be merged
@@ -30,12 +33,13 @@ let
           "description"
         ];
       in
-      lib.mapAttrs (k: v: stripMeta v) cleaned
+      lib.mapAttrs (_k: v: stripMeta v) cleaned
     else
       value;
-  
+
   # Deep merge that concatenates lists instead of overwriting them
-  deepMergeWith = lhs: rhs:
+  deepMergeWith =
+    lhs: rhs:
     if builtins.isList lhs && builtins.isList rhs then
       let
         appendUnique = l: r: l ++ builtins.filter (x: !(builtins.any (y: y == x) l)) r;
@@ -44,52 +48,58 @@ let
     else if builtins.isAttrs lhs && builtins.isAttrs rhs then
       let
         allKeys = lib.unique (builtins.attrNames lhs ++ builtins.attrNames rhs);
-        mergedAttrs = builtins.listToAttrs (map (k: {
-            name = k; value =
+        mergedAttrs = builtins.listToAttrs (
+          map (k: {
+            name = k;
+            value =
               if lhs ? k && rhs ? k then
                 deepMergeWith lhs.${k} rhs.${k}
               else if lhs ? k then
                 lhs.${k}
               else
                 rhs.${k};
-          }) allKeys);
+          }) allKeys
+        );
       in
       mergedAttrs
     else
       rhs;
-  
+
   # Extract denful values, strip metadata, and merge them deeply before passing to module system
-  tracedSources = map (srcItem:
-    let src = lib.getAttrFromPath [ "denful" name ] srcItem;
-    in stripMeta src
+  tracedSources = map (
+    srcItem:
+    let
+      src = lib.getAttrFromPath [ "denful" name ] srcItem;
+    in
+    stripMeta src
   ) attrs;
 
-  deepMerge = builtins.foldl' (acc: x:
-    deepMergeWith acc x
-  ) { } tracedSources;
+  deepMerge = builtins.foldl' (acc: x: deepMergeWith acc x) { } tracedSources;
 
   # Normalize lists in the merged result to remove duplicates while preserving order
-  normalize = v:
+  normalize =
+    v:
     if builtins.isList v then
       let
-        dedup = list:
+        dedup =
+          list:
           let
-            helper = acc: rem:
-              if rem == [] then acc
+            helper =
+              acc: rem:
+              if rem == [ ] then
+                acc
               else
-                let h = builtins.head rem;
-                    t = builtins.tail rem;
+                let
+                  h = builtins.head rem;
+                  t = builtins.tail rem;
                 in
-                if builtins.any (x: x == h) acc then
-                  helper acc t
-                else
-                  helper (acc ++ [ h ]) t;
+                if builtins.any (x: x == h) acc then helper acc t else helper (acc ++ [ h ]) t;
           in
-          helper [] list;
+          helper [ ] list;
       in
       dedup v
     else if builtins.isAttrs v then
-      lib.mapAttrs (n: x: normalize x) v
+      lib.mapAttrs (_n: x: normalize x) v
     else
       v;
 
