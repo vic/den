@@ -9,7 +9,7 @@
   den.base.host =
     { host, ... }:
     {
-      options.capabilities.ssh-server = lib.mkEnableOption "Does host ${host.name} provides ssh?";
+      options.capabilities.ssh-server = lib.mkEnableOption "Does host ${host.name} provide ssh?";
     };
 
   # This module is base for all user configs.
