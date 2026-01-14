@@ -1,6 +1,12 @@
 { den, withSystem, ... }:
+let
+  inherit (den.lib)
+    parametric
+    take
+    ;
+in
 {
-  den.provides.inputs' = den.lib.parametric.exactly {
+  den.provides.inputs' = parametric.exactly {
     description = ''
       Provides the `flake-parts` `inputs'` (the flake's `inputs` with system pre-selected)
       as a top-level module argument.
@@ -30,12 +36,12 @@
       (
         { OS, host }:
         let
-          unused = den.lib.take.unused OS;
+          unused = take.unused OS;
         in
         withSystem host.system (
           { inputs', ... }:
-          {
-            ${host.class}._module.args.inputs' = unused inputs';
+          unused {
+            ${host.class}._module.args.inputs' = inputs';
           }
         )
       )
@@ -47,27 +53,27 @@
           host,
         }:
         let
-          unused = den.lib.take.unused [
+          unused = take.unused [
             OS
             HM
           ];
         in
         withSystem host.system (
           { inputs', ... }:
-          {
-            ${user.class}._module.args.inputs' = unused inputs';
+          unused {
+            ${user.class}._module.args.inputs' = inputs';
           }
         )
       )
       (
         { HM, home }:
         let
-          unused = den.lib.take.unused HM;
+          unused = take.unused HM;
         in
         withSystem home.system (
           { inputs', ... }:
-          {
-            ${home.class}._module.args.inputs' = unused inputs';
+          unused {
+            ${home.class}._module.args.inputs' = inputs';
           }
         )
       )
