@@ -42,6 +42,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs-lib.follows = "nixpkgs";
     nixpkgs-stable.url = "github:nixos/nixpkgs/release-25.05";
+    provider = {
+      inputs = {
+        den.follows = "den";
+        flake-aspects.follows = "flake-aspects";
+        flake-parts.follows = "flake-parts";
+        import-tree.follows = "import-tree";
+        nixpkgs.follows = "nixpkgs";
+      };
+      url = "path:./provider";
+    };
     systems.url = "github:nix-systems/default";
   };
 
