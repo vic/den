@@ -234,6 +234,34 @@
         "type": "github"
       }
     },
+    "provider": {
+      "inputs": {
+        "den": [
+          "den"
+        ],
+        "flake-aspects": [
+          "flake-aspects"
+        ],
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "import-tree": [
+          "import-tree"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "path": "./provider",
+        "type": "path"
+      },
+      "original": {
+        "path": "./provider",
+        "type": "path"
+      },
+      "parent": []
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
@@ -251,6 +279,7 @@
           "nixpkgs"
         ],
         "nixpkgs-stable": "nixpkgs-stable",
+        "provider": "provider",
         "systems": "systems"
       }
     },
