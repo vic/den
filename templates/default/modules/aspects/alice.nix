@@ -66,6 +66,6 @@
   den.aspects.setHost =
     { host, ... }:
     {
-      networking.hostName = host.hostName;
+      nixos.networking.hostName = host.hostName;
     };
 }
