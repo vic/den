@@ -1,15 +1,9 @@
 let
 
-  modules =
-    { inputs, ... }:
-    {
-      imports = [ (inputs.import-tree ./modules) ];
-    };
-
   outputs =
     inputs:
     (inputs.nixpkgs.lib.evalModules {
-      modules = [ modules ];
+      modules = [ (inputs.import-tree ./modules) ];
       specialArgs = {
         inherit inputs;
         inherit (inputs) self;
@@ -17,4 +11,6 @@ let
     }).config;
 
 in
-import ./with-inputs.nix outputs
+# Den outputs configurations at flake top-level attr
+# even when it does not depend on flakes or flake-parts.
+(import ./with-inputs.nix outputs).flake

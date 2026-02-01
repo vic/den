@@ -28,7 +28,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v4
       - run: sed -i 's@# den.outPath@den.outPath@' templates/noflake/with-inputs.nix
-      - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
+      - run: cd templates/noflake && nix-build -A nixosConfigurations.igloo.config.system.build.toplevel
   template:
     needs: [non-draft]
     strategy:
