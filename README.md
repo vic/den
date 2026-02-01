@@ -22,13 +22,13 @@
 
 - [Dendritic](https://github.com/mightyiam/dendritic): **same** concern across **different** Nix classes.
 
+- [Flake optional](templates/noflake). Works with _stable_/_unstable_ Nix and with/without flake-parts.
+
 - Create [DRY](modules/aspects/provides/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
 - Context-aware [dependencies](modules/aspects/dependencies.nix): user/host contributions.
-
-- [templates/noflake](templates/noflake). Works with stable Nix (no-flakes) and needs no flake-parts.
 
 - [Share](templates/default/modules/namespace.nix) aspects across systems & repos.
 
@@ -78,6 +78,7 @@ nix run .#vm
 
 - [`default`](templates/default) batteries-included layout.
 - [`minimal`](templates/minimal) truly minimalistic start.
+- [`noflake`](templates/noflake) no flakes, no flake-parts, user nix-maid.
 - [`examples`](templates/examples) tests for all features.
 - [`bogus`](templates/bogus) reproduce and report bugs.
 
