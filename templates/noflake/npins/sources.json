@@ -1,0 +1,63 @@
+{
+  "pins": {
+    "den": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "vic",
+        "repo": "den"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "2dab67aab2214b84f5ac15adc4e900e90d07f17b",
+      "url": "https://github.com/vic/den/archive/2dab67aab2214b84f5ac15adc4e900e90d07f17b.tar.gz",
+      "hash": "sha256-LKTq2QTXzA5lR0xhrG/hkWtjvKnr91mvIabBof0/M4A="
+    },
+    "flake-aspects": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "vic",
+        "repo": "flake-aspects"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "61524836788ef6991a82e7d34ebb0ccc05d374ed",
+      "url": "https://github.com/vic/flake-aspects/archive/61524836788ef6991a82e7d34ebb0ccc05d374ed.tar.gz",
+      "hash": "sha256-U15OaMr9AcJiB1wW2uCFzFO+DnQ3jJSvln+ZR/+Q0vE="
+    },
+    "import-tree": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "vic",
+        "repo": "import-tree"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "3c23749d8013ec6daa1d7255057590e9ca726646",
+      "url": "https://github.com/vic/import-tree/archive/3c23749d8013ec6daa1d7255057590e9ca726646.tar.gz",
+      "hash": "sha256-ZvYKbFib3AEwiNMLsejb/CWs/OL/srFQ8AogkebEPF0="
+    },
+    "nix-maid": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "viperml",
+        "repo": "nix-maid"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "303e67a8c67d1ba1416abd8842d206a57b46f832",
+      "url": "https://github.com/viperml/nix-maid/archive/303e67a8c67d1ba1416abd8842d206a57b46f832.tar.gz",
+      "hash": "sha256-nvybtwQnyGeUbAq/iOMnt0rOGrp8nkyjnZTW9XIsrfI="
+    },
+    "nixpkgs": {
+      "type": "Channel",
+      "name": "nixpkgs-unstable",
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre937085.6308c3b21396/nixexprs.tar.xz",
+      "hash": "sha256-RuGWBqXVEsZwwBvRGS/nRrA6PQyOQwVaAu139Z853Bk="
+    }
+  },
+  "version": 7
+}

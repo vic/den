@@ -1,6 +1,7 @@
 <p align="right">
   <a href="https://github.com/sponsors/vic"><img src="https://img.shields.io/badge/sponsor-vic-white?logo=githubsponsors&logoColor=white&labelColor=%23FF0000" alt="Sponsor Vic"/>
   </a>
+  <a href="https://deepwiki.com/vic/den"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
   <a href="https://github.com/vic/den/releases"><img src="https://img.shields.io/github/v/release/vic/den?style=plastic&logo=github&color=purple"/></a>
   <a href="https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries"> <img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/> </a>
   <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
@@ -19,15 +20,17 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- Dendritic: each module configures **same** concern over **different** Nix classes.
+- [Dendritic](https://github.com/mightyiam/dendritic): **same** concern across **different** Nix classes.
 
 - Create [DRY](modules/aspects/provides/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
-- [Share](templates/default/modules/namespace.nix) aspects across systems & repos.
-
 - Context-aware [dependencies](modules/aspects/dependencies.nix): user/host contributions.
+
+- [templates/noflake](templates/noflake). Works with stable Nix (no-flakes) and needs no flake-parts.
+
+- [Share](templates/default/modules/namespace.nix) aspects across systems & repos.
 
 - [Routable](templates/default/modules/aspects/eg/routes.nix) configurations.
 
@@ -35,7 +38,7 @@
 
 - Use `stable`/`unstable` channels per config.
 
-- Freeform `host`/`user`/`home` [schemas](modules/_types.nix) (no `specialArgs`).
+- Freeform `host`/`user`/`home` [schemas](modules/_types.nix) (no `specialArgs`) with base modules.
 
 - Multi-platform, multi-tenant hosts.
 

@@ -18,6 +18,17 @@ jobs:
     steps:
       - uses: cachix/install-nix-action@v31
       - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  noflake:
+    needs: [non-draft]
+    name: noflake
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
+      - run: sed -i 's@# den.outPath@den.outPath@' templates/noflake/with-inputs.nix
+      - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
   template:
     needs: [non-draft]
     strategy:
