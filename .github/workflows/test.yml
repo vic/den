@@ -34,7 +34,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        template: [default, bogus, examples]
+        template: [default, bogus, ci, example]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:

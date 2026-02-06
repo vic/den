@@ -5,7 +5,7 @@ let
     url = "https://github.com/edolstra/flake-compat/archive/${rev}.tar.gz";
     sha256 = narHash;
   };
-  flake = import compat { src = ../templates/default; };
+  flake = import compat { src = ../templates/example; };
   pkgs = flake.outputs.packages;
 in
 {
