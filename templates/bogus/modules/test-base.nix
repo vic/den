@@ -1,4 +1,4 @@
-{ den, ... }:
+{ den, lib, ... }:
 {
   den.default.nixos.system.stateVersion = "25.11";
   den.default.homeManager.home.stateVersion = "25.11";
@@ -11,7 +11,7 @@
   ];
 
   den.aspects.no-boot.nixos = {
-    boot.loader.grub.enable = false;
-    fileSystems."/".device = "/dev/fake";
+    boot.loader.grub.enable = lib.mkForce false;
+    fileSystems."/".device = lib.mkForce "/dev/fake";
   };
 }

@@ -1,5 +1,8 @@
 { inputs, ... }:
 {
+  # we can import this flakeModule even if we dont have flake-parts as input!
+  imports = [ inputs.den.flakeModule ];
+
   # tux user on igloo host.
   den.hosts.x86_64-linux.igloo.users.tux = { };
 
@@ -8,11 +11,7 @@
     nixos =
       { pkgs, ... }:
       {
-        # remove these for a real bootable host
-        boot.loader.grub.enable = false;
-        fileSystems."/".device = "/dev/fake";
         passthru = { };
-
         environment.systemPackages = [
           pkgs.vim
         ];

@@ -28,7 +28,31 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v4
       - run: sed -i 's@# den.outPath@den.outPath@' templates/noflake/with-inputs.nix
+      - run: |
+          cat <<-EOF > templates/noflake/modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+          git add templates/noflake/modules/ci-runtime.nix
       - run: cd templates/noflake && nix-build -A nixosConfigurations.igloo.config.system.build.toplevel
+  minimal:
+    needs: [non-draft]
+    name: minimal
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
+      - run: |
+          cat <<-EOF > templates/minimal/modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+          git add templates/minimal/modules/ci-runtime.nix
+      - run: nix flake check ./templates/minimal --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
   template:
     needs: [non-draft]
     strategy:
