@@ -8,11 +8,13 @@ in
   modules.flake = flakeModules;
   templates = {
     default.path = ../templates/default;
-    default.description = "Batteries included";
+    default.description = "Default template";
     minimal.path = ../templates/minimal;
     minimal.description = "Minimalistic den";
-    examples.path = ../templates/examples;
-    examples.description = "API examples and CI";
+    example.path = ../templates/example;
+    example.description = "Example";
+    ci.path = ../templates/ci;
+    ci.description = "Feature Tests";
     bogus.path = ../templates/bogus;
     bogus.description = "For bug reproduction";
   };

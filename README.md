@@ -30,9 +30,9 @@
 
 - Context-aware [dependencies](modules/aspects/dependencies.nix): user/host contributions.
 
-- [Share](templates/default/modules/namespace.nix) aspects across systems & repos.
+- [Share](templates/example/modules/namespace.nix) aspects across systems & repos.
 
-- [Routable](templates/default/modules/aspects/eg/routes.nix) configurations.
+- [Routable](templates/example/modules/aspects/eg/routes.nix) configurations.
 
 - Custom factories for any Nix `class`.
 
@@ -46,7 +46,7 @@
 
 - Opt-in [`<angle/brackets>`](https://vic.github.io/den/angle-brackets.html) aspect resolution.
 
-- Templates [tested](templates/default/modules/tests.nix) along [examples](templates/examples/modules/_example/ci).
+- Features [tested](templates/ci).
 
 - Concepts [documented](https://vic.github.io/den).
 
@@ -77,16 +77,17 @@ nix run .#vm
 **Available templates**
 
 - [`default`](templates/default) batteries-included layout.
-- [`minimal`](templates/minimal) truly minimalistic start.
+- [`minimal`](templates/minimal) minimalistic flake.
 - [`noflake`](templates/noflake) no flakes, no flake-parts, user nix-maid.
-- [`examples`](templates/examples) tests for all features.
+- [`example`](templates/example) examples.
+- [`ci`](templates/ci) tests for all features.
 - [`bogus`](templates/bogus) reproduce and report bugs.
 
 </div>
 </td>
 <td>
 
-🏠 Define [Hosts, Users](templates/examples/modules/_example/hosts.nix) & [Homes](templates/examples/modules/_example/homes.nix) concisely.
+🏠 Define [Hosts, Users](templates/ci/modules/hosts.nix) & [Homes](templates/ci/modules/homes.nix) concisely.
 
 See schema in [`_types.nix`](modules/_types.nix).
 
@@ -107,7 +108,7 @@ $ darwin-rebuild switch --flake .#mac
 $ home-manager   switch --flake .#vic
 ```
 
-🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) incremental features. ([example](templates/default/modules/den.nix))
+🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) incremental features.
 
 Any module can contribute configurations to aspects.
 
@@ -178,7 +179,7 @@ Any module can contribute configurations to aspects.
 
 You are done! You know everything to start creating configurations with `den`.
 
-Feel free to to **explore** the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/examples/modules/_example/ci).
+Feel free to to **explore** the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/ci).
 
 ## Learn more at our [documentation website](https://vic.github.io/den)
 
