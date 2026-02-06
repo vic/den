@@ -87,15 +87,71 @@ nix run .#vm
 </td>
 <td>
 
-🏠 Define [Hosts, Users](templates/ci/modules/hosts.nix) & [Homes](templates/ci/modules/homes.nix) concisely.
+### Den fundamental idea
+
+<details>
+
+<summary>
+
+> Configurations that can be applied to multiple host+user combinations.
+
+</summary>
+
+```nix
+# context => aspect
+{ host, user, ... }@context: {
+  # any Nix configuration classes
+  nixos = { };
+  darwin = { };
+  homeManager = { };
+  # supports conditional includes that inspect context
+  # unlike nix-module imports
+  includes = [ ];
+}
+```
+
+You first define which [Hosts, Users](templates/ci/modules/hosts.nix)
+and [Homes](templates/ci/modules/homes.nix) exist
+using freeform-attributes or base-modules.
+
+```nix
+{
+  # isWarm or any other freeform attr
+  den.hosts.x86_64-linux.igloo.isWarm = true;
+}
+```
+
+Then, you write functions from context `host`/`user` to configs.
+
+```nix
+{
+  den.aspects.heating = { host, user, ... }: {
+    nixos = { ... }; # depends on host.isWarm, etc.
+    homeManager = { ... };
+  };
+
+  # previous aspect can be included on any host
+  #   den.aspects.igloo.includes = [ den.aspects.heating ];
+  # or by default in all of them
+  #   den.default.includes = [ den.aspects.heating ];
+}
+```
+
+This way, configurations are truly re-usable,
+as they are nothing more than functions of the
+particularities of the host or its users.
+
+</details>
+
+### Code example
 
 See schema in [`_types.nix`](modules/_types.nix).
 
 ```nix
 # modules/hosts.nix
 {
-  # same home-manager vic configuration
-  # over laptop, macbook and standalone-hm
+  # same vic home-manager aspect shared
+  # on laptop, macbook and standalone-hm
   den.hosts.x86_64-linux.lap.users.vic = {};
   den.hosts.aarch64-darwin.mac.users.vic = {};
   den.homes.aarch64-darwin.vic = {};
@@ -108,9 +164,7 @@ $ darwin-rebuild switch --flake .#mac
 $ home-manager   switch --flake .#vic
 ```
 
-🧩 [Aspect-oriented](https://github.com/vic/flake-aspects) incremental features.
-
-Any module can contribute configurations to aspects.
+Any module can contribute configurations to [aspects](https://github.com/vic/flake-aspects).
 
 ```nix
 # modules/my-laptop.nix
@@ -156,7 +210,9 @@ Any module can contribute configurations to aspects.
 
   };
 }
+```
 
+```nix
 # modules/vic.nix
 { den, ... }: {
   den.aspects.vic = {
@@ -167,7 +223,7 @@ Any module can contribute configurations to aspects.
     };
     includes = [
       den.aspects.tiling-wm
-      den._.primary-user
+      den.provides.primary-user
     ];
   };
 }
