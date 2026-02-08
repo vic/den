@@ -28,7 +28,7 @@
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
-- Context-aware [dependencies](modules/aspects/dependencies.nix): user<->host bidirectional contributions.
+- Context-aware [dependencies](modules/aspects/dependencies.nix): user\<->host bidirectional contributions.
 
 - [Share](templates/example/modules/namespace.nix) aspects across systems & repos.
 
