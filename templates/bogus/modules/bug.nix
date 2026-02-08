@@ -1,10 +1,13 @@
-{ inputs, den, ... }:
+{
+  inputs,
+  den,
+  lib,
+  ...
+}:
 {
   den.hosts.x86_64-linux.igloo.users.tux = { };
 
-  # See [Debugging Tips](https://den.oeiuwq.com/debugging.html)
-  flake.den = den;
-
+  den.aspects.igloo.includes = [ den.aspects.testing ];
   # Use aspects to create a **minimal** bug reproduction
   den.aspects.testing =
     { user, ... }@ctx:
@@ -12,9 +15,9 @@
       homeManager.programs.vim.enable = user.userName == "tux";
     };
 
-  den.aspects.igloo.includes = [ den.aspects.testing ];
-
-  flake.tests."test it works" =
+  # `nix-unit --flake .#.tests.systems`
+  # `nix eval .#.tests.testItWorks`
+  flake.tests.testItWorks =
     let
       igloo = inputs.self.nixosConfigurations.igloo.config;
       tux = igloo.home-manager.users.tux;
@@ -25,4 +28,22 @@
     {
       inherit expr expected;
     };
+
+  # See [Debugging Tips](https://den.oeiuwq.com/debugging.html)
+  flake.den = den;
+  # `nix eval .#.value`
+  flake.value =
+    let
+      aspect = den.aspects.testing {
+        user.userName = "tux";
+        host.hostName = "fake";
+      };
+      modules = [
+        (aspect.resolve { class = "homeManager"; })
+        { options.programs = lib.mkOption { }; }
+      ];
+      evaled = lib.evalModules { inherit modules; };
+    in
+    evaled.config;
+
 }
