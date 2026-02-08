@@ -1,25 +1,26 @@
-{ inputs, lib, ... }:
+{ inputs, den, ... }:
 {
   den.hosts.x86_64-linux.igloo.users.tux = { };
-  den.hosts.aarch64-darwin.apple.users.tim = { };
+
+  # See [Debugging Tips](https://den.oeiuwq.com/debugging.html)
+  flake.den = den;
 
   # Use aspects to create a **minimal** bug reproduction
-  den.aspects.igloo.nixos =
-    { pkgs, ... }:
-    {
-      users.users.tux.packages = [ pkgs.hello ];
+  den.aspects.testing =
+    { user, ... }@ctx:
+    builtins.trace ctx.host.hostName {
+      homeManager.programs.vim.enable = user.userName == "tux";
     };
 
-  # rename "it works", evidently it has bugs
+  den.aspects.igloo.includes = [ den.aspects.testing ];
+
   flake.tests."test it works" =
     let
-      tux = inputs.self.nixosConfigurations.igloo.config.users.users.tux;
+      igloo = inputs.self.nixosConfigurations.igloo.config;
+      tux = igloo.home-manager.users.tux;
 
-      expr.len = lib.length tux.packages;
-      expr.names = map lib.getName tux.packages;
-
-      expected.len = 1;
-      expected.names = [ "hello" ];
+      expr = tux.programs.vim.enable;
+      expected = true;
     in
     {
       inherit expr expected;

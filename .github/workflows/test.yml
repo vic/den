@@ -53,12 +53,29 @@ jobs:
           EOF
           git add templates/minimal/modules/ci-runtime.nix
       - run: nix flake check ./templates/minimal --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  bogus:
+    needs: [non-draft]
+    name: bogus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
+      - run: |
+          cat <<-EOF > templates/bogus/modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+          git add templates/bogus/modules/ci-runtime.nix
+      - run: nix flake check ./templates/bogus --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
   template:
     needs: [non-draft]
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        template: [default, bogus, ci, example]
+        template: [default, ci, example]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
