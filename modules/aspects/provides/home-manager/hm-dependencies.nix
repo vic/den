@@ -22,9 +22,8 @@ let
       includes = [
         (owned den.default)
         (statics den.default)
-        (owned HM-OS-USER.HM)
-        (statics HM-OS-USER.HM)
         (parametric.fixedTo HM-OS-USER HM-OS-USER.OS)
+        (parametric.fixedTo HM-OS-USER HM-OS-USER.HM)
       ];
     };
 
