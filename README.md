@@ -24,21 +24,21 @@
 
 - [Flake optional](templates/noflake). Works with _stable_/_unstable_ Nix and with/without flake-parts.
 
-- Create [DRY](modules/aspects/provides/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
+- Create [DRY](modules/aspects/provides/unfree/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
-- Context-aware [dependencies](modules/aspects/dependencies.nix): user/host contributions.
+- Context-aware [dependencies](modules/aspects/dependencies.nix): user<->host bidirectional contributions.
 
 - [Share](templates/example/modules/namespace.nix) aspects across systems & repos.
 
 - [Routable](templates/example/modules/aspects/eg/routes.nix) configurations.
 
-- Custom factories for any Nix `class`.
+- Custom [factories](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/ci/modules/homes.nix#L20) for any Nix `class`.
 
 - Use `stable`/`unstable` channels per config.
 
-- Freeform `host`/`user`/`home` [schemas](modules/_types.nix) (no `specialArgs`) with base modules.
+- Freeform `host`/`user`/`home` [schemas](modules/_types.nix) (no `specialArgs`) with [base](https://github.com/vic/den/pull/119) modules.
 
 - Multi-platform, multi-tenant hosts.
 
@@ -48,7 +48,7 @@
 
 - Features [tested](templates/ci).
 
-- Concepts [documented](https://vic.github.io/den).
+- REPL [friendly](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/bogus/modules/bug.nix#L34) [debugging](https://den.oeiuwq.com/debugging.html).
 
 Need more **batteries**? See [vic/denful](https://github.com/vic/denful).
 
@@ -89,12 +89,13 @@ nix run .#vm
 
 ### Den fundamental idea
 
+> Configurations that can be applied to multiple host/user combinations.
+> The [`__functor`](https://den.oeiuwq.com/functor.html) pattern makes aspects parametric.
+
 <details>
 
 <summary>
-
-> Configurations that can be applied to multiple host+user combinations.
-
+  Den is about propagating context to produce configs.
 </summary>
 
 ```nix
@@ -145,7 +146,7 @@ particularities of the host or its users.
 
 ### Code example
 
-See schema in [`_types.nix`](modules/_types.nix).
+Schema based hosts/users/homes entities (see [`_types.nix`](modules/_types.nix)).
 
 ```nix
 # modules/hosts.nix
