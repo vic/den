@@ -1,7 +1,8 @@
 { lib, ... }:
 let
   # Example: configuration that depends on both host and user. provides only to HM.
-  host-to-user-conditional =
+  program-conditional =
+    program:
     {
       user,
       host,
@@ -9,17 +10,18 @@ let
     }:
     if user.userName == "alice" && !lib.hasSuffix "darwin" host.system then
       {
-        homeManager.programs.git.enable = true;
+        homeManager.programs.${program}.enable = true;
       }
     else
       { };
 in
 {
 
-  den.aspects.rockhopper.includes = [
-    # Example: host provides parametric user configuration.
-    host-to-user-conditional
-  ];
+  # Example: host parametric includes. conditional user configuration.
+  den.aspects.rockhopper.includes = [ (program-conditional "git") ];
+
+  # Example: user parametric includes
+  den.aspects.alice.includes = [ (program-conditional "mpv") ];
 
   perSystem =
     {
@@ -35,6 +37,10 @@ in
       );
       checks.alice-hm-git-enabled-off = checkCond "home-managed git for alice at honeycrisp" (
         !alice-at-honeycrisp.programs.git.enable
+      );
+
+      checks.alice-hm-mpv-enabled-rockhopper = checkCond "home-managed mpv for alice at rockhopper" (
+        alice-at-rockhopper.programs.mpv.enable
       );
 
     };
