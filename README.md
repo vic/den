@@ -190,7 +190,7 @@ Any module can contribute configurations to [aspects](https://github.com/vic/fla
     # modules in a single file:
 
     # any NixOS configuration
-    nixos  = {
+    nixos  = { pkgs, ... }: {
       # A nixos class module, see NixOS options.
       # import third-party NixOS modules
       imports = [
@@ -217,7 +217,7 @@ Any module can contribute configurations to [aspects](https://github.com/vic/fla
 # modules/vic.nix
 { den, ... }: {
   den.aspects.vic = {
-    homeManager = { /* ... */ };
+    homeManager = { pkgs, ... }: { /* ... */ };
     # User contribs to host
     nixos.users.users = {
       vic.description = "oeiuwq";
