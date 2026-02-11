@@ -14,13 +14,6 @@ let
 
   '';
 
-  unfreeOption.options.unfree = {
-    packages = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-    };
-  };
-
   unfreeModule =
     { config, ... }@args:
     let
@@ -28,19 +21,16 @@ let
       globalPkgs = args.osConfig.home-manager.useGlobalPkgs or false;
     in
     {
-      nixpkgs = lib.mkIf (!globalPkgs) {
+      options.unfree.packages = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+      };
+      config.nixpkgs = lib.mkIf (!globalPkgs) {
         config.allowUnfreePredicate = (pkg: builtins.elem (lib.getName pkg) config.unfree.packages);
       };
     };
 
-  osAspect =
-    { OS, host }:
-    take.unused OS {
-      ${host.class}.imports = [
-        unfreeOption
-        unfreeModule
-      ];
-    };
+  osAspect = { OS, host }: take.unused OS { ${host.class}.imports = [ unfreeModule ]; };
 
   userAspect =
     {
@@ -48,26 +38,9 @@ let
       user,
       host,
     }:
-    take.unused
-      [
-        HM
-        host
-      ]
-      {
-        ${user.class}.imports = [
-          unfreeOption
-          unfreeModule
-        ];
-      };
+    take.unused [ HM host ] { ${user.class}.imports = [ unfreeModule ]; };
 
-  homeAspect =
-    { HM, home }:
-    take.unused HM {
-      ${home.class}.imports = [
-        unfreeOption
-        unfreeModule
-      ];
-    };
+  homeAspect = { HM, home }: take.unused HM { ${home.class}.imports = [ unfreeModule ]; };
 
   aspect = parametric.exactly {
     inherit description;
