@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     import-tree.url = "github:vic/import-tree";
     flake-aspects.url = "github:vic/flake-aspects";
-    den.url = "github:vic/den";
+    den.url = "github:vic/den/main";
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";

@@ -7,9 +7,13 @@ concurrency:
 jobs:
   flake-check:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-    name: Nix flake check
+        # add more releases or commits to test
+        # rev: [ "main", "v0.8.0", "caa328d" ]
+        rev: ["main"]
+    name: Den (rev ${{matrix.rev}})
     runs-on: ${{matrix.os}}
     steps:
       - uses: wimpysworld/nothing-but-nix@main
@@ -17,5 +21,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v5
+      - run: sed -i 's#vic/den/main#vic/den/${{matrix.rev}}#' flake.nix
+      - run: nix flake update den
       - run: nix flake metadata
       - run: nix flake check
