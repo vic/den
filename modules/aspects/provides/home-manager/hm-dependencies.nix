@@ -18,12 +18,17 @@ let
   # from OS home-managed integration.
   hmUserDependencies =
     { HM-OS-USER }:
+    let
+      inherit (HM-OS-USER) OS HM;
+      hostCtx = { inherit (HM-OS-USER) OS host user; };
+      userCtx = { inherit (HM-OS-USER) HM host user; };
+    in
     {
       includes = [
         (owned den.default)
         (statics den.default)
-        (parametric.fixedTo HM-OS-USER HM-OS-USER.OS)
-        (parametric.fixedTo HM-OS-USER HM-OS-USER.HM)
+        (parametric.fixedTo hostCtx OS)
+        (parametric.fixedTo userCtx HM)
       ];
     };
 
