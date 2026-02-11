@@ -46,6 +46,8 @@
 
 - Opt-in [`<angle/brackets>`](https://vic.github.io/den/angle-brackets.html) aspect resolution.
 
+- _Incremental_ adoption and _unobstrusive_ [migration](https://vic.github.io/den/migration.html) plan.
+
 - Features [tested](templates/ci).
 
 - REPL [friendly](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/bogus/modules/bug.nix#L34) [debugging](https://den.oeiuwq.com/debugging.html).
