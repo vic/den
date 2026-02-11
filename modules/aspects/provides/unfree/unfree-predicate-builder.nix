@@ -14,75 +14,67 @@ let
 
   '';
 
-  unfreeComposableModule.options.unfree = {
+  unfreeOption.options.unfree = {
     packages = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
     };
   };
 
-  nixosAspect =
-    { config, ... }:
+  unfreeModule =
+    { config, ... }@args:
+    let
+      # nixpkgs.config must not be set when useGlobalPkgs is true.
+      globalPkgs = args.osConfig.home-manager.useGlobalPkgs or false;
+    in
     {
-      nixpkgs.config.allowUnfreePredicate = (pkg: builtins.elem (lib.getName pkg) config.unfree.packages);
-    };
-
-  homeManagerAspect =
-    { config, osConfig, ... }:
-    {
-      nixpkgs = lib.mkIf (!osConfig.home-manager.useGlobalPkgs) {
+      nixpkgs = lib.mkIf (!globalPkgs) {
         config.allowUnfreePredicate = (pkg: builtins.elem (lib.getName pkg) config.unfree.packages);
       };
+    };
+
+  osAspect =
+    { OS, host }:
+    take.unused OS {
+      ${host.class}.imports = [
+        unfreeOption
+        unfreeModule
+      ];
+    };
+
+  userAspect =
+    {
+      HM,
+      user,
+      host,
+    }:
+    take.unused
+      [
+        HM
+        host
+      ]
+      {
+        ${user.class}.imports = [
+          unfreeOption
+          unfreeModule
+        ];
+      };
+
+  homeAspect =
+    { HM, home }:
+    take.unused HM {
+      ${home.class}.imports = [
+        unfreeOption
+        unfreeModule
+      ];
     };
 
   aspect = parametric.exactly {
     inherit description;
     includes = [
-      (
-        { OS, host }:
-        let
-          unused = take.unused OS;
-        in
-        {
-          ${host.class}.imports = unused [
-            unfreeComposableModule
-            nixosAspect
-          ];
-        }
-      )
-      (
-        {
-          OS,
-          HM,
-          user,
-          host,
-        }:
-        let
-          unused = take.unused [
-            OS
-            HM
-            host
-          ];
-        in
-        {
-          ${user.class}.imports = unused [
-            unfreeComposableModule
-            homeManagerAspect
-          ];
-        }
-      )
-      (
-        { HM, home }:
-        let
-          unused = take.unused HM;
-        in
-        {
-          ${home.class}.imports = unused [
-            unfreeComposableModule
-            nixosAspect
-          ];
-        }
-      )
+      osAspect
+      userAspect
+      homeAspect
     ];
   };
 in

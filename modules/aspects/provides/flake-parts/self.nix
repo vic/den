@@ -1,0 +1,61 @@
+{ den, withSystem, ... }:
+let
+  inherit (den.lib.take) unused;
+  inherit (den.lib) parametric;
+
+  description = ''
+    Provides the `flake-parts` `self'` (the flake's `self` with system pre-selected)
+    as a top-level module argument.
+
+    This allows modules to access per-system flake outputs without needing
+    `pkgs.stdenv.hostPlatform.system`.
+
+    ## Usage
+
+    **Global (Recommended):**
+    Apply to all hosts, users, and homes.
+
+        den.default.includes = [ den._.self' ];
+
+    **Specific:**
+    Apply only to a specific host, user, or home aspect.
+
+        den.aspects.my-laptop.includes = [ den._.self' ];
+        den.aspects.alice.includes = [ den._.self' ];
+
+    **Note:** This aspect is contextual. When included in a `host` aspect, it
+    configures `self'` for the host's OS. When included in a `user` or `home`
+    aspect, it configures `self'` for the corresponding Home Manager configuration.
+  '';
+
+  mkAspect =
+    class: system:
+    withSystem system (
+      { self', ... }:
+      {
+        ${class}._module.args.self' = self';
+      }
+    );
+
+  osAspect = { OS, host }: unused OS (mkAspect host.class host.system);
+
+  userAspect =
+    {
+      HM,
+      user,
+      host,
+    }:
+    unused HM (mkAspect user.class host.system);
+
+  homeAspect = { HM, home }: unused HM (mkAspect home.class home.system);
+in
+{
+  den.provides.self' = parametric.exactly {
+    inherit description;
+    includes = [
+      osAspect
+      userAspect
+      homeAspect
+    ];
+  };
+}

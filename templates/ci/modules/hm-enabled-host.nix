@@ -4,12 +4,11 @@
   # a HM supported OS and at least one user with homeManager class.
   den.aspects.hm-global-pkgs =
     { HM-OS-HOST }:
-    den.lib.take.unused [ HM-OS-HOST.host ] # access host from context if needed
-      {
-        nixos.home-manager.useGlobalPkgs = true;
-      };
+    {
+      nixos.home-manager.useGlobalPkgs = HM-OS-HOST.host.hostName == "rockhopper";
+    };
 
-  den.default.includes = [ den.aspects.hm-global-pkgs ];
+  den.aspects.rockhopper.includes = [ den.aspects.hm-global-pkgs ];
 
   den.hosts.x86_64-linux.no-homes = { };
 
