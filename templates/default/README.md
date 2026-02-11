@@ -10,10 +10,14 @@ Steps you can follow after cloning this template:
 nix flake update den
 ```
 
-- Run checks to test everything works.
+- Edit [modules/hosts.nix](modules/hosts.nix)
+
+- Run the VM
+
+We recommend to use a VM develop cycle so you can play with the system before applying to your hardware.
+
+See [modules/vm.nix](modules/vm.nix)
 
 ```console
-nix flake check
+nix run .#vm
 ```
-
-- Edit [modules/hosts.nix](modules/hosts.nix)
