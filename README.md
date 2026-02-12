@@ -9,7 +9,7 @@
   <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
 </p>
 
-# den - an aspect-oriented approach to Dendritic Nix configurations.
+# den - Re-usable Dendritic Nix configurations. [See MOTIVATION](https://den.oeiuwq.com/motivation.html)
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
 
