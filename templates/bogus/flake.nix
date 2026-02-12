@@ -2,7 +2,7 @@
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
     import-tree.url = "github:vic/import-tree";
     flake-aspects.url = "github:vic/flake-aspects";
     den.url = "github:vic/den/main";
