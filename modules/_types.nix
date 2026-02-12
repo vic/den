@@ -57,7 +57,7 @@ let
               - adding specialArgs when absolutely required.
             '';
             example = lib.literalExpression "inputs.nixpkgs.lib.nixosSystem";
-            type = lib.types.unspecified;
+            type = lib.types.raw;
             default =
               {
                 nixos = inputs.nixpkgs.lib.nixosSystem;
@@ -147,6 +147,14 @@ let
           class = strOpt "home management nix class" "homeManager";
           aspect = strOpt "main aspect name" config.name;
           description = strOpt "home description" "home.${config.userName}@${config.system}";
+          pkgs = lib.mkOption {
+            description = ''
+              nixpkgs instance used to build the home configuration.
+            '';
+            example = lib.literalExpression ''inputs.nixpkgs.legacyPackages.''${home.system}'';
+            type = lib.types.raw;
+            default = inputs.nixpkgs.legacyPackages.${config.system};
+          };
           instantiate = lib.mkOption {
             description = ''
               Function used to instantiate the home configuration.
@@ -160,7 +168,7 @@ let
               - adding extraSpecialArgs when absolutely required.
             '';
             example = lib.literalExpression "inputs.home-manager.lib.homeManagerConfiguration";
-            type = lib.types.unspecified;
+            type = lib.types.raw;
             default =
               {
                 homeManager = inputs.home-manager.lib.homeManagerConfiguration;

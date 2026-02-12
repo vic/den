@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  withSystem,
   ...
 }:
 let
@@ -28,13 +27,10 @@ let
 
   homeConfiguration =
     home:
-    withSystem home.system (
-      { pkgs, ... }:
-      home.instantiate {
-        inherit pkgs;
-        modules = [ home.mainModule ];
-      }
-    );
+    home.instantiate {
+      pkgs = home.pkgs;
+      modules = [ home.mainModule ];
+    };
 
   cfgs = (build osConfiguration config.den.hosts) ++ (build homeConfiguration config.den.homes);
 
