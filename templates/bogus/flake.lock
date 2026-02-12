@@ -2,15 +2,16 @@
   "nodes": {
     "den": {
       "locked": {
-        "lastModified": 1770400943,
-        "narHash": "sha256-73eh5R6UQOP6B04dxot7Jdxmc/nd3n9fe1XX8vp8l3Q=",
+        "lastModified": 1770891706,
+        "narHash": "sha256-TLMkdQSbS9ggFAKVbV9OaeaTtk5ayMP19LSWyvfCOXY=",
         "owner": "vic",
         "repo": "den",
-        "rev": "b07ef22d338ef765e4e296fb3223ba3cf4e9ae82",
+        "rev": "d2c4938817195b6bc0cba9a43f6ea7d699de6aac",
         "type": "github"
       },
       "original": {
         "owner": "vic",
+        "ref": "main",
         "repo": "den",
         "type": "github"
       }
@@ -57,11 +58,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1770491427,
-        "narHash": "sha256-8b+0vixdqGnIIcgsPhjdX7EGPdzcVQqYxF+ujjex654=",
+        "lastModified": 1770818644,
+        "narHash": "sha256-DYS4jIRpRoKOzJjnR/QqEd/MlT4OZZpt8CrBLv+cjsE=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "cbd8a72e5fe6af19d40e2741dc440d9227836860",
+        "rev": "0acbd1180697de56724821184ad2c3e6e7202cd7",
         "type": "github"
       },
       "original": {
@@ -133,18 +134,15 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1770380644,
-        "narHash": "sha256-P7dWMHRUWG5m4G+06jDyThXO7kwSk46C1kgjEWcybkE=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "ae67888ff7ef9dff69b3cf0cc0fbfbcd3a722abe",
-        "type": "github"
+        "lastModified": 1770843696,
+        "narHash": "sha256-9SFCZkVcpDOV6unH5hVEy4+dB0rxMuUoBnDAO6vshac=",
+        "rev": "2343bbb58f99267223bc2aac4fc9ea301a155a16",
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre944764.2343bbb58f99/nixexprs.tar.xz"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
       }
     },
     "root": {
