@@ -28,7 +28,7 @@
 
 - [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
 
-- Context-aware [dependencies](modules/aspects/dependencies.nix): user\<->host bidirectional contributions.
+- Context-aware [dependencies](modules/aspects/dependencies.nix) with `host<->user` bidirectional contributions.
 
 - [Share](templates/example/modules/namespace.nix) aspects across systems & repos.
 
@@ -36,7 +36,7 @@
 
 - Custom [factories](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/ci/modules/homes.nix#L20) for any Nix `class`.
 
-- Use `stable`/`unstable` channels per config.
+- Use different `stable`/`unstable` input channels per host.
 
 - Freeform `host`/`user`/`home` [schemas](modules/_types.nix) (no `specialArgs`) with [base](https://github.com/vic/den/pull/119) modules.
 
@@ -46,7 +46,7 @@
 
 - Opt-in [`<angle/brackets>`](https://vic.github.io/den/angle-brackets.html) aspect resolution.
 
-- _Incremental_ adoption and _unobstrusive_ [migration](https://vic.github.io/den/migration.html) plan.
+- _Incremental_ adoption on [exising](https://github.com/vic/den/discussions/151#discussioncomment-15797741) flakes, and _unobstrusive_ [migration](https://vic.github.io/den/migration.html) plan.
 
 - Features [tested](templates/ci).
 
