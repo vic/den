@@ -72,7 +72,7 @@ nix run .#vm
 
 **Real-world examples for inspiration**
 
-- [`vic/vix`](https://github.com/vic/vix/tree/den)
+- [`vic/vix`](https://github.com/vic/vix)
 - [`quasigod.xyz/nixconfig`](https://tangled.org/quasigod.xyz/nixconfig)
 - [GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code).
 
