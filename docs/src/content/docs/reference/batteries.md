@@ -151,6 +151,22 @@ Returns an aspect. Used internally for Home-Manager integration.
 
 ## home-manager
 
-Empty marker aspect. The actual HM integration is handled by
+HM integration is handled by
 `den.ctx.hm-host` and `den.ctx.hm-user` context types, which are
 activated automatically when hosts have HM users.
+
+All `homeManager` class settings are forwarded to os-level `home-manager.users.<userName>`.
+
+## user
+
+The `user` class is automatically handled by Den and forwards to os-level `users.users.<userName>`
+
+You can write:
+
+```nix
+den.aspects.tux.user.description = "bird";
+
+# same as setting at host:
+den.aspects.igloo.nixos.users.users.tux.description = "bird";
+```
+
