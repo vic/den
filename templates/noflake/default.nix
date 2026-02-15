@@ -11,6 +11,4 @@ let
     }).config;
 
 in
-# Den outputs configurations at flake top-level attr
-# even when it does not depend on flakes or flake-parts.
-(import ./with-inputs.nix outputs).flake
+import ./with-inputs.nix outputs
