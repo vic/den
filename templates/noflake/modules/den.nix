@@ -3,6 +3,12 @@
   # we can import this flakeModule even if we dont have flake-parts as input!
   imports = [ inputs.den.flakeModule ];
 
+  den.default.nixos = {
+    # remove for real host
+    fileSystems."/".device = "/dev/fake";
+    boot.loader.grub.enable = false;
+  };
+
   # tux user on igloo host.
   den.hosts.x86_64-linux.igloo.users.tux = { };
 
