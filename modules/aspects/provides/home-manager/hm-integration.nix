@@ -31,39 +31,43 @@ let
       inherit (HM-OS-HOST) OS host;
 
       hmClass = "homeManager";
-      hmUsers = builtins.filter (u: u.class == hmClass) (lib.attrValues host.users);
+      hmModule = host.hm-module or inputs.home-manager."${host.class}Modules".home-manager;
+      hmUsers = lib.filter (u: u.class == hmClass) (lib.attrValues host.users);
 
-      hmUserModule =
+      hmUserAspect =
         user:
         let
           HM = den.aspects.${user.aspect};
-          aspect = HM {
-            HM-OS-USER = {
-              inherit
-                OS
-                HM
-                host
-                user
-                ;
-            };
+          HM-OS-USER = {
+            inherit
+              OS
+              HM
+              host
+              user
+              ;
           };
-          module = aspect.resolve { class = hmClass; };
         in
-        module;
+        HM { inherit HM-OS-USER; };
 
-      users = map (user: {
-        name = user.userName;
-        value.imports = [ (hmUserModule user) ];
-      }) hmUsers;
-
-      hmModule = host.hm-module or inputs.home-manager."${host.class}Modules".home-manager;
-      aspect.${host.class} = {
-        imports = [ hmModule ];
-        home-manager.users = lib.listToAttrs users;
-      };
-
+      hmUsersAspect = den._.forward (
+        { class, aspect-chain }:
+        den.lib.take.unused aspect-chain {
+          each = hmUsers;
+          from = _: hmClass;
+          into = user: [
+            class
+            "home-manager"
+            "users"
+            user.userName
+          ];
+          aspect = hmUserAspect;
+        }
+      );
     in
-    aspect;
+    {
+      ${host.class}.imports = [ hmModule ];
+      includes = [ hmUsersAspect ];
+    };
 
 in
 {
