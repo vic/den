@@ -17,7 +17,6 @@
     nixos =
       { pkgs, ... }:
       {
-        passthru = { };
         environment.systemPackages = [
           pkgs.vim
         ];
