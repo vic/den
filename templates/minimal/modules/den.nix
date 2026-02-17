@@ -10,7 +10,6 @@
       { pkgs, ... }:
       {
         environment.systemPackages = [ pkgs.hello ];
-        passthru = { };
       };
   };
 
