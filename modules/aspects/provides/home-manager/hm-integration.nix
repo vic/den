@@ -49,20 +49,22 @@ let
         in
         HM { inherit HM-OS-USER; };
 
-      hmUsersAspect = den._.forward (
+      hmUsersAspect =
         { class, aspect-chain }:
-        den.lib.take.unused aspect-chain {
-          each = hmUsers;
-          from = _: hmClass;
-          into = user: [
-            class
+        den._.forward {
+          each = lib.optionals (lib.elem class [
+            "nixos"
+            "darwin"
+          ]) hmUsers;
+          fromClass = _: hmClass;
+          fromAspect = den.lib.take.unused aspect-chain hmUserAspect;
+          intoClass = _: class;
+          intoPath = user: [
             "home-manager"
             "users"
             user.userName
           ];
-          aspect = hmUserAspect;
-        }
-      );
+        };
     in
     {
       ${host.class}.imports = [ hmModule ];

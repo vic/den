@@ -1,33 +1,41 @@
-{ lib, ... }:
+{ den, ... }:
 let
-
   description = ''
-    WIP: Creates a class-forwarding aspect.
+    An aspect that imports all modules defined for `from` class
+    into a target `into` submodule.
+
+    This can be used to create custom Nix classes that help
+    people separating concerns on huge module hierarchies.
+
+    For example, using a new `user` class that forwards all its
+    settings into `users.users.<userName>` allows:
+
+      den.aspects.alice.nixos.users.users.alice.isNormalUser = true;
+
+    to become:
+
+      den.aspects.alice.user.isNormalUser = true;
+
+
+    This is exactly how `homeManager` class support is implemented in Den.
+    See home-manager/hm-integration.nix.
+
+    Den also provides the mentioned `user` class (`den._.os-user`) for setting 
+    NixOS/Darwin options under `users.users.<userName>` at os-level.
+
+    Any other user-environments like `nix-maid` or `hjem` or user-custom classes
+    are easily implemented using `den._.forward`.
+
+    Note: `den._.forward` is a high-level aspect, its result 
+    is another aspect that needs to be included for the new class to exist.
+
+    See templates/ci/modules/forward.nix for usage example.
+    See also: https://github.com/vic/den/issues/160, https://github.com/vic/flake-aspects/pull/31
   '';
-
-  forward =
-    cb:
-    { class, aspect-chain }:
-    let
-      fwd = cb { inherit class aspect-chain; };
-      include =
-        item:
-        let
-          from = fwd.from item;
-          into = fwd.into item;
-          aspect = fwd.aspect item;
-          module = aspect.resolve { class = from; };
-        in
-        lib.setAttrByPath into { imports = [ module ]; };
-    in
-    {
-      includes = map include fwd.each;
-    };
-
 in
 {
   den.provides.forward = {
     inherit description;
-    __functor = _self: forward;
+    __functor = _self: den.lib.aspects.forward;
   };
 }
