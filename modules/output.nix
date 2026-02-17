@@ -30,7 +30,7 @@ else
     # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     # SOFTWARE.
-    options.flake = mkOption {
+    options.flake = lib.mkOption {
       type = lib.types.submoduleWith {
         modules = [{
           freeformType = lib.types.lazyAttrsOf (lib.types.unique {
