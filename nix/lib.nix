@@ -111,6 +111,7 @@ let
       isFn
       canTake
       take
+      isStatic
       ;
   };
 in

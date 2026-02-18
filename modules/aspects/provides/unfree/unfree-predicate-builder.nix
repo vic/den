@@ -30,19 +30,26 @@ let
       };
     };
 
-  osAspect = { OS, host }: take.unused OS { ${host.class}.imports = [ unfreeModule ]; };
-
-  userAspect =
+  osAspect = take.exactly (
+    { host }:
     {
-      HM,
-      user,
-      host,
-    }:
-    take.unused [ HM host ] { ${user.class}.imports = [ unfreeModule ]; };
+      ${host.class}.imports = [ unfreeModule ];
+    }
+  );
+  userAspect = take.exactly (
+    { host, user }:
+    {
+      ${user.class}.imports = [ unfreeModule ];
+    }
+  );
+  homeAspect = take.exactly (
+    { home }:
+    {
+      ${home.class}.imports = [ unfreeModule ];
+    }
+  );
 
-  homeAspect = { HM, home }: take.unused HM { ${home.class}.imports = [ unfreeModule ]; };
-
-  aspect = parametric.exactly {
+  aspect = parametric {
     inherit description;
     includes = [
       osAspect

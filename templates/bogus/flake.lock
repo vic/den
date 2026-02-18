@@ -2,11 +2,11 @@
   "nodes": {
     "den": {
       "locked": {
-        "lastModified": 1771153332,
-        "narHash": "sha256-oAzd3u2CsFxJXwZ1Mak2kJuAxKJUET7+nWLGWvdq5Jw=",
+        "lastModified": 1771364340,
+        "narHash": "sha256-i6IoHdOqdJHjJHuTIZqPJVDn6VVOG1nyRXR70qYQej4=",
         "owner": "vic",
         "repo": "den",
-        "rev": "933a84fd1e1b625eaa20e160704f83cdbf13efd9",
+        "rev": "f8cb8c618e1680e99c165d2bf826600170abb5a2",
         "type": "github"
       },
       "original": {
@@ -18,11 +18,11 @@
     },
     "flake-aspects": {
       "locked": {
-        "lastModified": 1771325453,
-        "narHash": "sha256-a50O/36ySKext94tOnv7ucfLD75C1aHTWP+Um0w35R0=",
+        "lastModified": 1771395573,
+        "narHash": "sha256-bcCOG2CW23/Eww/zULJf1xd0Shz2zS4c2AJWwLALyJ8=",
         "owner": "vic",
         "repo": "flake-aspects",
-        "rev": "cb78001b60fb34b8fabb8f78b082a6cf6c8a548d",
+        "rev": "8297f3bc41ad79b9f01d56d0dd92f7aac51bacfb",
         "type": "github"
       },
       "original": {

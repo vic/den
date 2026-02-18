@@ -9,7 +9,7 @@
   <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
 </p>
 
-# den - Re-usable Dendritic Nix configurations. [See MOTIVATION](https://den.oeiuwq.com/motivation.html)
+# den - Re-usable Dendritic Nix configurations. [See MOTIVATION](https://den.oeiuwq.com/motivation/)
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
 
@@ -20,17 +20,17 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- [Dendritic](https://github.com/mightyiam/dendritic): **same** concern across **different** Nix classes.
+- [Dendritic](https://den.oeiuwq.com/explanation/core-principles/): **same** concern across **different** Nix classes.
 
-- [Flake optional](templates/noflake). Works with _stable_/_unstable_ Nix and with/without flake-parts.
+- [Flake optional](https://den.oeiuwq.com/guides/no-flakes/). Works with _stable_/_unstable_ Nix and with/without flake-parts.
 
 - Create [DRY](modules/aspects/provides/unfree/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) modules.
 
-- [Parametric](modules/aspects/provides/define-user.nix) over `host`/`home`/`user`.
+- [Parametric](https://den.oeiuwq.com/explanation/parametric/) over `host`/`home`/`user`.
 
-- Context-aware [dependencies](modules/aspects/dependencies.nix) with `host<->user` bidirectional contributions.
+- Context-aware [dependencies](https://den.oeiuwq.com/explanation/context-system/) with `host<->user` [bidirectional](https://den.oeiuwq.com/guides/bidirectional/) contributions.
 
-- [Share](templates/example/modules/namespace.nix) aspects across systems & repos.
+- [Share](https://den.oeiuwq.com/guides/namespaces/) aspects across systems & repos.
 
 - [Routable](templates/example/modules/aspects/eg/routes.nix) configurations.
 
@@ -38,19 +38,19 @@
 
 - Use different `stable`/`unstable` input channels per host.
 
-- Freeform `host`/`user`/`home` [schemas](modules/_types.nix) (no `specialArgs`) with [base](https://github.com/vic/den/pull/119) modules.
+- Freeform `host`/`user`/`home` [schemas](https://den.oeiuwq.com/reference/schema/) (no `specialArgs`) with [base](https://github.com/vic/den/pull/119) modules.
 
 - Multi-platform, multi-tenant hosts.
 
-- [Batteries](modules/aspects/provides/): Opt-in, replaceable aspects.
+- [Batteries](https://den.oeiuwq.com/guides/batteries/): Opt-in, replaceable aspects.
 
-- Opt-in [`<angle/brackets>`](https://vic.github.io/den/angle-brackets.html) aspect resolution.
+- Opt-in [`<angle/brackets>`](https://den.oeiuwq.com/guides/angle-brackets/) aspect resolution.
 
-- _Incremental_ adoption on [exising](https://github.com/vic/den/discussions/151#discussioncomment-15797741) flakes, and _unobstrusive_ [migration](https://vic.github.io/den/migration.html) plan.
+- _Incremental_ adoption on [exising](https://github.com/vic/den/discussions/151#discussioncomment-15797741) flakes, and _unobstrusive_ [migration](https://den.oeiuwq.com/guides/migrate/) plan.
 
 - Features [tested](templates/ci).
 
-- REPL [friendly](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/bogus/modules/bug.nix#L34) [debugging](https://den.oeiuwq.com/debugging.html).
+- REPL [friendly](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/bogus/modules/bug.nix#L34) [debugging](https://den.oeiuwq.com/guides/debug/).
 
 Need more **batteries**? See [vic/denful](https://github.com/vic/denful).
 
@@ -92,7 +92,7 @@ nix run .#vm
 ### Den fundamental idea
 
 > Configurations that can be applied to multiple host/user combinations.
-> The [`__functor`](https://den.oeiuwq.com/functor.html) pattern makes aspects parametric.
+> The [`__functor`](https://den.oeiuwq.com/explanation/aspects/) pattern makes aspects parametric.
 
 <details>
 
@@ -145,6 +145,15 @@ as they are nothing more than functions of the
 particularities of the host or its users.
 
 </details>
+
+### Library vs framework
+
+Den works as both a **library** and a **framework**:
+
+- **Library** — a domain‑agnostic, context‑aware, aspect‑oriented API you can import and extend; build custom context pipelines and parametric aspects for anything Nix configurable.
+- **Framework** — batteries, ready-made schemas (`host`/`user`/`home`) and integrations tailored for NixOS/Darwin/home-manager configurations.
+
+Den is independent and extensible — you can use only the library pieces, or adopt the framework batteries for faster NixOS/Darwin setups. See the full explanation: https://den.oeiuwq.com/explanation/library-vs-framework/
 
 ### Code example
 
@@ -240,6 +249,6 @@ You are done! You know everything to start creating configurations with `den`.
 
 Feel free to to **explore** the codebase, particularly our [included batteries](modules/aspects/provides) and [tests](templates/ci).
 
-## Learn more at our [documentation website](https://vic.github.io/den)
+## Learn more at our [documentation website](https://den.oeiuwq.com)
 
 Join our [community discussion](https://github.com/vic/den/discussions).

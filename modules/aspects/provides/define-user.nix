@@ -25,7 +25,11 @@ let
   userContext =
     { host, user, ... }:
     {
-      nixos.users.users.${user.userName}.isNormalUser = true;
+      nixos.users.users.${user.userName} = {
+        name = user.userName;
+        home = homeDir host user;
+        isNormalUser = true;
+      };
       darwin.users.users.${user.userName} = {
         name = user.userName;
         home = homeDir host user;

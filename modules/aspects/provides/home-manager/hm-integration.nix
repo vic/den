@@ -5,76 +5,61 @@
   ...
 }:
 let
+  inherit (den.lib) parametric;
+
   description = ''
     integrates home-manager into nixos/darwin OS classes.
-
-    usage:
-
-      for using home-manager in just a particular host:
-
-        den.aspects.my-laptop.includes = [ den._.home-manager ];
-
-      for enabling home-manager by default on all hosts:
-
-        den.default.includes = [ den._.home-manager ];
 
     Does nothing for hosts that have no users with `homeManager` class.
     Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
     it is the home-manager.{nixos/darwin}Modules.home-manager.
 
-    For each user resolves den.aspects.''${user.aspect} and imports its homeManager class module.
+    For each user produces a `den.ctx.hm` context, and
+    forwards the `homeManager` class into os-level
+    `home-manager.home-manager.users.<user>`
   '';
 
-  homeManager =
-    { HM-OS-HOST }:
-    let
-      inherit (HM-OS-HOST) OS host;
+  hmClass = "homeManager";
 
-      hmClass = "homeManager";
-      hmModule = host.hm-module or inputs.home-manager."${host.class}Modules".home-manager;
-      hmUsers = lib.filter (u: u.class == hmClass) (lib.attrValues host.users);
+  intoHmUsers =
+    { host }:
+    map (user: { inherit host user; }) (lib.filter (u: u.class == hmClass) (lib.attrValues host.users));
 
-      hmUserAspect =
-        user:
-        let
-          HM = den.aspects.${user.aspect};
-          HM-OS-USER = {
-            inherit
-              OS
-              HM
-              host
-              user
-              ;
-          };
-        in
-        HM { inherit HM-OS-USER; };
-
-      hmUsersAspect =
-        { class, aspect-chain }:
-        den._.forward {
-          each = lib.optionals (lib.elem class [
-            "nixos"
-            "darwin"
-          ]) hmUsers;
-          fromClass = _: hmClass;
-          fromAspect = den.lib.take.unused aspect-chain hmUserAspect;
-          intoClass = _: class;
-          intoPath = user: [
-            "home-manager"
-            "users"
-            user.userName
-          ];
-        };
-    in
-    {
-      ${host.class}.imports = [ hmModule ];
-      includes = [ hmUsersAspect ];
+  forwardedToHost =
+    { host, user }:
+    den._.forward {
+      each = lib.singleton true;
+      fromClass = _: hmClass;
+      intoClass = _: host.class;
+      intoPath = _: [
+        "home-manager"
+        "users"
+        user.userName
+      ];
+      fromAspect = _: (den.ctx.hm-internal-user { inherit host user; });
     };
 
 in
 {
-  den.provides.home-manager = {
-    inherit description;
-    __functor = _: den.lib.take.exactly homeManager;
-  };
+  den.provides.home-manager = { };
+
+  den.ctx.home.desc = "Standalone Home-Manager config provided by home aspect";
+  den.ctx.home.conf = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
+  den.ctx.home.into.default = lib.singleton;
+
+  den.ctx.hm-host.into.hm-user = intoHmUsers;
+  den.ctx.hm-user.desc = "(internal)";
+  den.ctx.hm-user.conf = forwardedToHost;
+
+  den.ctx.hm-internal-user.conf =
+    { host, user }:
+    { class, aspect-chain }:
+    {
+      includes = [
+        (den.ctx.user { inherit host user; })
+        (den.lib.owned den.aspects.${host.aspect})
+        (den.lib.statics den.aspects.${host.aspect} { inherit class aspect-chain; })
+        (parametric.atLeast den.aspects.${host.aspect} { inherit host user; })
+      ];
+    };
 }

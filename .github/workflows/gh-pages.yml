@@ -1,7 +1,9 @@
 name: GH Pages
 on:
-  gollum:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["docs/**"]
 permissions:
   contents: read
   pages: write
@@ -16,24 +18,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Install mdbook
-        run: |
-          set -ve -o pipefail
-          curl -vL https://github.com/rust-lang/mdBook/releases/download/v0.4.52/mdbook-v0.4.52-x86_64-unknown-linux-gnu.tar.gz -o mdbook.tar.gz
-          sudo tar xf mdbook.tar.gz -C /usr/local/bin mdbook
-          mdbook --version
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: "${{github.repository}}.wiki"
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
       - name: Build
-        run: mdbook build
+        run: |
+          pushd docs
+          nix profile install nixpkgs#nodejs nixpkgs#pnpm
+          pnpm install
+          pnpm run build
+          popd
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./book"
+          path: "./docs/build"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -17,9 +17,8 @@
   den.default.homeManager.home.stateVersion = "26.05";
 
   den.default.includes = [
-    den.provides.home-manager
-    den.provides.define-user
     den.aspects.no-boot
+    den.provides.define-user
   ];
 
   den.aspects.no-boot.nixos = {

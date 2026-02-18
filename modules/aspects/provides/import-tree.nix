@@ -48,13 +48,13 @@
       or it can be default imported per host/user/home:
 
           # load from ./hosts/<host>/_nixos
-          den.default.includes = [ (den._.import-tree._.host ./hosts) ];
+          den.ctx.os.includes = [ (den._.import-tree._.host ./hosts) ];
 
           # load from ./users/<user>/{_homeManager, _nixos}
-          den.default.includes = [ (den._.import-tree._.user ./users) ];
+          den.ctx.hm.includes = [ (den._.import-tree._.user ./users) ];
 
           # load from ./homes/<home>/_homeManager
-          den.default.includes = [ (den._.import-tree._.home ./homes) ];
+          den.ctx.home.includes = [ (den._.import-tree._.home ./homes) ];
 
       you are also free to create your own auto-imports layout following the implementation of these.
   '';

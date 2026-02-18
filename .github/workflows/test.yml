@@ -70,12 +70,32 @@ jobs:
           EOF
           git add templates/bogus/modules/ci-runtime.nix
       - run: nix flake check ./templates/bogus --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  tests:
+    needs: [non-draft]
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#ci
+      - run: sed -i "s@\"github:vic/den\"@\"github:vic/den/$GITHUB_SHA\"@" flake.nix
+      - run: |
+          cat <<-EOF > modules/ci-runtime.nix
+          { lib, ... }:
+          {
+            _module.args.CI = true;
+          }
+          EOF
+      - run: nix flake update den
+      - run: nix flake metadata
+      - run: nix flake check
   template:
     needs: [non-draft]
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        template: [default, ci, example]
+        template: [default, example]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:

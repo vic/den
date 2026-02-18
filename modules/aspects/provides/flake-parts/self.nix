@@ -37,17 +37,16 @@ let
       }
     );
 
-  osAspect = { OS, host }: unused OS (mkAspect host.class host.system);
+  osAspect = { host }: mkAspect host.class host.system;
 
   userAspect =
     {
-      HM,
       user,
       host,
     }:
-    unused HM (mkAspect user.class host.system);
+    mkAspect user.class host.system;
 
-  homeAspect = { HM, home }: unused HM (mkAspect home.class home.system);
+  homeAspect = { home }: mkAspect home.class home.system;
 in
 {
   den.provides.self' = parametric.exactly {
