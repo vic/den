@@ -3,90 +3,102 @@ title: Why Den?
 description: The motivation and fundamental idea behind Den.
 ---
 
-## Den Origins
 
-Den started by exploring the re-usability enabled by the [Dendritic Nix](https://dendrix.oeiuwq.com/Dendritic.html) pattern.
+> This section is about how and why Den came to be.
+> You can safely skip this unless you are interested in how Den was shaped.
+>
+> However you might need to already be familiar with what [Dendritic](https://github.com/mightyiam/dendritic) means
+> you might also want to read the [FAQ](https://github.com/Doc-Steve/dendritic-design-with-flake-parts/wiki/FAQ)
 
-Traditional Nix configurations are powerful but isolated. Even when all nix modules are already functions, it is not common to share configurations outside of what is provided by `NixOS` and projects like `Home Manager` or `Hjem Run`. 
+Den is basically about a single idea:
 
-All these different configuration domains have different option sets, they share nothing in common except that they are nix modules. Passing values between different classes of configurations is not intuitive.
+> Being able to share re-usable (parametric) cross-class Nix configurations.
 
-When writing their infra, most people do re-invent the wheel an infinite number of times. And most of this is because configurations are not written with re-usability in mind. The result is you find people copy-pasting from other's repositories, or letting an AI slop-generate whatever it had consumed.
+Den was born not to be yet-another zillionth way to wire-up configurations.
 
-## The Fundamental Idea
+The purpose of Den is *social* more than purely _technical_.
 
-Just like any Nix module can already be a function. Den explores the idea of Dendritic aspects being functions.
+Den can be used with/without flakes, with/without flake-parts, because it is an
+exploration on how to take nix module sharing to a higher-level, literaly, since
+*dendritic* modules contain one or more of other classic _non-dendritic_ modules.
+
+## The history of Den
+
+Before creating Den, my `vic/vix` infra was made with flake-parts (previously I had used `blueprint`, `snowfall`, and before that a couple of my own in-flake tailor-made libs) and I was really happy with dendritic flake-parts. 
+You can still browse the [`noden`](https://github.com/vic/vix/tree/noden) branch as an example of a flake-parts based Dendritic setup.
+
+So I dreamed about having a place akin to the `Nix User Repository` but for finding Dendritic aspects made by others. That is still an on-going effort named [dendrix](https://dendrix.oeiuwq.com/). At that time there were just a handful of people using Dendritic publicly, and every module even when they followed a dendritic-style were clearly not made with re-usability in mind, user-specifics and host-specifics where always there somehow, or even worse, trying to evaluate a single module demanded to also download all of the owner's particular inputs.
+
+At that time [unify](https://codeberg.org/quasigod/unify) - the first dendritic framework I know of- entered my radar, and I really loved it! It was missing a couple of features that I needed in my existing infra, but I loved the `<aspect>.<class>` transposition that its author invented, and the cleaness of the code at the author's infra was a testament to how good-looking and organized a Dendritic setup could look. I certainly wanted that for mine.
+
+However, before adopting `unify`, I realized that my re-usability problem was not about syntax, not about how things are loaded from filesystem nor how they are wired at the flake level.
+
+> The problem was more about feature composability.
+
+Being an fan of functional programming, the most composable things I know are functions.
+
+## **A dendritic aspect in Den is a function**
 
 ```nix
-# a NixOS module is a function.
-{ pkgs, ... }: { .... };
+# Just like any nixos module can be a function: 
+{ pkgs, ... }: { <nixos-settings> }
 
-# a Dendritic aspect can be a function.
-{ host, user }: {
-  nixos = { pkgs, ... }: { users.users.${user.name}.packages = [ pkgs.hello ] };
-};
-
-```
-
-
-> Configurations that are **functions of context** become truly re-usable.
-> An important point is that `{ host, user }` are NOT module arguments in
-> the nix-modules sense. Because they do not depend on config you can use
-> them for conditional inclusion of other features.
-
-Instead of writing a NixOS module tied to one machine, you write an [**aspect**](/explanation/aspects/) — a
-function that receives [context](/explanation/context-system/) (which host, which user, which platform) and produces
-configurations for any Nix class it needs:
-
-```nix
-{ host, user, ... }: {
-  nixos.users.users.${user.userName}.description = "${user.userName} on ${host.name}";
-  darwin.users.users.${user.userName}.home = "/Users/${user.userName}";
-  homeManager.programs.git.userName = user.userName;
+# A function returning nixos and darwin configs
+{ <context> }: { 
+  nixos = { pkgs, ... }: { <nixos-settings> }; 
+  darwin = { pkgs, ... }: { <darwin-settings> };
+  # any other nix-configuration class
 }
 ```
 
-One function. Three classes. Any host. Any user. **Truly parametric.**
+Like `flake.modules.<class>.<name>` transposed and turned into functions.
 
-## Two Core Principles
+The result of that exploration was [flake-aspects](https://github.com/vic/flake-aspects). Which is a dependency free library (usable with/without flakes) that focuses on composability not on wiring/building configurations.
 
-### 1. Context Transformation
 
-Data flows through a declarative pipeline. You declare the entities (data) that exists in your universe, Den transforms them into progressively richer contexts to which aspects are attached, providing configuration:
+`flake-aspects` allows for aspects to be parametric by using the Nix [`__functor` pattern](/explanation/aspects/#the-__functor-pattern), it also allows aspects to be nested unlike the flat-structure we had in `flake.modules` which caused people to use weird-named modules `flake.modules."host/desktop".nixos` or similar for string-based-semantics. It also allows declaring dependencies between aspects themselves, not using **stringly-typed** references like `.modules = [ "base" "gaming" ]` which was one of the shortcomings early-days unify had.
 
-```mermaid
-graph LR
-  H["den.ctx.host {host}"] --> U["den.ctx.user {host, user} (for each user)"]
-  U --> HM["aspect provides homeManager/hjeim class"]
-  H --> OS["aspect provides nixos/darwin class"]
-```
+> Some [people](https://codeberg.org/FrdrCkII/nixconf/src/branch/main/modules/aspects.prt.nix) have found `flake-aspects` enough to implement their own Dendritic setups, or even for mixing with other non-dendritic infra.
 
-Each stage of the pipeline is a [**context type**](/reference/ctx/) defined in `den.ctx`. Context types
-declare how to find [aspects](/explanation/aspects/), how to transform into other contexts, and which
-[parametric](/explanation/parametric/) includes to activate.
+## Den builds upon flake-aspects
 
-### 2. Context-Aware Aspects
+Den, tries to answer some specific issues regarding NixOS/nix-Darwin configurations:
 
-Aspects are composable bundles that inspect their context parameters to decide
-what to produce. A function taking `{ host, ... }` only runs when a host context
-exists. A function taking `{ host, user, ... }` runs once per user on each host.
+- How to [define entities](/guides/declare-hosts) on your infra:
+  
+  `den.hosts.<arch>.<hostName>.users.<userName>`
 
-Functions that require parameters not present in the current context are
-not included. Den introduces pattern matching on context shape.
+- How to define common [schemas](/guides/declare-hosts#base-modules) (options) for these entities.
 
-## Den is Social
+  `den.base.host.options.vpn-group = lib.mkOption`
 
-Den is fundamentally born to solve a **social** problem: making Dendritic Nix configurations shareable.
+- How to [include features](/guides/batteries) that affect all entities
 
-Den's [**namespaces**](/guides/namespaces/) and [**aspects**](/explanation/aspects/) create a common language for sharing
-configurations across repositories, even across flake/non-flake projects, and communities.
+  `den.default.includes = [ (den._.unfree ["vscode"]) ]`
 
-## Built on Flake-Aspects
+- How a `Host` can affect its `User`s configurations, and [viceversa](/guides/bidirectional).
 
-Den is built on [flake-aspects](https://github.com/vic/flake-aspects) — a
-dependency-free library for composable, nested, parametric aspect trees.
-Den adds the context transformation pipeline and framework integration
-on top of this foundation.
+- How to [mixin](/guides/namespaces) aspects from remote sources and enhance locally defined ones.
+
+  `den.namespace "omfnix" [ inputs.remote ]`
+
+- How to provide features to the community using a common namespace.
+
+  `{ omfnix, ... }: { omfnix.niri.nixos = ...; }`
+
+
+## Den is about sharing functions to configs.
+
+Based on Den sharable aspects (which depend on a minimal surface syntax for namespaces), I'm planning to create [denful](https://github.com/vic/denful). A lazyvim-like configurations distribution that people can include from, just like they do with editor distributions.
+
+And this exploration is all part of the `dendrix` initiative. Trying to come up with better ways to share configurations *even* between flakes/no-flakes users. `dendrix` indexes using [`import-tree`](https://github.com/vic/import-tree) collections instead of flakes, because flakes demand all its inputs to be downloaded, a collection of modules in an import-tree can define the inputs they need by using [`flake-file`](https://github.com/vic/flake-file) and these inputs can be propagated to the final user's flake or npins/unflake.
+
+So, `dendrix` became something like an index of browsable aspects found in GitHub, my intention was that showing the different aspects each people produces would motivate re-usability, because a major problem I see in the Nix community is most people just copy and paste and/or re-invent the wheel in so many infinite ways. 
+
+Den is more about giving to others (creating useful Nix software/configurations), not just about make things work locally.
+
+> I've been working over a year on these [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries), but time is our most scarce resource. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
+
 
 ## What's Next?
 

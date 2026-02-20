@@ -25,6 +25,8 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
+
+
 ## Two Core Principles
 
 Den builds on [flake-aspects](https://github.com/vic/flake-aspects)' **parametric aspects**,
@@ -42,6 +44,33 @@ and provides a declarative **context-pipeline** as cutting-points for these aspe
     configurations — and are activated by a matching context.
   </Card>
 </CardGrid>
+
+
+### 1. Context Transformation
+
+Data flows through a declarative pipeline. You declare the entities (data) that exists in your universe, Den transforms them into progressively richer contexts to which aspects are attached, providing configuration for each context:
+
+```mermaid
+graph LR
+  H["den.ctx.host {host}"] --> U["den.ctx.user {host, user} (for each user)"]
+  U --> HM["aspect provides homeManager/hjeim class"]
+  H --> OS["aspect provides nixos/darwin class"]
+```
+
+Each stage of the pipeline is a [**context type**](/reference/ctx/) defined in `den.ctx`. Context types
+declare how to find [aspects](/explanation/aspects/), how to transform into other contexts, and which
+[parametric](/explanation/parametric/) includes to activate.
+
+### 2. Context-Aware Aspects
+
+Aspects are composable bundles that inspect their context parameters to decide
+what to produce. A function taking `{ host, ... }` only runs when a host context
+exists. A function taking `{ host, user, ... }` runs once per user on each host.
+
+Functions that require parameters not present in the current context are
+not included. Den introduces pattern matching on context shape.
+
+
 
 ## Den as a Library
 
