@@ -86,7 +86,19 @@ den.homes.aarch64-darwin.vic = {};
     includes = [
       den.aspects.tiling-wm
       den.provides.primary-user
+      den.aspects.vic._.conditional
     ];
+
+    provides = {
+      conditional = { host, user }:
+        lib.optionalAttrs (host.hasX && user.hasY)  {
+           nixos.imports = [
+            inputs.someX.nixosModules.default
+           ];
+           nixos.someX.foo = user.someY;
+        };
+      };
+    };
   };
 }
 ```
