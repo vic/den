@@ -10,6 +10,10 @@
       { pkgs, ... }:
       {
         environment.systemPackages = [ pkgs.hello ];
+
+        # USER TODO: remove this
+        boot.loader.grub.enable = false;
+        fileSystems."/".device = "/dev/null";
       };
   };
 

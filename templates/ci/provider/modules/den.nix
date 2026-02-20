@@ -12,17 +12,11 @@
 
   provider.tools._.dev._.editors = {
     description = "Editor configurations from provider flake";
-    nixos.environment.variables.PROVIDER_EDITOR = "vim";
+    nixos.programs.vim.enable = true;
     homeManager =
       { pkgs, ... }:
       {
         home.packages = [ pkgs.vim ];
       };
-  };
-
-  provider.tools._.dev._.shells = {
-    description = "Shell configurations from provider flake";
-    nixos.environment.variables.PROVIDER_SHELL = "fish";
-    nixos.environment.systemPackages = [ ];
   };
 }

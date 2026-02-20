@@ -91,7 +91,7 @@ let
             visible = false;
             readOnly = true;
             type = lib.types.deferredModule;
-            default = mainModule config "OS" "host";
+            default = mainModule config den.ctx.host "host";
           };
         };
       }
@@ -196,7 +196,7 @@ let
             visible = false;
             readOnly = true;
             type = lib.types.deferredModule;
-            default = mainModule config "HM" "home";
+            default = mainModule config den.ctx.home "home";
           };
         };
       }
@@ -205,12 +205,8 @@ let
   mainModule =
     from: intent: name:
     let
-      asp = den.aspects.${from.aspect};
-      ctx = {
-        ${intent} = asp;
-        ${name} = from;
-      };
-      mod = (asp ctx).resolve { inherit (from) class; };
+      asp = intent { ${name} = from; };
+      mod = asp.resolve { inherit (from) class; };
     in
     mod;
 in

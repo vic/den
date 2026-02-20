@@ -19,9 +19,6 @@
     # ${user}.provides.${host} and ${host}.provides.${user}
     <eg/routes>
 
-    # Enable home-manager on all hosts.
-    <den/home-manager>
-
     # Automatically create the user on host.
     <den/define-user>
 

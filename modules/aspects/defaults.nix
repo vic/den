@@ -1,8 +1,10 @@
-# creates den.default aspect
-{ lib, den, ... }:
 {
-  config.den.default = den.lib.parametric.atLeast { };
-  options.den.default = lib.mkOption {
-    type = den.lib.aspects.types.aspectSubmodule;
-  };
+  den =
+    { lib, ... }:
+    {
+      imports = [ (lib.mkAliasOptionModule [ "default" ] [ "ctx" "default" ]) ];
+
+      ctx.default.conf = _: { };
+
+    };
 }

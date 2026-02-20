@@ -1,0 +1,125 @@
+---
+title: Use Batteries
+description: Opt-in, replaceable aspects for common tasks.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="tip">Source: [`modules/aspects/provides/`](https://github.com/vic/den/tree/main/modules/aspects/provides) · Reference: [Batteries](/reference/batteries/)</Aside>
+
+## What Are Batteries?
+
+Batteries are pre-built aspects shipped with Den. They are **opt-in** — you
+explicitly include them where needed. They are **replaceable** — you can
+write your own alternative.
+
+Access batteries via `den._.` (shorthand for `den.provides.`).
+
+## define-user
+
+Defines a user at both OS and Home-Manager levels:
+
+```nix
+den.default.includes = [ den._.define-user ];
+```
+
+Sets `users.users.<name>`, `home.username`, and `home.homeDirectory`
+automatically for NixOS, Darwin, and standalone Home-Manager.
+
+## primary-user
+
+Makes a user an administrator:
+
+```nix
+den.aspects.vic.includes = [ den._.primary-user ];
+```
+
+On NixOS: adds `wheel` and `networkmanager` groups.
+On Darwin: sets `system.primaryUser`.
+On WSL: sets `wsl.defaultUser` if host has a `wsl` attribute.
+
+## user-shell
+
+Sets a user's default shell at OS and HM levels:
+
+```nix
+den.aspects.vic.includes = [ (den._.user-shell "fish") ];
+```
+
+Enables the shell program on both NixOS/Darwin and Home-Manager,
+and sets it as the user's default shell.
+
+## unfree
+
+Enables unfree packages by name:
+
+```nix
+den.aspects.my-laptop.includes = [ (den._.unfree [ "discord" "slack" ]) ];
+```
+
+Works for any class — NixOS, Darwin, Home-Manager.
+
+## tty-autologin
+
+Enables automatic tty login for a given username:
+
+```nix
+den.aspects.my-laptop.includes = [ (den._.tty-autologin "root") ];
+```
+
+## import-tree
+
+Recursively imports non-dendritic Nix files by class:
+
+```nix
+den.ctx.host.includes = [ (den._.import-tree._.host ./hosts) ];
+den.ctx.user.includes = [ (den._.import-tree._.user ./users) ];
+```
+
+Given a directory structure like `./hosts/my-laptop/_nixos/`, it auto-imports
+files under the matching class directory. Useful for migration.
+
+## inputs' and self' (flake-parts)
+
+Provide per-system `inputs'` and `self'` to NixOS/HM modules:
+
+```nix
+den.default.includes = [ den._.inputs' den._.self' ];
+
+den.aspects.igloo.nixos = { inputs', ... }: {
+  environment.systemPackages = [ inputs'.nixpkgs.legacyPackages.hello ];
+};
+```
+
+## forward
+
+Create custom Nix classes that forward configs into target submodules:
+
+```nix
+den.aspects.igloo.includes = [
+  ({ class, aspect-chain }:
+    den._.forward {
+      each = lib.singleton class;
+      fromClass = _: "custom";
+      intoClass = _: "nixos";
+      intoPath = _: [ ];
+      fromAspect = _: lib.head aspect-chain;
+    })
+];
+```
+
+This is how Home-Manager integration is implemented internally.
+
+## Writing Your Own
+
+Any aspect can serve as a battery. Publish it in a namespace for others:
+
+```nix
+{ den, ... }: {
+  den.provides.my-battery = den.lib.parametric {
+    includes = [
+      ({ host, ... }: { nixos.my-setting = host.name; })
+    ];
+  };
+}
+```

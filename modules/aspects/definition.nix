@@ -8,10 +8,7 @@ let
   inherit (den.lib) parametric;
 
   makeAspect = from: {
-    ${from.aspect} = parametric.atLeast {
-      ${from.class} = { };
-      includes = [ den.default ];
-    };
+    ${from.aspect} = parametric { ${from.class} = { }; };
   };
 
   hosts = map builtins.attrValues (builtins.attrValues den.hosts);

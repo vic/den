@@ -1,0 +1,89 @@
+{ denTest, ... }:
+{
+
+  flake.tests.deadbugs.dups.test-static-include = denTest (
+    {
+      den,
+      lib,
+      tuxHm,
+      ...
+    }:
+    {
+      den.default.homeManager.home.stateVersion = "25.11";
+
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.aspects.tux.includes = [
+        {
+          homeManager =
+            { pkgs, ... }:
+            {
+              programs.emacs.enable = true;
+              programs.emacs.package = pkgs.emacs-nox;
+            };
+        }
+      ];
+
+      expr = lib.getName tuxHm.programs.emacs.package;
+      expected = "emacs-nox";
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-default-func-include = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.default.homeManager.home.stateVersion = "25.11";
+
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.default.nixos.imports = [
+        { options.foo = lib.mkOption { type = lib.types.listOf lib.types.str; }; }
+      ];
+
+      den.default.includes = [
+        (
+          { user, ... }:
+          {
+            nixos.foo = [ user.name ];
+          }
+        )
+      ];
+
+      expr = igloo.foo;
+      expected = [ "tux" ];
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-host-owned = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.default.homeManager.home.stateVersion = "25.11";
+
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.aspects.igloo.includes = [
+        {
+          nixos.imports = [
+            { options.foo = lib.mkOption { type = lib.types.listOf lib.types.str; }; }
+          ];
+        }
+      ];
+
+      den.aspects.igloo.nixos.foo = [ "bar" ];
+
+      expr = igloo.foo;
+      expected = [ "bar" ];
+    }
+  );
+
+}
