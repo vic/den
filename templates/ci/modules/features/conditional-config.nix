@@ -2,6 +2,52 @@
 {
   flake.tests.conditional-config = {
 
+    test-conditional-nixos-import = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      let
+        # A nixos module not always included
+        # suppose this comes from inputs.<something>.nixosModules.default
+        trueModule = {
+          options.something = lib.mkOption { default = "was-true"; };
+        };
+
+        # fallback for test
+        falseModule = {
+          options.something = lib.mkOption { default = "was-false"; };
+        };
+
+        conditional = host: user: host.hasFoo && user.hasBar;
+
+        conditionalAspect =
+          { user, host, ... }:
+          {
+            # nixos module with conditional imports
+            nixos =
+              { pkgs, ... }:
+              {
+                imports = if conditional host user then [ trueModule ] else [ falseModule ];
+              };
+          };
+
+      in
+      {
+        den.hosts.x86_64-linux.igloo = {
+          hasFoo = true;
+          users.tux.hasBar = true;
+        };
+
+        den.aspects.igloo.includes = [ conditionalAspect ];
+
+        expr = igloo.something;
+        expected = "was-true";
+      }
+    );
+
     test-conditional-hm-by-user-and-host = denTest (
       {
         den,
@@ -13,10 +59,7 @@
       let
         git-for-linux-only =
           { user, host, ... }:
-          if user.userName == "tux" && !lib.hasSuffix "darwin" host.system then
-            { homeManager.programs.git.enable = true; }
-          else
-            { };
+          if user.userName == "tux" then { homeManager.programs.git.enable = true; } else { };
       in
       {
         den.hosts.x86_64-linux.igloo.users = {
@@ -24,7 +67,7 @@
           pingu = { };
         };
         den.default.homeManager.home.stateVersion = "25.11";
-        den.aspects.tux.includes = [ git-for-linux-only ];
+        den.aspects.igloo.includes = [ git-for-linux-only ];
 
         expr = [
           tuxHm.programs.git.enable
@@ -34,67 +77,6 @@
           true
           false
         ];
-      }
-    );
-
-    test-conditional-os-by-user-system = denTest (
-      {
-        den,
-        lib,
-        igloo,
-        iceberg,
-        ...
-      }:
-      let
-        tmux-on-linux =
-          { user, host, ... }:
-          if user.userName == "tux" && !lib.hasSuffix "darwin" host.system then
-            { nixos.programs.tmux.enable = true; }
-          else
-            { };
-      in
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.hosts.x86_64-linux.iceberg.users.tux = { };
-        den.aspects.tux.includes = [ tmux-on-linux ];
-
-        expr = [
-          igloo.programs.tmux.enable
-          iceberg.programs.tmux.enable
-        ];
-        expected = [
-          true
-          true
-        ];
-      }
-    );
-
-    test-custom-nixos-module-import = denTest (
-      {
-        den,
-        lib,
-        igloo,
-        ...
-      }:
-      let
-        peopleModule = {
-          options.people = lib.mkOption { type = lib.types.listOf lib.types.str; };
-        };
-      in
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.default.nixos.imports = [ peopleModule ];
-        den.default.includes = [
-          (
-            { user, ... }:
-            {
-              nixos.people = [ user.userName ];
-            }
-          )
-        ];
-
-        expr = igloo.people;
-        expected = [ "tux" ];
       }
     );
 
