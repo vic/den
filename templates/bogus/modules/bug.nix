@@ -1,49 +1,35 @@
+{ denTest, ... }:
 {
-  inputs,
-  den,
-  lib,
-  ...
-}:
-{
-  den.hosts.x86_64-linux.igloo.users.tux = { };
+  flake.tests.bogus = {
 
-  den.aspects.igloo.includes = [ den.aspects.testing ];
-  # Use aspects to create a **minimal** bug reproduction
-  den.aspects.testing =
-    { user, ... }@ctx:
-    builtins.trace ctx.host.hostName {
-      homeManager.programs.vim.enable = user.userName == "tux";
-    };
+    test-something = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        tuxHm,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
 
-  # `nix-unit --flake .#.tests.systems`
-  # `nix eval .#.tests.testItWorks`
-  flake.tests.testItWorks =
-    let
-      igloo = inputs.self.nixosConfigurations.igloo.config;
-      tux = igloo.home-manager.users.tux;
+        den.ctx.hm-host.includes = [ (den._.unfree [ "discord" ]) ];
 
-      expr = tux.programs.vim.enable;
-      expected = true;
-    in
-    {
-      inherit expr expected;
-    };
+        expr =
+          let
+            discord-host = igloo.nixpkgs.config.allowUnfreePredicate { pname = "discord"; };
+            discord-user = tuxHm.nixpkgs.config.allowUnfreePredicate { pname = "discord"; };
+          in
+          {
+            inherit discord-host discord-user;
+          };
 
-  # See [Debugging Tips](https://den.oeiuwq.com/debugging.html)
-  flake.den = den;
-  # `nix eval .#.value`
-  flake.value =
-    let
-      aspect = den.aspects.testing {
-        user.userName = "tux";
-        host.hostName = "fake";
-      };
-      modules = [
-        (aspect.resolve { class = "homeManager"; })
-        { options.programs = lib.mkOption { }; }
-      ];
-      evaled = lib.evalModules { inherit modules; };
-    in
-    evaled.config;
+        expected = {
+          discord-host = true;
+          discord-user = false;
+        };
+      }
+    );
 
+  };
 }
