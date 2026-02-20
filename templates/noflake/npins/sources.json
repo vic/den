@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "f8cb8c618e1680e99c165d2bf826600170abb5a2",
-      "url": "https://github.com/vic/den/archive/f8cb8c618e1680e99c165d2bf826600170abb5a2.tar.gz",
-      "hash": "sha256-i6IoHdOqdJHjJHuTIZqPJVDn6VVOG1nyRXR70qYQej4="
+      "revision": "68052f29fe7f5d4e452fb1eb56874054e5cba1c9",
+      "url": "https://github.com/vic/den/archive/68052f29fe7f5d4e452fb1eb56874054e5cba1c9.tar.gz",
+      "hash": "sha256-C32B1+oba7eV+ZBndmVPltNk1eYuj94haLnzJ0FEdW8="
     },
     "flake-aspects": {
       "type": "Git",

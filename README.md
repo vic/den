@@ -13,11 +13,9 @@
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
 
-
-> **Den as a Library**: domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).  
-> **Den as Framework**: uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.  
+> **Den as a Library**: domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).\
+> **Den as Framework**: uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.\
 > [Learn more →](https://den.oeiuwq.com/explanation/library-vs-framework/)
-
 
 <table>
 <tr>
