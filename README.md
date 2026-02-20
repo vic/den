@@ -9,9 +9,15 @@
   <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
 </p>
 
-# den - Re-usable Dendritic Nix configurations. [See MOTIVATION](https://den.oeiuwq.com/motivation/)
+# den - Context-aware Dendritic Nix configurations.
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
+
+
+> **Den as a Library**: domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).  
+> **Den as Framework**: uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.  
+> [Learn more →](https://den.oeiuwq.com/explanation/library-vs-framework/)
+
 
 <table>
 <tr>
@@ -47,12 +53,7 @@ Examples: [`vic/vix`](https://github.com/vic/vix) · [`quasigod.xyz`](https://ta
 </td>
 <td>
 
-### Den — library & framework
-
-> **Library**: domain-agnostic, context-aware, [aspect-oriented](https://den.oeiuwq.com/explanation/aspects/) API — extend with custom pipelines for any Nix class.\
-> **Framework**: batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager. [Learn more →](https://den.oeiuwq.com/explanation/library-vs-framework/)
-
-### Code example
+### Code example (OS configuration domain)
 
 ```nix
 # hosts & homes have extensible schema types.
@@ -62,13 +63,17 @@ den.homes.aarch64-darwin.vic = {};
 ```
 
 ```nix
-# modules/my-laptop.nix — any module can contribute to an aspect
+# modules/my-laptop.nix
 { den, inputs, ... }: {
   den.aspects.my-laptop = {
-    includes = [ den.aspects.workplace-vpn den.provides.home-manager ];
+    includes = [
+      den.aspects.work-vpn
+    ];
     # regular nixos/darwin modules or any other Nix class
-    nixos  = { pkgs, ... }: { imports = [ inputs.disko.nixosModules.disko ]; };
-    darwin = { imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ]; };
+    nixos  = { pkgs, ... }: {
+       imports = [ inputs.disko.nixosModules.disko ];
+    };
+    darwin = { ... };
     homeManager.programs.vim.enable = true;
   };
 }
@@ -78,9 +83,12 @@ den.homes.aarch64-darwin.vic = {};
 # modules/vic.nix
 { den, ... }: {
   den.aspects.vic = {
-    homeManager = { pkgs, ... }: { /* ... */ };
+    homeManager = { pkgs, ... }: ...;
     nixos.users.users.vic.description = "oeiuwq";
-    includes = [ den.aspects.tiling-wm den.provides.primary-user ];
+    includes = [
+      den.aspects.tiling-wm
+      den.provides.primary-user
+    ];
   };
 }
 ```
