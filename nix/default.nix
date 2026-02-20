@@ -11,6 +11,8 @@ in
     default.description = "Default template";
     minimal.path = ../templates/minimal;
     minimal.description = "Minimalistic den";
+    noflake.path = ../templates/noflake;
+    noflake.description = "Den without flake";
     example.path = ../templates/example;
     example.description = "Example";
     ci.path = ../templates/ci;
