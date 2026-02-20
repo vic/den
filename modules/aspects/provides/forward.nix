@@ -1,4 +1,4 @@
-{ den, ... }:
+{ den, lib, ... }:
 let
   description = ''
     An aspect that imports all modules defined for `from` class
@@ -32,10 +32,63 @@ let
     See templates/ci/modules/forward.nix for usage example.
     See also: https://github.com/vic/den/issues/160, https://github.com/vic/flake-aspects/pull/31
   '';
+
+  forward =
+    {
+      adaptArgs ? null,
+      adapterModule ? null,
+      ...
+    }@fwd:
+    let
+      forwarded = den.lib.aspects.forward clean;
+      clean = builtins.removeAttrs fwd [
+        "adaptArgs"
+        "adapterModule"
+      ];
+      fromClass = fwd.fromClass (lib.head fwd.each);
+      intoClass = fwd.intoClass (lib.head fwd.each);
+      intoPath = fwd.intoPath (lib.head fwd.each);
+      adapter =
+        { class, aspect-chain }:
+        {
+          includes = [
+            (den.lib.aspects.forward (
+              clean
+              // {
+                intoPath = _: [
+                  "den"
+                  "fwd-adapter"
+                  fromClass
+                ];
+              }
+            ))
+          ];
+          ${intoClass} = args: {
+            options.den.fwd-adapter.${fromClass} = lib.mkOption {
+              default = { };
+              type = lib.types.submoduleWith {
+                specialArgs = adaptArgs args;
+                modules =
+                  if adapterModule == null then
+                    [
+                      {
+                        config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
+                      }
+                    ]
+                  else
+                    [ adapterModule ];
+              };
+            };
+            config = lib.setAttrByPath intoPath args.config.den.fwd-adapter.${fromClass};
+          };
+        };
+    in
+    if adaptArgs == null then forwarded else adapter;
+
 in
 {
   den.provides.forward = {
     inherit description;
-    __functor = _self: den.lib.aspects.forward;
+    __functor = _self: forward;
   };
 }

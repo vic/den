@@ -41,6 +41,7 @@ let
         user.userName
       ];
       fromAspect = _: den.aspects.${user.aspect};
+      adaptArgs = args: args // { osConfig = args.config; };
     };
 
 in
