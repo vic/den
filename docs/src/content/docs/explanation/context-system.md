@@ -46,9 +46,9 @@ den.ctx.foobar = {
 | Component | Purpose |
 |-----------|---------|
 | `desc` | Human-readable description |
-| `conf` | Given context values, locate the configuration aspect |
+| `conf` | Given a context, find aspect responsible for configuration |
 | `includes` | Parametric aspects activated for this context (aspect cutting-point) |
-| `into` | Transformations fan-out to other context types |
+| `into` | Transformations fan-out into other context types |
 
 ## Context Application
 
@@ -58,21 +58,21 @@ A context type is callable — it's a functor:
 aspect = den.ctx.foobar { foo = "hello"; bar = "world"; };
 ```
 
-When applied, Den:
+When applied, Den creates a new aspect that includes the following:
 
-1. **Produces owned configs** from the context type itself
-2. **Locates the aspect** via `conf` (e.g., `den.aspects.hello._.world`)
-3. **Applies includes** — parametric aspects matching this context
-4. **Transforms** — calls each `into` function, producing new contexts
-5. **Recurses** — applies each produced context through its own pipeline
+1. **owned configs** from the context itself
+2. **main aspect config** via `conf` (e.g., `den.aspects.hello._.world`)
+3. **included configs** — parametric aspects matching this context
+4. **transforms** — calls each `into` function, producing new contexts
+5. **recurses** — applies each produced context through its own pipeline
 
 ```mermaid
 graph TD
   Apply["ctx.foobar { foo, bar }"]
   Apply --> Own["Owned configs"]
-  Apply --> Conf["conf → locate aspect"]
+  Apply --> Conf["ctx → find aspect"]
   Apply --> Inc["includes → parametric aspects"]
-  Apply --> Into["into.baz → new contexts"]
+  Apply --> Into["into.baz → new baz contexts"]
   Into --> Next["ctx.baz { baz }"]
   Next --> Own2["...recurse"]
 ```
@@ -134,7 +134,7 @@ aspects to specific pipeline stages instead of the catch-all `den.default`.
 
 ## Extending Context Flow
 
-Add new transformations to existing context types from any module:
+You can define new context types or new transformations into existing contexts from any module:
 
 ```nix
 den.ctx.hm-host.into.foo = { host }: [ { foo = host.name; } ];
@@ -148,58 +148,49 @@ without modifying any built-in file.
 
 Den defines these context types for its NixOS/Darwin/HM framework:
 
-### host — `{ host }`
+### den.ctx.host — `{ host }`
 
-The entry point. Created when evaluating `den.hosts.<system>.<name>`:
-
-```nix
-den.ctx.host.conf = { host }:
-  parametric.fixedTo { inherit host; } den.aspects.${host.aspect};
-
-den.ctx.host.into.default = lib.singleton;
-den.ctx.host.into.user = { host }:
-  map (user: { inherit host user; }) (attrValues host.users);
-```
-
-Transforms **into** `default` (for global aspects) and `user` (for each user).
-
-### user — `{ host, user }`
-
-Created for each user on a host:
+This is how NixOS configurations get created:
 
 ```nix
-den.ctx.user.conf = { host, user }@ctx: {
-  includes = [
-    (fixedTo ctx userAspect)
-    (atLeast hostAspect ctx)
-  ];
+# use den API to apply the context to data
+aspect = den.ctx.host {
+  # value is `den.hosts.<system>.<name>`.
+  host = den.hosts.x86_64-linux.igloo;
 };
 
-den.ctx.user.into.default = lib.singleton;
+# use flake-aspects API to resolve nixos module
+nixosModule = aspect.resolve { class = "nixos"; };
+
+# use NixOS API to build the system
+nixosConfigurations.igloo = lib.nixosSystem {
+  modules = [ nixosModule ];
+};
 ```
 
-### default — catch-all
+### den.ctx.user — `{ host, user }`
 
-`den.default` is an alias for `den.ctx.default`. Every context type
-transforms into `default` via `.into.default`:
+A host fan-outs a new context for each user.
 
-```nix
-den.ctx.default.conf = _: { };
-```
+### den.ctx.default
 
-This is how `den.default.includes` functions receive their context data —
-host, user, or home contexts all flow through here.
+Aliased as `den.default`, used to define static global settings for hosts, users and homes.
 
-### hm-host — `{ host }` (when HM detected)
+### den.ctx.hm-host — `{ host }` 
 
-Activates only for hosts with Home-Manager users. Imports the HM module.
-See [Context Pipeline](/explanation/context-pipeline/) for detection criteria.
+Home Manager enabled host.
 
-### hm-user — `{ host, user }` (HM users)
+A den.ctx.host gets transformed into den.ctx.hm-host only if the [host supports home-manager](/explanation/context-pipeline/).
 
-Created for each HM user, forwards `homeManager` class into the host.
+When activated, it imports the HM module.
 
-### home — `{ home }` (standalone HM)
+### den.ctx.hm-user — `{ host, user }`
+
+For each user that has its class value set to homeManager.
+
+When activated enables the `homeManager` user configuration class.
+
+### den.ctx.home — `{ home }`
 
 Entry point for standalone Home-Manager configurations.
 

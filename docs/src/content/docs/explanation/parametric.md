@@ -3,21 +3,23 @@ title: Parametric Aspects
 description: How parametric functors enable context forwarding and adaptation.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside type="tip">Source: [`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) · [`nix/fn-can-take.nix`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix)</Aside>
+> Use the source, Luke: [`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) · [`nix/fn-can-take.nix`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix)
 
 ## What Is a Parametric Aspect?
 
-A **parametric** aspect uses a `__functor` that forwards its received context
-to functions in `.includes`. Den provides several parametric functors in
+A **parametric** aspect delegates its [implicit arguments](https://sngeth.com/functional%20programming/2024/09/25/point-free-style/) to functions defined in its `.includes`.
+
+Den provides several parametric functors in
 `den.lib.parametric`.
 
-## den.lib.parametric (the default)
+## den.lib.parametric
 
-The most common functor. Alias for `parametric.withOwn parametric.atLeast`:
+The most common functor.
+
+Alias for `(parametric.withOwn parametric.atLeast)`:
 
 ```nix
+# NOTE: context is implicit.
 den.aspects.foo = den.lib.parametric {
   nixos.networking.hostName = "owned";  # always included
   includes = [

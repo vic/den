@@ -44,19 +44,20 @@ Being an fan of functional programming, the most composable things I know are fu
 { pkgs, ... }: { <nixos-settings> }
 
 # A function returning nixos and darwin configs
-{ <context> }: { 
+{ host, user }: { 
   nixos = { pkgs, ... }: { <nixos-settings> }; 
   darwin = { pkgs, ... }: { <darwin-settings> };
   # any other nix-configuration class
 }
 ```
 
-Like `flake.modules.<class>.<name>` transposed and turned into functions.
-
 The result of that exploration was [flake-aspects](https://github.com/vic/flake-aspects). Which is a dependency free library (usable with/without flakes) that focuses on composability not on wiring/building configurations.
 
 
-`flake-aspects` allows for aspects to be parametric by using the Nix [`__functor` pattern](/explanation/aspects/#the-__functor-pattern), it also allows aspects to be nested unlike the flat-structure we had in `flake.modules` which caused people to use weird-named modules `flake.modules."host/desktop".nixos` or similar for string-based-semantics. It also allows declaring dependencies between aspects themselves, not using **stringly-typed** references like `.modules = [ "base" "gaming" ]` which was one of the shortcomings early-days unify had.
+`flake-aspects` allows for aspects to be parametric by using the Nix [`__functor` pattern](/explanation/aspects/#the-__functor-pattern), it also allows aspects to be nested unlike the flat-structure we had in `flake.modules` which caused people to use weird-named modules `flake.modules.nixos."host/desktop"` or similar for string-based-semantics. It also allows declaring dependencies between aspects themselves, not using **stringly-typed** references like `.modules = [ "base" "gaming" ]` which was one of the shortcomings early-days unify had.
+
+An important point is that parametric aspect's context **are not** _module.args, they do not depend on config. This allows using them for [conditional](https://github.com/vic/den/blob/main/templates/ci/modules/features/conditional-config.nix) imports.
+
 
 > Some [people](https://codeberg.org/FrdrCkII/nixconf/src/branch/main/modules/aspects.prt.nix) have found `flake-aspects` enough to implement their own Dendritic setups, or even for mixing with other non-dendritic infra.
 
