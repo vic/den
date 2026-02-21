@@ -9,26 +9,56 @@ description: How parametric functors enable context forwarding and adaptation.
 
 A **parametric** aspect delegates its [implicit arguments](https://sngeth.com/functional%20programming/2024/09/25/point-free-style/) to functions defined in its `.includes`.
 
+
+The result of a `parametric` functions 
+is an aspect that looks like this:
+
+```nix
+foo = {
+  # context propagation into includes
+  __functor = self: ctx: 
+    map (f: f ctx) self.includes;
+
+  # owned configs
+  nixos.foo = 1;
+
+  includes = [
+    # functions receiving context
+    (ctx: { nixos.bar = 2; })
+  ];
+}
+```
+
+When applied `foo { x = 1; }` the context
+is propagated to the aspect includes.
+
 Den provides several parametric functors in
-`den.lib.parametric`.
+`den.lib.parametric`. Each of them provides a
+different `__functor` beaviour.
 
 ## den.lib.parametric
 
-The most common functor.
+The most common functor. When applied it
+includes the aspect owned config as well as
+the result of applying the context to 
+included functions that support `atLeast` the
+same context.
 
-Alias for `(parametric.withOwn parametric.atLeast)`:
 
 ```nix
-# NOTE: context is implicit.
-den.aspects.foo = den.lib.parametric {
-  nixos.networking.hostName = "owned";  # always included
+# NOTE: context is known until application
+foo = den.lib.parametric {
+  # always included
+  nixos.networking.hostName = "owned";
+
   includes = [
+    # context received here
     ({ host, ... }: { nixos.time.timeZone = "UTC"; })
   ];
 };
 ```
 
-When applied with `{ host = ...; user = ...; }`:
+When applied with `foo { host = ...; user = ...; }`:
 
 1. **Owned** configs (`nixos.networking.hostName`) are included
 2. **Static** includes are included
@@ -36,39 +66,58 @@ When applied with `{ host = ...; user = ...; }`:
 
 ## parametric.atLeast
 
-Only dispatches to functions — does **not** include owned configs:
+Only dispatches to includes — does **not** contribute owned configs:
 
 ```nix
-F = parametric.atLeast { includes = [ a b c ]; };
+foo = parametric.atLeast { 
+  nixos.ignored = 22;
+  includes = [ 
+    ({ x, ...}: { nixos.x = x; })
+    ({ x, y }: { nixos.y = y; })
+    ({ z }: { nixos.z = z; })
+  ]; 
+};
 ```
 
-Applied with `{ x = 1; y = 2; }`:
-- `{ x, ... }: ...` → called (has at least `x`)
-- `{ x, y }: ...` → called (has exactly `x, y`)
-- `{ z }: ...` → skipped (needs `z`)
+Applied with `foo { x = 1; y = 2; }`:
+- `{ x, ... }` matches (context has at least x)
+- `{ x, y }` matches (context has at least x y)
+- `{ z }` skipped (context has no z)
 
 ## parametric.exactly
 
-Like `atLeast`, but only calls functions with **exactly** matching args:
+Only dispatches to includes — does **not** contribute owned configs:
+
+only calls functions with **exactly** matching args:
 
 ```nix
-F = parametric.exactly { includes = [ a b c ]; };
+foo = parametric.exactly { 
+  nixos.ignored = 22;
+  includes = [ 
+    ({ x, ...}: { nixos.x = x; })
+    ({ x, y }: { nixos.y = y; })
+    ({ z }: { nixos.z = z; })
+  ]; 
+};
 ```
 
 Applied with `{ x = 1; y = 2; }`:
-- `{ x, ... }: ...` → skipped (has `...`)
-- `{ x, y }: ...` → called (exact match)
-- `{ z }: ...` → skipped
+- `{ x, ... }` → skipped context is larget
+- `{ x, y }` → called (exact match)
+- `{ z }` → skipped no match
 
-Use `exactly` to prevent duplicate configs when the same function would
-match multiple context stages.
 
 ## parametric.fixedTo
 
-Replaces the context entirely:
+This is an `atLeast` functor that also
+contributes its **owned** configs and
+ignores the context it is called with,
+replacing it with a fixed one.
 
 ```nix
 foo = parametric.fixedTo { planet = "Earth"; } {
+  nixos.foo = "contributed";
+  # functions have atLeast semantics
   includes = [
     ({ planet, ... }: { nixos.setting = planet; })
   ];
@@ -80,7 +129,8 @@ No matter what context `foo` receives, its includes always get
 
 ## parametric.expands
 
-Adds attributes to the received context:
+Like `fixedTo` but
+adds attributes to the received context:
 
 ```nix
 foo = parametric.expands { planet = "Earth"; } {
@@ -110,26 +160,38 @@ parametric.withOwn parametric.atLeast {
 }
 ```
 
+The `parametric` function itself is an alias for `(parametric.withOwn parametric.atLeast)`.
+
+
 ## Matching Rules Summary
 
-| Functor | Owned | Statics | Functions |
+| Functor | Owned configs | Statics includes | Functions includes semantics |
 |---------|:-----:|:-------:|:---------:|
-| `parametric` (default) | ✓ | ✓ | atLeast |
+| `parametric` | ✓ | ✓ | atLeast |
 | `parametric.atLeast` | ✗ | ✗ | atLeast |
 | `parametric.exactly` | ✗ | ✗ | exactly |
-| `parametric.withOwn F` | ✓ | ✓ | uses F |
 | `parametric.fixedTo ctx` | ✓ | ✓ | fixed ctx |
 | `parametric.expands ctx` | ✓ | ✓ | ctx + received |
+| `parametric.withOwn F` | ✓ | ✓ | uses F |
 
 ## take.exactly and take.atLeast
 
 For individual functions (not whole aspects), use [`den.lib.take`](/reference/lib/#denlibatake):
 
+
 ```nix
-den.default.includes = [
-  (den.lib.take.exactly ({ host }: { nixos.x = 1; }))
-];
+foo = parametric.atLeast { 
+  includes = [ 
+    (take.exactly ({ x, y }: ... ));
+    (take.atLeast ({ x, y }: ... ));
+  ]; 
+};
 ```
 
-This prevents the function from matching `{ host, user }` contexts,
-avoiding duplicate config values.
+Applied with `foo { x = 1; y = 2; z = 3; }`:
+- `exactly { x, y }` is skipped
+- `atLeast { x, y }` matches
+
+This mechanism prevents functions with
+lax context from matching everything,
+which would **produce duplicate config values**.

@@ -5,33 +5,20 @@ description: Understanding Den's dual nature as both a library and a framework.
 
 ## Den the Library
 
-At its core, Den is a **library** for context-driven Nix configurations.
+At its core, Den is a **library** for activating configuration aspects via context transformations.
+
 The library provides:
 
 - [**`den.ctx`**](/reference/ctx/) — Declarative context types with transformations
 - [**`den.lib.parametric`**](/reference/lib/#denlibparametric) — Functors for context-aware dispatch
 - [**`den.lib.take`**](/reference/lib/#denlibtake) — Argument matching (`atLeast`, `exactly`)
 - [**`den.lib.aspects`**](/reference/lib/#denlibaspects) — Aspect composition (via [flake-aspects](https://github.com/vic/flake-aspects))
-- **`den.lib.canTake`** — Function signature introspection
+- [**`den.lib.canTake`**](https://github.com/vic/den/blob/main/nix/fn-can-take.nix) — Function signature introspection
 - [**`den.lib.__findFile`**](/guides/angle-brackets/) — Angle-bracket resolution
 
-These tools work with **any Nix class**. You can define context types
+These tools work with **any Nix domain**. You can define context types
 for terraform modules, NixVim configs, container definitions, or anything
 else configurable through Nix.
-
-```mermaid
-graph LR
-  subgraph "Den Library"
-    CTX["den.ctx"] --- PAR["parametric"]
-    PAR --- TAKE["take"]
-    TAKE --- ASP["aspects"]
-  end
-  CTX --> A["NixOS"]
-  CTX --> B["Darwin"]
-  CTX --> C["Home-Manager"]
-  CTX --> D["NixVim"]
-  CTX --> E["Your Nix class"]
-```
 
 ## Den the Framework
 
@@ -41,7 +28,7 @@ of managing NixOS/Darwin/Home-Manager configurations:
 - [**`den.hosts`**](/reference/schema/#denhosts) — Host declaration with freeform schema
 - [**`den.homes`**](/reference/schema/#denhomes) — Standalone Home-Manager declaration
 - [**`den.base`**](/reference/schema/#denbase) — Base modules for entities
-- [**`den.default`**](/explanation/context-pipeline/#dendefault-is-an-alias) — Global aspect backbone
+- [**`den.default`**](/explanation/context-pipeline/#dendefault-is-an-alias) — Global contributions to hosts / users / homes.
 - [**`den.provides`**](/reference/batteries/) — Batteries (define-user, unfree, etc.)
 - **Built-in `den.ctx` types** — [host, user, hm-host, hm-user, home](/reference/ctx/#built-in-context-types)
 
@@ -80,35 +67,17 @@ The same `ctxApply` mechanics — owned configs, `conf` lookup,
 You can even design and test custom context flows independently of
 building any configuration, using Den's test infrastructure.
 
-## The Boundary
+Obtaining the final Nix configuration of `terraform` class is like:
 
-```mermaid
-graph TD
-  subgraph Library["Den Library (any domain)"]
-    CTX["den.ctx"]
-    PAR["den.lib.parametric"]
-    TAKE["den.lib.take"]
-    ASP["den.lib.aspects"]
-    FIND["den.lib.__findFile"]
-  end
-  subgraph Framework["Den Framework (OS configs)"]
-    HOSTS["den.hosts / den.homes"]
-    BASE["den.base"]
-    DEF["den.default"]
-    BAT["den.provides (batteries)"]
-    BUILTIN["Built-in ctx types"]
-  end
-  Framework -->|"uses"| Library
+```nix
+aspect = den.ctx.deploy { target.name = "web"; };
+
+module = aspect.resolve { class = "terranix"; };
+
+terranix.lib.terranixConfiguration {
+  modules = [ module ];
+};
 ```
-
-| Concern | Library | Framework |
-|---------|:-------:|:---------:|
-| Context types | ✓ | provides built-in types |
-| Parametric dispatch | ✓ | uses for host/user routing |
-| Aspect composition | ✓ | adds default + batteries |
-| Host/user schema | — | ✓ |
-| HM integration | — | ✓ |
-| Configuration building | — | ✓ |
 
 ## No Lock-in
 
@@ -120,6 +89,4 @@ Because the framework is built on the library:
 - You can extend the framework with custom context types
 - You can adopt incrementally — one host at a time
 
-Den doesn't force a project structure, a dependency manager, or a
-build system. It plays well with flakes, flake-parts, npins, or
-plain `fetchTarball`.
+Den doesn't force a project structure, it plays well with anything you choose, be it flakes, npins, flake-parts, falake, or other module systems.
