@@ -23,7 +23,6 @@ export default defineConfig({
 		}),
 		starlight({
 			title: 'den',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/vic/den' }],
 			sidebar: [
 				{ label: 'Motivation', slug: 'motivation' },
 				{
@@ -73,6 +72,11 @@ export default defineConfig({
 				},
 				{ label: 'Community', slug: 'community' },
 			],
+			components: {
+				Footer: './src/components/Footer.astro',
+				SocialIcons: './src/components/SocialIcons.astro',
+				PageSidebar: './src/components/PageSidebar.astro',
+			},
 			plugins: [
 				catppuccin({
 					dark: { flavor: "macchiato", accent: "mauve" },
