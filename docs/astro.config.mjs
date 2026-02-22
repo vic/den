@@ -33,7 +33,7 @@ export default defineConfig({
 						{ label: 'Context System', slug: 'explanation/context-system' },
 						{ label: 'Aspects & Functors', slug: 'explanation/aspects' },
 						{ label: 'Parametric Aspects', slug: 'explanation/parametric' },
-						{ label: 'Context Pipeline', slug: 'explanation/context-pipeline' },
+						{ label: 'NixOS Context Pipeline', slug: 'explanation/context-pipeline' },
 						{ label: 'Library vs Framework', slug: 'explanation/library-vs-framework' },
 					],
 				},

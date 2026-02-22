@@ -1,11 +1,11 @@
 ---
-title: Context Pipeline
+title: OS Context Pipeline
 description: The complete data flow from host declaration to final configuration.
 ---
 
 > Use the source, Luke: [`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix) · HM: [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix) · [`hm-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-integration.nix)
 
-## The Full Pipeline
+## The NixOS/nix-Darwin Pipeline
 
 When Den evaluates a host configuration, data flows through a pipeline
 of context transformations. Here is the complete picture:
@@ -13,49 +13,24 @@ of context transformations. Here is the complete picture:
 ```mermaid
 graph TD
   Host["den.hosts.x86_64-linux.igloo"]
-  Host -->|"creates"| CtxHost["ctx.host { host }"]
+  Host -->|"initial context"| CtxHost["ctx.host { host }"]
 
   CtxHost -->|"conf"| HA["den.aspects.igloo<br/>(fixedTo { host })"]
-  CtxHost -->|"into.default"| CtxDef1["ctx.default { host }"]
+  CtxHost -->|"into.default"| CtxDef1["<b>ctx.default</b> { host }"]
   CtxHost -->|"into.user<br/>(per user)"| CtxUser["ctx.user { host, user }"]
   CtxHost -->|"into.hm-host<br/>(if HM detected)"| CtxHM["ctx.hm-host { host }"]
 
   CtxUser -->|"conf"| UA["den.aspects.tux<br/>(fixedTo { host, user })"]
-  CtxUser -->|"into.default"| CtxDef2["ctx.default { host, user }"]
+  CtxUser -->|"into.default"| CtxDef2["<b>ctx.default</b> { host, user }"]
 
   CtxHM -->|"conf"| HMmod["Import HM module"]
   CtxHM -->|"into.hm-user<br/>(per HM user)"| CtxHMU["ctx.hm-user { host, user }"]
 
   CtxHMU -->|"forward homeManager<br/>into host"| FW["home-manager.users.tux"]
 
-  CtxDef1 -->|"includes"| DI1["den.default.includes<br/>(host-context funcs)"]
+  CtxDef1 -->|"includes"| DI1["<b>den.default.{class}</b> ()<br/>den.default.includes<br/>(host-context funcs)"]
   CtxDef2 -->|"includes"| DI2["den.default.includes<br/>(user-context funcs)"]
 ```
-
-## How a nixosConfiguration Is Built
-
-Here is the concrete path from a host declaration to a final NixOS configuration:
-
-```nix
-# 1. The initial data is the host itself — nothing NixOS-specific yet.
-aspect = den.ctx.host {
-  host = den.hosts.x86_64-linux.igloo;
-};
-
-# 2. ctxApply produces an aspect that includes den.aspects.igloo
-#    plus the entire transformation chain (users, HM, defaults).
-
-# 3. We enter the NixOS domain by resolving for the "nixos" class.
-nixosModule = aspect.resolve { class = "nixos"; };
-
-# 4. Standard nixosSystem with the resolved module.
-nixosConfigurations.igloo = lib.nixosSystem {
-  modules = [ nixosModule ];
-};
-```
-
-This same pattern works for any class — replace `"nixos"` with
-`"darwin"`, `"homeManager"`, or any custom class name.
 
 ## Stage by Stage
 

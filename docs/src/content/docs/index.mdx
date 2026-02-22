@@ -8,10 +8,10 @@ hero:
     html: |
       <img width="400" height="400" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
   actions:
-    - text: Den Framework
+    - text: NixOS Framework
       link: /tutorials/getting-started/
       icon: right-arrow
-    - text: Den Library
+    - text: Pure Nix Library
       link: /explanation/library-vs-framework
       variant: minimal
     - text: Why Den?
@@ -26,6 +26,12 @@ hero:
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
 
+At its core, Den is a **library** for activating Nix-modules configuration aspects via context transformations.  
+
+On top of the library, Den provides a **framework** for the common case
+of NixOS/Darwin/Home-Manager.  
+
+Den embraces to your Nix choices and does not impose itself. All parts of Den are optional and replaceable.
 
 ## Two Core Principles
 
@@ -57,13 +63,13 @@ graph LR
   H --> OS["aspect provides nixos/darwin class"]
 ```
 
-Each stage of the pipeline is a [**context type**](/reference/ctx/) defined in `den.ctx`. Context types
+Each stage of the pipeline is a [**context type**](/explanation/context-system/) defined in `den.ctx`. Context types
 declare how to find [aspects](/explanation/aspects/), how to transform into other contexts, and which
 [parametric](/explanation/parametric/) includes to activate.
 
 ### 2. Context-Aware Aspects
 
-Aspects are composable bundles that inspect their context parameters to decide
+Aspects are composable bundles of multi-class Nix modules that inspect their context parameters to decide
 what to produce. A function taking `{ host, ... }` only runs when a host context
 exists. A function taking `{ host, user, ... }` runs once per user on each host.
 
@@ -74,11 +80,23 @@ not included. Den introduces pattern matching on context shape.
 
 ## Den as a Library
 
-All parts of Den are optional, re-usable and replaceable. Even the default NixOS configuration
-pipeline is opt-in, and you can use Den lib to configure anything supporting Nix modules.
+```nix
+# Use Den API -- Build the dependencies graph for NixOS hosts
+aspect = den.ctx.host { host = den.hosts.x86_64-linux.igloo; };
+
+# Use flake-aspects API -- We enter the NixOS domain by resolving for the "nixos" class.
+nixosModule = aspect.resolve { class = "nixos"; };
+
+# Use NixOS API -- Instantiate using nixosSystem with the resolved module.
+nixosConfigurations.igloo = lib.nixosSystem { modules = [ nixosModule ]; };
+```
+
+This same pattern works for any class — create your own context transformation graphs and replace `"nixos"` with
+`"darwin"`, `"systemManager"`, `"terranix"` or any custom class name.
+
 
 <CardGrid>
-  <Card title="Any Nix Class" icon="none">
+  <Card title="Any Nix Class" icon="nix">
     NixOS, Darwin, Home-Manager, Terraform, NixVim — Den
     works with [anything configurable through Nix](/explanation/library-vs-framework/).
   </Card>
@@ -99,7 +117,30 @@ pipeline is opt-in, and you can use Den lib to configure anything supporting Nix
 
 ## Den as a Framework
 
-Built upon `den.lib`, Den provides ready-made facilities for the common use-case of OS and User configurations.
+```nix
+# use in flake-parts or any lib.evalModules where den.nixModule is imported
+{ den, ... }: {
+
+  # declare your hosts, users and homes
+  den.x86_64-linux.hosts.igloo.users.tux = { };
+
+  # attach configurations via aspects
+  den.igloo.nixos.networking.hostName = "warm-home";
+
+  # user aspects can configure its home and host environment
+  den.tux.homeManager = { pkgs, ... }: { home.packages = [ pkgs.cowsay ]; };
+  den.tux.nixos.users.users.tux.desscription = "cute pinguin";
+
+  # include other re-usable aspects of yours or den batteries
+  den.tux.includes = [ (den.provides.user-shell "fish") ];
+
+  # generic config for all hosts, users, homes.
+  den.default.nixos.system.stateVersion = "25.11";
+  den.default.homeManager.home.stateVersion = "25.11";
+  den.default.includes [ den._.inputs' ];
+
+}
+```
 
 <CardGrid>
   <Card title="Declare Systems" icon="laptop">

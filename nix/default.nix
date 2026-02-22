@@ -3,9 +3,14 @@ let
   flakeModules.dendritic = ./dendritic.nix;
 in
 {
+  # for non-flakes, our default modules needs no flakes
+  nixModule = flakeModules.default;
+
+  # flake-parts conventions
   flakeModule = flakeModules.default;
   inherit flakeModules;
   modules.flake = flakeModules;
+
   templates = {
     default.path = ../templates/default;
     default.description = "Default template";
