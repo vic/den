@@ -12,7 +12,7 @@ export default defineConfig({
 			{
 				provider: fontProviders.google(),
 				name: "Victor Mono",
-				cssVariable: "--font-victor-mono",
+				cssVariable: "--sl-font",
 			},
 		],
 	},
@@ -24,7 +24,15 @@ export default defineConfig({
 		starlight({
 			title: 'den',
 			sidebar: [
-				{ label: 'Motivation', slug: 'motivation' },
+				{
+					label: 'Den',
+					items: [
+						{ label: 'Motivation', slug: 'motivation', },
+						{ label: 'Community', slug: 'community' },
+						{ label: 'Contributing', slug: 'contributing' },
+						{ label: 'Sponsor', slug: 'sponsor' },
+					],
+				},
 				{
 					label: 'Learn',
 					items: [
@@ -70,9 +78,9 @@ export default defineConfig({
 						{ label: 'Configuration Output', slug: 'reference/output' },
 					],
 				},
-				{ label: 'Community', slug: 'community' },
 			],
 			components: {
+				Sidebar: './src/components/Sidebar.astro',
 				Footer: './src/components/Footer.astro',
 				SocialIcons: './src/components/SocialIcons.astro',
 				PageSidebar: './src/components/PageSidebar.astro',
@@ -82,6 +90,12 @@ export default defineConfig({
 					dark: { flavor: "macchiato", accent: "mauve" },
 					light: { flavor: "latte", accent: "mauve" },
 				}),
+			],
+			editLink: {
+				baseUrl: 'https://github.com/vic/den/edit/main/docs/',
+			},
+			customCss: [
+				'./src/styles/custom.css'
 			],
 		}),
 	],
