@@ -18,14 +18,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: wimpysworld/nothing-but-nix@main
-      - uses: cachix/install-nix-action@v31
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - name: Build
         run: |
           pushd docs
-          nix profile install nixpkgs#nodejs nixpkgs#pnpm
           pnpm install
           pnpm run build
           popd
