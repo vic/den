@@ -43,8 +43,8 @@ in
 {
   den.ctx.host.into.hm-host = hm-detect;
 
-  den.ctx.hm-host.desc = description;
-  den.ctx.hm-host.conf =
+  den.ctx.hm-host.description = description;
+  den.ctx.hm-host._.hm-host =
     { host }:
     {
       ${host.class}.imports = [ (hm-module host) ];

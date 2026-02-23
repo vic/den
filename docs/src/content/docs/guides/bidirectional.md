@@ -79,7 +79,7 @@ graph TD
 ```
 
 Den’s [context system](/explanation/context-system/) handles the routing:
-- Host aspect configs flow to all users on that host
+- Host aspect configs flow to all users via `ctx.host.provides.user` (cross-provider)
 - User aspect configs flow to all hosts with that user
 - Context functions get called with the specific `{ host, user }` pair
 

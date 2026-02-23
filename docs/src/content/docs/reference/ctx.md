@@ -9,12 +9,15 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## Context Type Schema
 
-Each `den.ctx.<name>` is a submodule with these options:
+Each `den.ctx.<name>` is an [aspect submodule](/explanation/aspects/) extended
+with context transformations. It inherits all options from `flake-aspects`'s
+`aspectSubmodule` and adds `into`:
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `desc` | `str` | Human-readable description |
-| `conf` | `ctx → aspect` | Locates the aspect for this context |
+| `description` | `str` | Human-readable description (from aspectSubmodule) |
+| `provides.${name}` / `_.${name}` | `ctx → aspect` | Self-named provider: locates the aspect for this context |
+| `provides.${target}` / `_.${target}` | `ctx → aspect` | Cross-provider: source's contribution to target contexts |
 | `into` | `attrset of (ctx → list)` | Transformations to other contexts |
 | `includes` | `list of aspect` | Parametric aspects activated for this context |
 
@@ -26,19 +29,29 @@ aspect = den.ctx.host { host = den.hosts.x86_64-linux.igloo; };
 
 ## ctxApply (internal)
 
-When a context type is applied, `ctxApply` executes:
+When a context type is applied, `ctxApply` walks the full `into` graph
+and deduplicates includes using a seen-set:
 
 ```nix
-ctxApply = self: ctx: {
-  includes = lib.flatten [
-    (parametric.fixedTo ctx (cleanCtx self))  # owned configs
-    (self.conf ctx)                            # located aspect
-    (mapAttrsToList (name: into:              # transformations
-      map den.ctx.${name} (into ctx)
-    ) self.into)
-  ];
-};
+ctxApply = ctxName: _self: ctx:
+  let
+    pairs = collectPairs null den.ctx.${ctxName} ctx;
+  in
+  { includes = dedupIncludes pairs; };
 ```
+
+**collectPairs** recursively walks `into` transformations, producing
+`(source, ctxDef, ctx)` triples for every reachable context type.
+The `source` tracks which context type produced the transformation.
+
+**dedupIncludes** processes triples with a seen-set keyed by context name:
+
+- **First visit**: `fixedTo ctx (cleanCtx ctxDef)` — dispatches owned, static, and parametric includes — plus self-provider and cross-provider
+- **Subsequent visits**: `atLeast (cleanCtx ctxDef) ctx` — dispatches only parametric includes — plus self-provider and cross-provider
+
+For each triple, three providers are called:
+1. **Self-provider** `ctxDef.provides.${ctxDef.name}` — the target's own aspect lookup
+2. **Cross-provider** `source.provides.${ctxDef.name}` — the source's contribution to this target (if defined)
 
 ## Transformation Types
 
@@ -73,7 +86,7 @@ Add transformations to existing context types from any module:
 
 ```nix
 den.ctx.hm-host.into.foo = { host }: [ { foo = host.name; } ];
-den.ctx.foo.conf = { foo }: { funny.names = [ foo ]; };
+den.ctx.foo._.foo = { foo }: { funny.names = [ foo ]; };
 ```
 
 The module system merges these definitions. You can also override a
@@ -85,8 +98,9 @@ host's `mainModule` to use a completely custom context flow.
 
 | Field | Value |
 |-------|-------|
-| `desc` | OS |
-| `conf` | `{ host }:` fixedTo host aspect |
+| `description` | OS |
+| `provides.host` | `{ host }:` fixedTo host aspect |
+| `provides.user` | `{ host, user }:` host's contribution to user contexts (cross-provider) |
 | `into.default` | `lib.singleton` (pass-through) |
 | `into.user` | Enumerate `host.users` |
 | `into.hm-host` | Detect HM support (from `hm-detect.nix`) |
@@ -95,37 +109,39 @@ host's `mainModule` to use a completely custom context flow.
 
 | Field | Value |
 |-------|-------|
-| `desc` | OS user |
-| `conf` | `{ host, user }:` includes user + host aspects |
+| `description` | OS user |
+| `provides.user` | `{ host, user }:` fixedTo user aspect |
 | `into.default` | `lib.singleton` (pass-through) |
 
 ### den.ctx.default
 
 | Field | Value |
 |-------|-------|
-| `conf` | `_: { }` (empty — just a dispatcher) |
+| `provides.default` | `_: { }` (empty — just a dispatcher) |
 
 Aliased as `den.default` via `lib.mkAliasOptionModule`.
 Writing `den.default.foo` is identical to `den.ctx.default.foo`.
 
 Every context type transforms into `default`, so `den.default.includes`
-functions run at every pipeline stage. Use `take.exactly` to restrict
-matching if you see duplicate values.
+functions run at every pipeline stage. However, owned and static configs
+are **automatically deduplicated** — only the first visit gets them.
+Parametric functions still run at every stage; use `take.exactly` to
+restrict matching if needed.
 
 ### den.ctx.home
 
 | Field | Value |
 |-------|-------|
-| `desc` | Standalone Home-Manager config |
-| `conf` | `{ home }:` fixedTo home aspect |
+| `description` | Standalone Home-Manager config |
+| `provides.home` | `{ home }:` fixedTo home aspect |
 | `into.default` | `lib.singleton` |
 
 ### den.ctx.hm-host
 
 | Field | Value |
 |-------|-------|
-| `desc` | Host with HM-supported OS and HM users |
-| `conf` | `{ host }:` imports HM NixOS/Darwin module |
+| `description` | Host with HM-supported OS and HM users |
+| `provides.hm-host` | `{ host }:` imports HM NixOS/Darwin module |
 | `into.hm-user` | Enumerate HM-class users |
 
 **Detection criteria** (all must be true):
@@ -139,8 +155,8 @@ If detection fails, the HM pipeline is skipped entirely.
 
 | Field | Value |
 |-------|-------|
-| `desc` | Internal — forwards HM class to host |
-| `conf` | `{ host, user }:` forward homeManager into host |
+| `description` | Internal — forwards HM class to host |
+| `provides.hm-user` | `{ host, user }:` forward homeManager into host |
 
 ### den.ctx.hm-internal-user (internal)
 
@@ -160,8 +176,8 @@ Context types are independent of NixOS. Use them for any domain:
 
 ```nix
 den.ctx.myctx = {
-  desc = "{x, y} context";
-  conf = { x, y }: { funny.names = [ x y ]; };
+  description = "{x, y} context";
+  _.myctx = { x, y }: { funny.names = [ x y ]; };
   includes = [
     ({ x, ... }: { funny.names = [ "include-${x}" ]; })
   ];
@@ -171,7 +187,7 @@ den.ctx.myctx = {
 };
 ```
 
-Owned attributes (anything not `desc`, `conf`, `into`, `includes`)
+Owned attributes (anything not `description`, `provides`, `into`, `includes`)
 are included when the context is applied.
 
 Custom context flows can be designed and tested in isolation — Den's

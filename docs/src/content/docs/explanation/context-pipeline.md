@@ -15,15 +15,16 @@ graph TD
   Host["den.hosts.x86_64-linux.igloo"]
   Host -->|"initial context"| CtxHost["ctx.host { host }"]
 
-  CtxHost -->|"conf"| HA["den.aspects.igloo<br/>(fixedTo { host })"]
+  CtxHost -->|"_.host"| HA["den.aspects.igloo<br/>(fixedTo { host })"]
   CtxHost -->|"into.default"| CtxDef1["<b>ctx.default</b> { host }"]
   CtxHost -->|"into.user<br/>(per user)"| CtxUser["ctx.user { host, user }"]
   CtxHost -->|"into.hm-host<br/>(if HM detected)"| CtxHM["ctx.hm-host { host }"]
 
-  CtxUser -->|"conf"| UA["den.aspects.tux<br/>(fixedTo { host, user })"]
+  CtxUser -->|"_.user (self)"| UA["den.aspects.tux<br/>(fixedTo { host, user })"]
+  CtxHost -->|"_.user (cross)"| XP["host aspect includes<br/>matching { host, user }"]
   CtxUser -->|"into.default"| CtxDef2["<b>ctx.default</b> { host, user }"]
 
-  CtxHM -->|"conf"| HMmod["Import HM module"]
+  CtxHM -->|"_.hm-host"| HMmod["Import HM module"]
   CtxHM -->|"into.hm-user<br/>(per HM user)"| CtxHMU["ctx.hm-user { host, user }"]
 
   CtxHMU -->|"forward homeManager<br/>into host"| FW["home-manager.users.tux"]
@@ -44,8 +45,9 @@ den.ctx.host { host = den.hosts.x86_64-linux.igloo; }
 
 ### 2. Host Aspect Resolution
 
-`den.ctx.host.conf` locates `den.aspects.igloo` and fixes it to the host context.
-All owned configs and static includes from the host aspect are collected.
+`den.ctx.host.provides.host` (aliased as `_.host`) locates `den.aspects.igloo`
+and fixes it to the host context. All owned configs and static includes from the
+host aspect are collected.
 
 ### 3. Default configs (host-level)
 
@@ -59,13 +61,16 @@ activates `den.default.includes` functions matching `{ host, ... }`.
 
 ### 5. User Aspect Resolution
 
-`den.ctx.user.conf` locates both the user's aspect (`den.aspects.tux`) and the
-host's aspect, collecting contributions from both directions.
+Two providers contribute to user context:
+- `den.ctx.user.provides.user` (self-provider) — locates the user's own aspect (`den.aspects.tux`)
+- `den.ctx.host.provides.user` (cross-provider) — the host's contribution, dispatching host aspect includes matching `{ host, user }`
 
 ### 6. Default configs (user-level)
 
 `ctx.user.into.default` activates `den.default.includes` again, this time
 with `{ host, user }` — functions needing user context now match.
+Because `den.ctx.default` was already visited in stage 3, only parametric
+includes are dispatched (owned and static configs are **deduplicated**).
 
 ### 7. Home-Manager Detection
 
@@ -74,7 +79,7 @@ class and a supported OS. If so, it activates `den.ctx.hm-host`.
 
 ### 8. HM Module Import (host-level)
 
-`den.ctx.hm-host.conf` imports the Home-Manager NixOS/Darwin module.
+`den.ctx.hm-host.provides.hm-host` imports the Home-Manager NixOS/Darwin module.
 
 ### 9. HM User config collection (user-level)
 
@@ -94,20 +99,37 @@ For each HM user, `ctx.hm-user` uses `den._.forward` to take
 All three must be true. Hosts without users, or with only non-HM users,
 skip the entire HM pipeline.
 
-## Duplication Caveat with den.default
+## Automatic Deduplication
 
-`den.default` (alias for `den.ctx.default`) is included at **{host}**, **{host, user}**, **{home}**
-context stages — once for the host context and once __per each__ user.
+`den.default` (alias for `den.ctx.default`) is reached at **{host}**, **{host, user}**,
+and **{home}** context stages — once for the host context and once per user.
+
+Den's `ctxApply` automatically deduplicates includes using a seen-set:
+
+- **First visit** to a context type: includes **owned + static + parametric** configs via `fixedTo`
+- **Subsequent visits**: includes only **parametric** configs via `atLeast`
+
+Additionally, for each context, two providers are called:
+- **Self-provider** (`provides.${name}`) — the target's own aspect lookup
+- **Cross-provider** (`source.provides.${target}`) — the source's contribution (if defined)
+
+```mermaid
+graph TD
+  H["ctx.host { host }"] -->|"into.default (1st visit)"| D1["ctx.default { host }<br/><b>fixedTo</b>: owned + statics + parametric<br/>+ self-provider + cross-provider"]
+  H -->|"into.user"| U["ctx.user { host, user }"]
+  U -->|"into.default (2nd visit)"| D2["ctx.default { host, user }<br/><b>atLeast</b>: parametric only<br/>+ self-provider + cross-provider"]
+```
 
 This means:
 
-- **Owned** configs and **static** includes from `den.default` can appear
-  multiple times in the final configuration
-- For `mkMerge`-compatible options (most NixOS options), this is harmless
-- For options of **types.listOf** or **types.package**, you may get duplicate entries.
+- **Owned** configs and **static** includes from `den.default` appear **exactly once**
+- **Parametric** functions in `den.default.includes` still run at every stage
+  (each may match different context shapes)
+- Options of `types.package` or `types.listOf` no longer get duplicate entries
 
-To avoid duplication, use `den.lib.take.exactly` to restrict which
-context stages a function matches:
+:::tip
+For parametric includes in `den.default.includes`, use `den.lib.take.exactly`
+to restrict which context stages a function matches:
 
 ```nix
 den.default.includes = [
@@ -115,12 +137,7 @@ den.default.includes = [
 ];
 ```
 
-This function runs only in the `{ host }` context, not in `{ host, user }`.
-
-:::tip
-Prefer attaching configurations directly to specific host or user aspects, or use
-`den.ctx.host` / `den.ctx.user` includes, rather than overloading `den.default`
-for everything.
+This function runs only with `{ host }` context, not with `{ host, user }`.
 :::
 
 ## Standalone Home-Manager
@@ -131,7 +148,7 @@ For `den.ctx.home`, the pipeline is shorter:
 graph TD
   Home["den.homes.x86_64-linux.tux"]
   Home -->|"creates"| CtxHome["ctx.home { home }"]
-  CtxHome -->|"conf"| HomeA["den.aspects.tux<br/>(fixedTo { home })"]
+  CtxHome -->|"_.home"| HomeA["den.aspects.tux<br/>(fixedTo { home })"]
   CtxHome -->|"into.default"| CtxDef["ctx.default { home }"]
 ```
 
@@ -146,7 +163,7 @@ den.default.includes = [ den._.define-user ];
 
 You are actually setting `den.ctx.default.homeManager...` and
 `den.ctx.default.includes`. This means `den.default` is a full
-context type — it has `conf`, `into`, `includes`, and owned attributes.
+context type — it has self-named providers, `into`, `includes`, and owned attributes.
 
 ### How den.default Receives Data
 

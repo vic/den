@@ -89,8 +89,10 @@ nix-repl> config = (lib.nixosSystem { modules = [ module ]; }).config
 
 ## Common Issues
 
-**Duplicate values in lists**: Your function matches too many contexts.
-Use `den.lib.take.exactly` to restrict matching:
+**Duplicate values in lists**: Den automatically deduplicates owned and
+static configs from `den.default`, but parametric functions in
+`den.default.includes` still run at every context stage. Use
+`den.lib.take.exactly` to restrict matching:
 
 ```nix
 den.lib.take.exactly ({ host }: { nixos.x = 1; })

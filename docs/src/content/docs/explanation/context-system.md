@@ -30,12 +30,16 @@ graph LR
 
 ## Context Types: den.ctx
 
-Each context type is defined in `den.ctx` with four components:
+Each context type is defined in `den.ctx`. Context types are
+[aspect submodules](/explanation/aspects/) — they inherit `includes`, `provides`,
+`description`, and owned freeform configs from `flake-aspects`'s `aspectSubmodule`.
+Den adds only the `into` option for context transformations:
 
 ```nix
 den.ctx.foobar = {
-  desc = "The {foo, bar} context";
-  conf = { foo, bar }: den.aspects.${foo}._.${bar};
+  description = "The {foo, bar} context";
+  _.foobar = { foo, bar }: den.aspects.${foo}._.${bar};
+  _.baz = { foo, bar, baz }: { /* host contribution to baz */ };
   includes = [ /* parametric aspects */ ];
   into = {
     baz = { foo, bar }: [{ baz = computeBaz foo bar; }];
@@ -44,9 +48,10 @@ den.ctx.foobar = {
 ```
 
 | Component | Purpose |
-|-----------|---------|
-| `desc` | Human-readable description |
-| `conf` | Given a context, find aspect responsible for configuration |
+|-----------|---------||
+| `description` | Human-readable description (from aspectSubmodule) |
+| `provides.${name}` / `_.${name}` | Self-named provider: given a context, find aspect responsible for configuration |
+| `provides.${target}` / `_.${target}` | Cross-provider: source's contribution to a target context (called per transformation) |
 | `includes` | Parametric aspects activated for this context (aspect cutting-point) |
 | `into` | Transformations fan-out into other context types |
 
@@ -58,23 +63,23 @@ A context type is callable — it's a functor:
 aspect = den.ctx.foobar { foo = "hello"; bar = "world"; };
 ```
 
-When applied, Den creates a new aspect that includes the following:
+When applied, `ctxApply` walks the full `into` graph depth-first,
+collecting `(source, ctxDef, ctx)` triples, then deduplicates:
 
-1. **owned configs** from the context itself
-2. **main aspect config** via `conf` (e.g., `den.aspects.hello._.world`)
-3. **included configs** — parametric aspects matching this context
-4. **transforms** — calls each `into` function, producing new contexts
-5. **recurses** — applies each produced context through its own pipeline
+1. **First visit** to a context type — `fixedTo`: owned + static + parametric dispatch
+2. **Subsequent visits** — `atLeast`: parametric dispatch only
+3. **Self-named provider** (`provides.${name}`) is always called
+4. **Cross-provider** (`source.provides.${target}`) is called if the source defines one
 
 ```mermaid
 graph TD
   Apply["ctx.foobar { foo, bar }"]
-  Apply --> Own["Owned configs"]
-  Apply --> Conf["ctx → find aspect"]
-  Apply --> Inc["includes → parametric aspects"]
-  Apply --> Into["into.baz → new baz contexts"]
-  Into --> Next["ctx.baz { baz }"]
-  Next --> Own2["...recurse"]
+  Apply --> Collect["collectPairs: walk into graph"]
+  Collect --> Dedup["dedupIncludes: seen-set"]
+  Dedup --> First["1st visit: fixedTo + self + cross"]
+  Dedup --> Later["Nth visit: atLeast + self + cross"]
+  First --> Result["merged includes list"]
+  Later --> Result
 ```
 
 ## Transformation Types
@@ -118,7 +123,8 @@ passed.
 
 ## Contexts as Aspect Cutting-Points
 
-Contexts are aspect-like themselves. They have owned configs and `.includes`:
+Since context types **are** aspect submodules, they naturally have owned
+configs and `.includes`:
 
 ```nix
 den.ctx.hm-host.nixos.home-manager.useGlobalPkgs = true;
@@ -138,7 +144,7 @@ You can define new context types or new transformations into existing contexts f
 
 ```nix
 den.ctx.hm-host.into.foo = { host }: [ { foo = host.name; } ];
-den.ctx.foo.conf = { foo }: { funny.names = [ foo ]; };
+den.ctx.foo._.foo = { foo }: { funny.names = [ foo ]; };
 ```
 
 The module system merges these definitions. You can extend the pipeline
@@ -199,13 +205,13 @@ Entry point for standalone Home-Manager configurations.
 Create your own for domain-specific pipelines:
 
 ```nix
-den.ctx.greeting.conf = { hello }:
+den.ctx.greeting._.greeting = { hello }:
   { funny.names = [ hello ]; };
 
 den.ctx.greeting.into.shout = { hello }:
   [{ shout = lib.toUpper hello; }];
 
-den.ctx.shout.conf = { shout }:
+den.ctx.shout._.shout = { shout }:
   { funny.names = [ shout ]; };
 ```
 
