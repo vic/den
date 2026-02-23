@@ -86,4 +86,149 @@
     }
   );
 
+  flake.tests.deadbugs.dups.test-default-owned-package = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.default.nixos =
+        { pkgs, ... }:
+        {
+          services.locate.package = pkgs.plocate;
+        };
+
+      expr = lib.getName igloo.services.locate.package;
+      expected = "plocate";
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-default-static-package = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.default.includes = [
+        {
+          nixos =
+            { pkgs, ... }:
+            {
+              services.locate.package = pkgs.plocate;
+            };
+        }
+      ];
+
+      expr = lib.getName igloo.services.locate.package;
+      expected = "plocate";
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-default-owned-list = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.default.nixos.imports = [
+        {
+          options.tags = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+          };
+        }
+      ];
+      den.default.nixos.tags = [ "server" ];
+
+      expr = igloo.tags;
+      expected = [ "server" ];
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-host-owned-package = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.aspects.igloo.nixos =
+        { pkgs, ... }:
+        {
+          services.locate.package = pkgs.plocate;
+        };
+
+      expr = lib.getName igloo.services.locate.package;
+      expected = "plocate";
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-host-owned-list = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.hosts.x86_64-linux.igloo.users.tux = { };
+
+      den.aspects.igloo.nixos.imports = [
+        {
+          options.tags = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+          };
+        }
+      ];
+      den.aspects.igloo.nixos.tags = [ "server" ];
+
+      expr = igloo.tags;
+      expected = [ "server" ];
+    }
+  );
+
+  flake.tests.deadbugs.dups.test-default-list-multi-user = denTest (
+    {
+      den,
+      lib,
+      igloo,
+      ...
+    }:
+    {
+      den.hosts.x86_64-linux.igloo.users = {
+        tux = { };
+        pingu = { };
+      };
+
+      den.default.nixos.imports = [
+        {
+          options.tags = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+          };
+        }
+      ];
+      den.default.nixos.tags = [ "server" ];
+
+      expr = igloo.tags;
+      expected = [ "server" ];
+    }
+  );
+
 }

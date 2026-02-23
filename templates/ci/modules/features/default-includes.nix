@@ -2,6 +2,27 @@
 {
   flake.tests.default-includes = {
 
+    test-setting-host-service-package = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.aspects.igloo.nixos =
+          { pkgs, ... }:
+          {
+            services.locate.package = pkgs.plocate;
+          };
+
+        expr = lib.getName igloo.services.locate.package;
+        expected = "plocate";
+      }
+    );
+
     test-set-hostname-from-host-context = denTest (
       { den, igloo, ... }:
       {
