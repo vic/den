@@ -29,8 +29,7 @@ Den replaces this with a **declarative pipeline**. You declare entities
 (hosts, users, homes) and context types (shapes holding them). Den transforms these through
 a graph of context stages, each producing richer or conditioned data.
 
-The key insight: **the flow of data is declared separately from the
-configurations it produces**.
+**the flow of data is declared separately from the configurations it produces**.
 
 ### 2. Context-Aware Aspects
 
@@ -39,8 +38,7 @@ context to decide what to produce. A function taking `{ host, user }` naturally
 adapts to every host-user combination. A function requiring `{ other }` is
 not used.
 
-The key insight: **the shape of the function arguments determines when
-configs are produced, without explicit conditionals**.
+**the shape of the function arguments determines when configs are produced, without explicit conditionals**.
 
 ## Why This Matters
 

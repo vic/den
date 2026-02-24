@@ -7,6 +7,7 @@ labels: 'bug'
 assignees: ''
 
 ---
+Please read https://den.oeiuwq.com/tutorials/bogus/ first.
 
 If you have found a bug, please share a reproduction repository with us.
 
@@ -20,6 +21,8 @@ nix flake check
 ```
 
 Your repository will help us verify that we can reproduce the bug in a minimal environment - Your repo has CI actions enabled. When the bug has been fixed we can use your same code as a non-regression test to ensure bugs do not appear again.
+
+If you found a bug regression please edit the CI workflow to include main and any other revision to test and show something was working before main.
 
 ### Description
 

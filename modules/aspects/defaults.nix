@@ -4,7 +4,7 @@
     {
       imports = [ (lib.mkAliasOptionModule [ "default" ] [ "ctx" "default" ]) ];
 
-      ctx.default.conf = _: { };
+      ctx.default._.default = _: { };
 
     };
 }

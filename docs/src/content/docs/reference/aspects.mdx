@@ -1,0 +1,74 @@
+---
+title: den.aspects Reference
+description: Aspect structure, resolution, and configuration.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside title="Use the Source, Luke" icon="github">[`modules/aspects.nix`](https://github.com/vic/den/blob/main/modules/aspects.nix) · [`modules/aspects/definition.nix`](https://github.com/vic/den/blob/main/modules/aspects/definition.nix) · [`modules/aspects/provides.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides.nix) · Tests: [`user-host-bidirectional-config.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-bidirectional-config.nix) · [`top-level-parametric.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/top-level-parametric.nix)</Aside>
+
+## Aspect Attributes
+
+Every aspect is an attribute set with these recognized keys:
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `description` | str | Human-readable description |
+| `__functor` | function | Context-aware behavior |
+| `includes` | list | Dependencies on other aspects or functions |
+| `provides` | attrset | Nested sub-aspects |
+| `_` | alias | Shorthand for `provides` |
+| `<class>` | module | Any Nix class, like the following |
+| `nixos` | module | NixOS configuration module |
+| `darwin` | module | nix-darwin configuration module |
+| `homeManager` | module | Home-Manager configuration module |
+
+## Automatic Aspect Creation
+
+Den creates an aspect for each host, user, and home you declare:
+
+```nix
+den.hosts.x86_64-linux.igloo.users.tux = { };
+
+# will create:
+
+den.aspects.igloo = parametric { };
+den.aspects.tux = parametric { };
+```
+
+## Aspect Resolution
+
+To extract a class module from an aspect use the flake-aspects API:
+
+```nix
+module = aspect.resolve { class = "nixos"; aspect-chain = []; };
+```
+
+Resolution collects the specified class from the aspect and all
+transitive includes into a single merged Nix module.
+
+## den.aspects (namespace)
+
+This namespace is where Den creates aspects for your host/user/home.
+
+You can also use this namespace to create your own aspects.
+Aspects in this namespace are not shared outside the flake,
+for that use `den.namespace`.
+
+Contributions from any module are merged:
+
+```nix
+# file1.nix
+den.aspects.igloo.nixos.networking.hostName = "igloo";
+
+# file2.nix
+den.aspects.igloo.homeManager.programs.vim.enable = true;
+```
+
+## den.provides (namespace)
+
+Den batteries-included re-usable aspects.
+
+Access via `den._.name` or `den.provides.name`.
+
+See [Batteries Reference](/reference/batteries/) for all built-in aspects.

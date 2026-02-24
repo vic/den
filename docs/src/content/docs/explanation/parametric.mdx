@@ -3,7 +3,11 @@ title: Parametric Aspects
 description: How parametric functors enable context forwarding and adaptation.
 ---
 
-> Use the source, Luke: [`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) · [`nix/fn-can-take.nix`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix)
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside title="Use the Source, Luke" icon="github">
+[`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) · [`nix/fn-can-take.nix`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix)
+</Aside>
 
 ## What Is a Parametric Aspect?
 
@@ -35,6 +39,22 @@ is propagated to the aspect includes.
 Den provides several parametric functors in
 `den.lib.parametric`. Each of them provides a
 different `__functor` beaviour.
+
+<Aside >
+Aspects created by Den from your host/user/home definitions are already `parametric`.
+They will forward context to their includes functions.
+
+However for new aspects you define manually, they are not parametric unless you say so.
+If you get the following error: 
+
+```error
+error: function 'anonymous lambda' called without required argument 'user'
+```
+
+It likely means you are trying to forward context from an aspect that is not `parametric`.
+See also [#182](https://github.com/vic/den/discussions/182)
+</Aside>
+
 
 ## den.lib.parametric
 
@@ -176,7 +196,7 @@ The `parametric` function itself is an alias for `(parametric.withOwn parametric
 
 ## take.exactly and take.atLeast
 
-For individual functions (not whole aspects), use [`den.lib.take`](/reference/lib/#denlibatake):
+For individual functions (not whole aspects), use [`den.lib.take`](/reference/lib/#denlibtake):
 
 
 ```nix

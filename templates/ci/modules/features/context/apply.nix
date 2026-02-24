@@ -3,8 +3,8 @@
   flake.tests.ctx.test-apply = denTest (
     { den, funnyNames, ... }:
     {
-      den.ctx.foobar.desc = "{foo,bar} context";
-      den.ctx.foobar.conf =
+      den.ctx.foobar.description = "{foo,bar} context";
+      den.ctx.foobar._.foobar =
         { foo, bar }:
         {
           funny.names = [

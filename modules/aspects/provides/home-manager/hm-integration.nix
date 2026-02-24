@@ -43,15 +43,15 @@ in
 {
   den.provides.home-manager = { };
 
-  den.ctx.home.desc = "Standalone Home-Manager config provided by home aspect";
-  den.ctx.home.conf = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
+  den.ctx.home.description = "Standalone Home-Manager config provided by home aspect";
+  den.ctx.home._.home = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
   den.ctx.home.into.default = lib.singleton;
 
   den.ctx.hm-host.into.hm-user = intoHmUsers;
-  den.ctx.hm-user.desc = "(internal)";
-  den.ctx.hm-user.conf = forwardedToHost;
+  den.ctx.hm-user.description = "(internal)";
+  den.ctx.hm-user._.hm-user = forwardedToHost;
 
-  den.ctx.hm-internal-user.conf =
+  den.ctx.hm-internal-user._.hm-internal-user =
     { host, user }:
     { class, aspect-chain }:
     {

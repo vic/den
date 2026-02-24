@@ -1,0 +1,164 @@
+---
+title: "Template: CI Tests"
+description: Den's own test suite — the definitive reference for every feature.
+---
+
+The CI template is Den's comprehensive test suite. It tests every feature using [nix-unit](https://github.com/nix-community/nix-unit). This is the **best learning resource** for understanding exactly how Den behaves.
+
+## Structure
+
+```
+flake.nix
+modules/
+  empty.nix                              # example test skeleton
+  test-support/
+    eval-den.nix                         # denTest + evalDen helpers
+    nix-unit.nix                         # nix-unit integration
+  features/
+    angle-brackets.nix                   # <den/...> syntax
+    conditional-config.nix               # conditional imports/configs
+    default-includes.nix                 # den.default behavior
+    forward.nix                          # den._.forward
+    homes.nix                            # standalone HM
+    host-options.nix                     # host/user schema options
+    namespaces.nix                       # namespace define/merge/export
+    os-user-class.nix                    # user class forwarding
+    parametric.nix                       # parametric functors
+    schema-base-modules.nix              # den.base modules
+    special-args-custom-instantiate.nix  # custom instantiation
+    top-level-parametric.nix             # top-level context aspects
+    user-host-bidirectional-config.nix   # bidirectional providers
+    batteries/
+      define-user.nix                    # define-user battery
+      flake-parts.nix                    # inputs' and self'
+      import-tree.nix                    # import-tree battery
+      primary-user.nix                   # primary-user battery
+      tty-autologin.nix                  # tty-autologin battery
+      unfree.nix                         # unfree packages
+      user-shell.nix                     # user-shell battery
+    context/
+      apply.nix                          # ctx application
+      apply-non-exact.nix               # non-exact matching
+      cross-provider.nix                 # cross-provider mechanism
+      custom-ctx.nix                     # custom context types
+      den-default.nix                    # den.default as context
+      host-propagation.nix              # full host pipeline
+      named-provider.nix                # self-named providers
+    deadbugs/
+      _external-namespace-deep-aspect.nix
+      static-include-dup-package.nix
+    home-manager/
+      home-managed-home.nix
+      use-global-pkgs.nix
+  non-dendritic/                         # non-den files for import-tree tests
+  provider/                              # external namespace provider flake
+```
+
+## Test Categories
+
+### Core Features
+
+| Test File | What It Tests |
+|-----------|---------------|
+| [conditional-config.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/conditional-config.nix) | Conditional imports using host/user attributes |
+| [default-includes.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/default-includes.nix) | `den.default` applying to all hosts/users |
+| [host-options.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/host-options.nix) | Custom host attributes, hostName, aspect names |
+| [top-level-parametric.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/top-level-parametric.nix) | Context-aware top-level aspects |
+| [parametric.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/parametric.nix) | All parametric functors (atLeast, fixedTo, expands) |
+
+### Bidirectional & Providers
+
+| Test File | What It Tests |
+|-----------|---------------|
+| [user-host-bidirectional-config.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-bidirectional-config.nix) | Host→user and user→host config flow |
+| [context/cross-provider.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/cross-provider.nix) | Source providing config to target context |
+| [context/named-provider.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/named-provider.nix) | Self-named provider mechanism |
+
+### Context System
+
+| Test File | What It Tests |
+|-----------|---------------|
+| [context/apply.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/apply.nix) | Context application mechanics |
+| [context/apply-non-exact.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/apply-non-exact.nix) | Non-exact context matching |
+| [context/custom-ctx.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/custom-ctx.nix) | User-defined context types with `into` |
+| [context/den-default.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/den-default.nix) | `den.default` as a context type |
+| [context/host-propagation.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/host-propagation.nix) | Full host pipeline with all contributions |
+
+### Batteries
+
+| Test File | What It Tests |
+|-----------|---------------|
+| [batteries/define-user.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/define-user.nix) | User definition across contexts |
+| [batteries/primary-user.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/primary-user.nix) | Primary user groups |
+| [batteries/user-shell.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/user-shell.nix) | Shell configuration |
+| [batteries/unfree.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/unfree.nix) | Unfree package predicates |
+| [batteries/tty-autologin.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/tty-autologin.nix) | TTY autologin service |
+| [batteries/import-tree.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/import-tree.nix) | Auto-importing class dirs |
+| [batteries/flake-parts.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/flake-parts.nix) | `inputs'` and `self'` providers |
+
+### Advanced
+
+| Test File | What It Tests |
+|-----------|---------------|
+| [angle-brackets.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/angle-brackets.nix) | All bracket resolution paths |
+| [namespaces.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/namespaces.nix) | Local, remote, merged namespaces |
+| [forward.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward.nix) | Custom class forwarding |
+| [homes.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/homes.nix) | Standalone Home-Manager configs |
+| [schema-base-modules.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/schema-base-modules.nix) | `den.base.{host,user,home,conf}` |
+
+### Bug Regressions
+
+| Test File | What It Tests |
+|-----------|---------------|
+| [deadbugs/static-include-dup-package.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/deadbugs/static-include-dup-package.nix) | Duplicate deduplication for packages/lists |
+| [deadbugs/_external-namespace-deep-aspect.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/deadbugs/_external-namespace-deep-aspect.nix) | Deep aspect access from external flakes |
+
+### External Provider
+
+The `provider/` subdirectory is a **separate flake** that defines a namespace `provider` with aspects. It's used by the deadbugs test to verify cross-flake namespace consumption:
+
+```nix
+# provider/modules/den.nix
+{ inputs, ... }:
+{
+  imports = [ inputs.den.flakeModule  (inputs.den.namespace "provider" true) ];
+  provider.tools._.dev._.editors = {
+    nixos.programs.vim.enable = true;
+  };
+}
+```
+
+## Running CI Tests
+
+From the Den root against your local checkout:
+
+```console
+nix flake check --override-input den . ./templates/ci
+```
+
+You can also run a single or a subset of tests using:
+
+```console
+# You can use any attr-path bellow flake.tests after system-agnositc to run those specific tests:
+nix-unit  --override-input den .  --flake ./templates/ci#.tests.systems.x86_64-linux.system-agnostic
+```
+
+## Writing New Tests
+
+Copy `modules/empty.nix` as a starting point:
+
+```nix
+{ denTest, ... }:
+{
+  flake.tests.my-feature = {
+    test-name = denTest (
+      { den, igloo, ... }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+        expr = /* what you get */;
+        expected = /* what you expect */;
+      }
+    );
+  };
+}
+```

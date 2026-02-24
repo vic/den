@@ -10,15 +10,15 @@
         ...
       }:
       {
-        den.ctx.greeting.desc = "{hello} context";
-        den.ctx.greeting.conf =
+        den.ctx.greeting.description = "{hello} context";
+        den.ctx.greeting._.greeting =
           { hello }:
           {
             funny.names = [ hello ];
           };
         den.ctx.greeting.into.shout = { hello }: [ { shout = lib.toUpper hello; } ];
 
-        den.ctx.shout.conf =
+        den.ctx.shout._.shout =
           { shout }:
           {
             funny.names = [ shout ];
@@ -35,8 +35,8 @@
     test-ctx-includes-static-and-parametric = denTest (
       { den, funnyNames, ... }:
       {
-        den.ctx.foo.desc = "{foo} context";
-        den.ctx.foo.conf =
+        den.ctx.foo.description = "{foo} context";
+        den.ctx.foo._.foo =
           { foo }:
           {
             funny.names = [ foo ];
@@ -63,8 +63,8 @@
     test-ctx-owned = denTest (
       { den, funnyNames, ... }:
       {
-        den.ctx.bar.desc = "{x} context";
-        den.ctx.bar.conf =
+        den.ctx.bar.description = "{x} context";
+        den.ctx.bar._.bar =
           { x }:
           {
             funny.names = [ x ];

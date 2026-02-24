@@ -1,74 +1,59 @@
 { den, lib, ... }:
 let
   inherit (den.lib) parametric;
-  inherit (den.lib.aspects.types) providerType;
+  inherit (den.lib.aspects.types) aspectSubmodule providerType;
 
   ctxType = lib.types.submodule (
-    { name, ... }:
+    { name, config, ... }:
     {
-      freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;
-      options = {
-        name = lib.mkOption {
-          description = "Context type name";
-          type = lib.types.str;
-          default = name;
-        };
-        desc = lib.mkOption {
-          description = "Context description";
-          type = lib.types.str;
-          default = "";
-        };
-        conf = lib.mkOption {
-          description = "Obtain a configuration aspect for context";
-          type = lib.types.functionTo providerType;
-          default = { };
-        };
-        into = lib.mkOption {
-          description = "Context transformations";
-          type = lib.types.lazyAttrsOf (lib.types.functionTo (lib.types.listOf lib.types.raw));
-          default = { };
-        };
-        includes = lib.mkOption {
-          description = "Parametric aspects to include for this context";
-          type = lib.types.listOf providerType;
-          default = [ ];
-        };
-        __functor = lib.mkOption {
-          description = "Apply context with dedup across into targets.";
-          type = lib.types.functionTo (lib.types.functionTo providerType);
-          readOnly = true;
-          internal = true;
-          visible = false;
-          default = ctxApply;
-        };
+      imports = aspectSubmodule.getSubModules;
+      options.into = lib.mkOption {
+        description = "Context transformations to other context types";
+        type = lib.types.lazyAttrsOf (lib.types.functionTo (lib.types.listOf lib.types.raw));
+        default = { };
       };
+      config.__functor = lib.mkForce (ctxApply config.name);
     }
   );
 
   cleanCtx =
-    ctx:
-    builtins.removeAttrs ctx [
+    self:
+    builtins.removeAttrs self [
       "name"
-      "desc"
-      "conf"
+      "description"
       "into"
+      "provides"
       "__functor"
+      "modules"
+      "resolve"
+      "_module"
+      "_"
     ];
 
   collectPairs =
-    self: ctx:
+    source: self: ctx:
     [
       {
-        inherit ctx;
+        inherit ctx source;
         ctxDef = self;
       }
     ]
     ++ lib.concatLists (
-      lib.mapAttrsToList (n: into: lib.concatMap (v: collectPairs den.ctx.${n} v) (into ctx)) self.into
+      lib.mapAttrsToList (
+        n: into: lib.concatMap (v: collectPairs self den.ctx.${n} v) (into ctx)
+      ) self.into
     );
 
   dedupIncludes =
     let
+      crossProvider =
+        p:
+        let
+          src = p.source;
+          n = p.ctxDef.name;
+        in
+        if src == null then (_: { }) else src.provides.${n} or (_: { });
+
       go =
         acc: remaining:
         if remaining == [ ] then
@@ -80,16 +65,20 @@ let
             n = p.ctxDef.name;
             clean = cleanCtx p.ctxDef;
             isFirst = !(acc.seen ? ${n});
+            selfProvider = p.ctxDef.provides.${n} or (_: { });
+            cross = crossProvider p;
             items =
               if isFirst then
                 [
                   (parametric.fixedTo p.ctx clean)
-                  (p.ctxDef.conf p.ctx)
+                  (selfProvider p.ctx)
+                  (cross p.ctx)
                 ]
               else
                 [
                   (parametric.atLeast clean p.ctx)
-                  (p.ctxDef.conf p.ctx)
+                  (selfProvider p.ctx)
+                  (cross p.ctx)
                 ];
           in
           go {
@@ -105,7 +94,9 @@ let
       result = [ ];
     } pairs;
 
-  ctxApply = self: ctx: { includes = dedupIncludes (collectPairs self ctx); };
+  ctxApply = ctxName: _self: ctx: {
+    includes = dedupIncludes (collectPairs null den.ctx.${ctxName} ctx);
+  };
 
 in
 {

@@ -3,6 +3,7 @@ title: Library vs Framework
 description: Understanding Den's dual nature as both a library and a framework.
 ---
 
+
 ## Den the Library
 
 At its core, Den is a **library** for activating configuration aspects via context transformations.
@@ -45,14 +46,14 @@ Nix-configurable systems.
 Here is a deployment pipeline example:
 
 ```nix
-den.ctx.deploy.conf = { target }:
+den.ctx.deploy._.deploy = { target }:
   den.aspects.${target.name};
 
 den.ctx.deploy.into.service = { target }:
   map (s: { service = s; target = target; })
     target.services;
 
-den.ctx.service.conf = { service, target }:
+den.ctx.service._.service = { service, target }:
   { terraform.resource.${service.name} = { ... }; };
 ```
 
@@ -61,7 +62,7 @@ This creates a deployment pipeline where:
 2. Targets enumerate their services
 3. Each service produces Terraform configurations
 
-The same `ctxApply` mechanics — owned configs, `conf` lookup,
+The same `ctxApply` mechanics — owned configs, self-named provider lookup,
 `into` transformations — drive this pipeline without any OS-specific code.
 
 You can even design and test custom context flows independently of
