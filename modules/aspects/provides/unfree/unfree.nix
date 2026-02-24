@@ -15,9 +15,20 @@ let
   __functor =
     _self: allowed-names:
     { class, aspect-chain }:
-    den.lib.take.unused aspect-chain {
-      ${class}.unfree.packages = allowed-names;
-    };
+    den.lib.take.unused aspect-chain (
+      if
+        (builtins.elem class [
+          "nixos"
+          "darwin"
+          "homeManager"
+        ])
+      then
+        {
+          ${class}.unfree.packages = allowed-names;
+        }
+      else
+        { }
+    );
 in
 {
   den.provides.unfree = {
