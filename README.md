@@ -13,7 +13,6 @@
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
 
-
 <table>
 <tr>
 <td>
@@ -21,24 +20,23 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-
 ### [Documentation](https://den.oeiuwq.com)
-### [Batteries](https://den.oeiuwq.com/guides/batteries/)
-### [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
-### [Community](https://github.com/vic/den/discussions)
 
+### [Batteries](https://den.oeiuwq.com/guides/batteries/)
+
+### [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
+
+### [Community](https://github.com/vic/den/discussions)
 
 **Den as a [Library](https://den.oeiuwq.com/explanation/library-vs-framework/)**:
 
-domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).  
+domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).
 
 **Den as [Framework](https://den.oeiuwq.com/explanation/context-pipeline/)**:
 
 uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.
 
-
-
-### Templates: 
+### Templates:
 
 [default](https://den.oeiuwq.com/tutorials/default/): +flake-file +flake-parts +home-manager
 
@@ -60,14 +58,12 @@ uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix
 
 [GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code)
 
-
 **❄️ Try it:**
 
 ```console
 nix run github:vic/den
 nix flake init -t github:vic/den && nix run .#vm
 ```
-
 
 </div>
 </td>
