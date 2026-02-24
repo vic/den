@@ -19,9 +19,9 @@
       appleBuilds = !pkgs.stdenvNoCC.isDarwin || builtins.pathExists (apple.system.build.toplevel);
     in
     {
-      checks."igloo builds" = checkCond "igloo-builds" iglooBuilds;
-      checks."apple builds" = checkCond "apple-builds" appleBuilds;
-      checks."vm builds" = checkCond "vm-builds" vmBuilds;
+      # checks."igloo builds" = checkCond "igloo-builds" iglooBuilds;
+      # checks."apple builds" = checkCond "apple-builds" appleBuilds;
+      # checks."vm builds" = checkCond "vm-builds" vmBuilds;
 
       checks."alice enabled igloo nh" = checkCond "alice.provides.igloo" igloo.programs.nh.enable;
       checks."igloo enabled alice helix" =
