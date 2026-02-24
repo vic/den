@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
         # add more releases or commits to test
         # rev: [ "main", "v0.8.0", "caa328d" ]
         rev: ["main"]
@@ -22,6 +22,9 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v5
       - run: sed -i 's#vic/den/main#vic/den/${{matrix.rev}}#' flake.nix
+        if: matrix.os == 'ubuntu-latest'
+      - run: sed -i '' 's#vic/den/main#vic/den/${{matrix.rev}}#' flake.nix
+        if: matrix.os == 'macos-latest'
       - run: nix flake update den
       - run: nix flake metadata
       - run: nix flake check
