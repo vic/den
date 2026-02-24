@@ -4,16 +4,6 @@
   # This test uses the `funny.names` test option to
   # demostrate different places and context-aspects that
   # can contribute configurations to the host.
-  #
-  # Note that both host and user aspects include default
-  # and because of that, default owned and static values
-  # might be duplicated. This is why users are NOT adviced
-  # to abuse den.default.
-  #
-  # The behaviour is correct, but using den.default for
-  # everything without care will cause deplication problems.
-  # Instead, users should include either directly on the host
-  # or by using `den.ctx.host` or `den.ctx.user`.
   flake.tests.ctx-transformation.test-host = denTest (
     {
       den,
@@ -161,7 +151,6 @@
 
       expected = [
         "default-anyctx {aspect-chain,class}"
-        "default-anyctx {aspect-chain,class}"
         "default-anyctx {host,user}"
         "default-anyctx {host}"
 
@@ -170,9 +159,7 @@
         "default-host-lax {host}"
 
         "default-owned"
-        "default-owned"
 
-        "default-static"
         "default-static"
 
         "default-user-lax {host,user}"
