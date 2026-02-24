@@ -35,6 +35,7 @@ let
 
   forward =
     {
+      guard ? null,
       adaptArgs ? null,
       adapterModule ? null,
       ...
@@ -42,48 +43,47 @@ let
     let
       forwarded = den.lib.aspects.forward clean;
       clean = builtins.removeAttrs fwd [
+        "guard"
         "adaptArgs"
         "adapterModule"
       ];
       fromClass = fwd.fromClass (lib.head fwd.each);
       intoClass = fwd.intoClass (lib.head fwd.each);
       intoPath = fwd.intoPath (lib.head fwd.each);
-      adapter =
-        { class, aspect-chain }:
-        {
-          includes = [
-            (den.lib.aspects.forward (
-              clean
-              // {
-                intoPath = _: [
-                  "den"
-                  "fwd-adapter"
-                  fromClass
-                ];
-              }
-            ))
-          ];
-          ${intoClass} = args: {
-            options.den.fwd-adapter.${fromClass} = lib.mkOption {
-              default = { };
-              type = lib.types.submoduleWith {
-                specialArgs = adaptArgs args;
-                modules =
-                  if adapterModule == null then
-                    [
-                      {
-                        config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
-                      }
-                    ]
-                  else
-                    [ adapterModule ];
-              };
+      freeformMod = {
+        config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
+      };
+      adapter = {
+        includes = [
+          (den.lib.aspects.forward (
+            clean
+            // {
+              intoPath = _: [
+                "den"
+                "fwd"
+                "adapter"
+                fromClass
+              ];
+            }
+          ))
+        ];
+        ${intoClass} = args: {
+          options.den.fwd.adapter.${fromClass} = lib.mkOption {
+            default = { };
+            type = lib.types.submoduleWith {
+              specialArgs = if adaptArgs == null then args else adaptArgs args;
+              modules = if adapterModule == null then [ freeformMod ] else [ adapterModule ];
             };
-            config = lib.setAttrByPath intoPath args.config.den.fwd-adapter.${fromClass};
           };
+          config =
+            if (guard == null || guard args) then
+              lib.setAttrByPath intoPath args.config.den.fwd.adapter.${fromClass}
+            else
+              { };
         };
+      };
     in
-    if adaptArgs == null then forwarded else adapter;
+    if guard != null || adaptArgs != null || adapterModule != null then adapter else forwarded;
 
 in
 {
