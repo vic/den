@@ -5,7 +5,8 @@ description: Opt-in shorthand for resolving deep aspect paths.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`nix/den-brackets.nix`](https://github.com/vic/den/blob/main/nix/den-brackets.nix)</Aside>
+
+<Aside title="Use the Source, Luke" icon="github">[`nix/den-brackets.nix`](https://github.com/vic/den/blob/main/nix/den-brackets.nix)</Aside>
 
 <Aside type="caution">Angle brackets is an experimental, opt-in feature.</Aside>
 
@@ -21,17 +22,6 @@ Den's `__findFile` resolves angle-bracket expressions to aspect paths:
 | `<foo/bar>` | `den.aspects.foo.provides.bar` |
 | `<foo/bar/baz>` | `den.aspects.foo.provides.bar.provides.baz` |
 | `<ns/tools>` | `den.ful.ns.tools` |
-
-## Enable Per-Module
-
-Bring `__findFile` into scope from module arguments:
-
-```nix
-{ den, __findFile, ... }: {
-  _module.args.__findFile = den.lib.__findFile;
-  den.aspects.igloo.includes = [ <den/define-user> ];
-}
-```
 
 ## Enable Globally
 
@@ -70,10 +60,9 @@ in {
 With a namespace `ns` enabled:
 
 ```nix
-{ __findFile, ns, ... }: {
-  ns.moo.silly = true;
-  # access:
-  expr = <ns/moo>;  # resolves to den.ful.ns.moo
+{ __findFile, ... }: {
+  ns.moo.silly = true; # write access
+  expr = <ns/moo>;  # read resolves to den.ful.ns.moo
 }
 ```
 

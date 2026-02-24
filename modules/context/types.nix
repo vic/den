@@ -9,9 +9,7 @@ let
       imports = aspectSubmodule.getSubModules;
       options.into = lib.mkOption {
         description = "Context transformations to other context types";
-        type = lib.types.lazyAttrsOf (
-          lib.types.functionTo (lib.types.listOf lib.types.raw)
-        );
+        type = lib.types.lazyAttrsOf (lib.types.functionTo (lib.types.listOf lib.types.raw));
         default = { };
       };
       config.__functor = lib.mkForce (ctxApply config.name);
@@ -54,10 +52,7 @@ let
           src = p.source;
           n = p.ctxDef.name;
         in
-        if src == null then
-          (_: { })
-        else
-          src.provides.${n} or (_: { });
+        if src == null then (_: { }) else src.provides.${n} or (_: { });
 
       go =
         acc: remaining:
@@ -99,9 +94,9 @@ let
       result = [ ];
     } pairs;
 
-  ctxApply =
-    ctxName: _self: ctx:
-    { includes = dedupIncludes (collectPairs null den.ctx.${ctxName} ctx); };
+  ctxApply = ctxName: _self: ctx: {
+    includes = dedupIncludes (collectPairs null den.ctx.${ctxName} ctx);
+  };
 
 in
 {

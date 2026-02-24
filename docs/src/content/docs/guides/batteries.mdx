@@ -5,7 +5,9 @@ description: Opt-in, replaceable aspects for common tasks.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`modules/aspects/provides/`](https://github.com/vic/den/tree/main/modules/aspects/provides) · Reference: [Batteries](/reference/batteries/)</Aside>
+<Aside title="Use the Source, Luke" icon="github">
+[`modules/aspects/provides/`](https://github.com/vic/den/tree/main/modules/aspects/provides) · Reference: [Batteries](/reference/batteries/)
+</Aside>
 
 ## What Are Batteries?
 
@@ -109,17 +111,3 @@ den.aspects.igloo.includes = [
 ```
 
 This is how Home-Manager integration is implemented internally.
-
-## Writing Your Own
-
-Any aspect can serve as a battery. Publish it in a namespace for others:
-
-```nix
-{ den, ... }: {
-  den.provides.my-battery = den.lib.parametric {
-    includes = [
-      ({ host, ... }: { nixos.my-setting = host.name; })
-    ];
-  };
-}
-```

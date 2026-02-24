@@ -5,12 +5,17 @@ description: Share and consume aspect libraries across repositories.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`nix/namespace.nix`](https://github.com/vic/den/blob/main/nix/namespace.nix)</Aside>
+<Aside title="Use the Source, Luke" icon="github">[`nix/namespace.nix`](https://github.com/vic/den/blob/main/nix/namespace.nix)</Aside>
 
 ## What Are Namespaces?
 
 Namespaces let you organize aspects into named collections that can be
 shared across flakes and consumed by others.
+
+This is unlike your `den.aspects.<name>` namespace which is private,
+because you wont likely want to share your user/host configurations.
+
+Namespaces are for re-usable aspects you are willing to share with others.
 
 ## Define a Local Namespace
 
@@ -21,6 +26,10 @@ shared across flakes and consumed by others.
 }
 ```
 
+The first argument is the aspect namespace name.
+It will be provided as module argument: `{ lib, ns, ... }`
+so you can access aspects from the namespace.
+
 The second argument controls output:
 - `false` — local only, not exposed as flake output
 - `true` — exposed at `flake.denful.ns`
@@ -28,7 +37,7 @@ The second argument controls output:
 
 ## Consume Remote Namespaces
 
-Import aspects from another flake's `denful` output:
+Import aspects from another flake's `flake.denful.provider` output:
 
 ```nix
 { inputs, ... }: {
@@ -40,7 +49,7 @@ Import aspects from another flake's `denful` output:
 }
 ```
 
-Multiple sources are merged. Local definitions override remote ones.
+Multiple sources are merged by the module system.
 
 ## Nested Provides in Namespaces
 
@@ -92,13 +101,14 @@ When `__findFile` is in scope, namespace aspects are accessible via
 angle brackets:
 
 ```nix
-{ __findFile, ns, ... }: {
+{ __findFile, ... }: {
   _module.args.__findFile = den.lib.__findFile;
+
   den.aspects.igloo.includes = [ <ns/tools> ];
 }
 ```
 
 ## Real-World: denful
 
-[denful](https://github.com/vic/denful) is a community aspect distribution
+[denful](https://github.com/vic/denful) is a (WIP) community aspect distribution
 built on Den namespaces — a lazyvim-like approach to Nix configurations.

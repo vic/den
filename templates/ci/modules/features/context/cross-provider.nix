@@ -21,7 +21,14 @@
           {
             funny.names = [ "parent-for-child-${x}-${y}" ];
           };
-        den.ctx.parent.into.child = { x }: [ { inherit x; y = "derived"; } ];
+        den.ctx.parent.into.child =
+          { x }:
+          [
+            {
+              inherit x;
+              y = "derived";
+            }
+          ];
 
         den.ctx.child._.child =
           { x, y }:
@@ -47,16 +54,28 @@
       }:
       {
         den.ctx.src.description = "source";
-        den.ctx.src._.src = { x }: { funny.names = [ x ]; };
+        den.ctx.src._.src =
+          { x }:
+          {
+            funny.names = [ x ];
+          };
         den.ctx.src._.dst =
           { x, i }:
           {
             funny.names = [ "src-for-${x}-${toString i}" ];
           };
-        den.ctx.src.into.dst = { x }: [
-          { inherit x; i = 1; }
-          { inherit x; i = 2; }
-        ];
+        den.ctx.src.into.dst =
+          { x }:
+          [
+            {
+              inherit x;
+              i = 1;
+            }
+            {
+              inherit x;
+              i = 2;
+            }
+          ];
 
         den.ctx.dst._.dst =
           { x, i }:
@@ -84,10 +103,18 @@
       }:
       {
         den.ctx.src.description = "source without cross-provider";
-        den.ctx.src._.src = { x }: { funny.names = [ x ]; };
+        den.ctx.src._.src =
+          { x }:
+          {
+            funny.names = [ x ];
+          };
         den.ctx.src.into.dst = { x }: [ { y = x; } ];
 
-        den.ctx.dst._.dst = { y }: { funny.names = [ "dst-${y}" ]; };
+        den.ctx.dst._.dst =
+          { y }:
+          {
+            funny.names = [ "dst-${y}" ];
+          };
 
         expr = funnyNames (den.ctx.src { x = "val"; });
         expected = [

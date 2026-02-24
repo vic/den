@@ -25,15 +25,6 @@ den.aspects.foo = { user, ... }@context:
   });
 ```
 
-## Trace Context Keys
-
-See which contexts are being applied:
-
-```nix
-den.default.includes = [
-  (context: builtins.trace (builtins.attrNames context) { })
-];
-```
 
 ## REPL Inspection
 

@@ -5,7 +5,9 @@ description: Define your infrastructure entities with Den's freeform schema.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix) · Reference: [Entity Schema](/reference/schema/)</Aside>
+<Aside title="Use the Source, Luke" icon="github">
+[`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix) · Reference: [Entity Schema](/reference/schema/)
+</Aside>
 
 ## Hosts and Users
 
@@ -16,7 +18,7 @@ den.hosts.x86_64-linux.my-laptop.users.vic = { };
 den.hosts.aarch64-darwin.macbook.users.vic = { };
 ```
 
-This creates NixOS/Darwin configurations with users, ready for:
+This creates NixOS/Darwin configurations with users sharing the same home configuration, ready for:
 
 ```console
 nixos-rebuild switch --flake .#my-laptop
@@ -74,7 +76,7 @@ that aspects can inspect:
 ```nix
 den.hosts.x86_64-linux.my-laptop = {
   isWarm = true;          # custom attribute
-  location = "home";      # custom attribute
+  location = "studio";    # custom attribute
   users.vic = { };
 };
 ```
@@ -103,22 +105,20 @@ den.base.conf = { lib, ... }: {
 
 ## Custom Instantiation
 
-Override how configurations are built:
-
-```nix
-den.hosts.x86_64-linux.wsl-box = {
-  class = "nixos";
-  instantiate = inputs.nixos-wsl.lib.nixosSystem;
-  intoAttr = "wslConfigurations";
-  users.vic = { };
-};
-```
-
 Different `nixpkgs` channels per host:
 
 ```nix
 den.hosts.x86_64-linux.stable-server = {
   instantiate = inputs.nixpkgs-stable.lib.nixosSystem;
   users.admin = { };
+};
+```
+
+Override where configurations are placed:
+
+```nix
+den.hosts.x86_64-linux.wsl-box = {
+  intoAttr = "wslConfigurations";
+  users.wsl = { };
 };
 ```

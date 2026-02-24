@@ -3,7 +3,12 @@ title: OS Context Pipeline
 description: The complete data flow from host declaration to final configuration.
 ---
 
-> Use the source, Luke: [`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix) · HM: [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix) · [`hm-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-integration.nix)
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside title="Use the Source, Luke" icon="github">
+[`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix) · HM: [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix) · [`hm-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-integration.nix)
+</Aside>
 
 ## The NixOS/nix-Darwin Pipeline
 
@@ -96,13 +101,12 @@ For each HM user, `ctx.hm-user` uses `den._.forward` to take
 2. **HM users exist** — at least one user has `class = "homeManager"`
 3. **HM module available** — `inputs.home-manager` exists, or the host has a custom `hm-module`
 
-All three must be true. Hosts without users, or with only non-HM users,
-skip the entire HM pipeline.
+All three must be true. Hosts without users, or with only non-HM users, skip the entire HM pipeline.
 
 ## Automatic Deduplication
 
-`den.default` (alias for `den.ctx.default`) is reached at **{host}**, **{host, user}**,
-and **{home}** context stages — once for the host context and once per user.
+`den.default` (alias for `den.ctx.default`) is reached at **`{host}`**, **`{host, user}`**,
+and **`{home}`** context stages — once for the host context and once per user.
 
 Den's `ctxApply` automatically deduplicates includes using a seen-set:
 
@@ -127,18 +131,17 @@ This means:
   (each may match different context shapes)
 - Options of `types.package` or `types.listOf` no longer get duplicate entries
 
-:::tip
+<Aside>
 For parametric includes in `den.default.includes`, use `den.lib.take.exactly`
 to restrict which context stages a function matches:
 
 ```nix
-den.default.includes = [
-  (den.lib.take.exactly ({ host }: { nixos.x = 1; }))
-];
+den.default.includes = [ den.aspects.foo ];
+den.aspects.foo = take.exactly ({ host }: { nixos.x = 1; });
 ```
 
 This function runs only with `{ host }` context, not with `{ host, user }`.
-:::
+</Aside>
 
 ## Standalone Home-Manager
 

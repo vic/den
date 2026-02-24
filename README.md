@@ -27,7 +27,7 @@
 - [Dendritic](https://den.oeiuwq.com/explanation/core-principles/): **same** concern, **different** Nix classes.
 - [Flake optional](https://den.oeiuwq.com/guides/no-flakes/). Stable/unstable Nix, with/without flake-parts.
 - [DRY](modules/aspects/provides/unfree/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) — [parametric](https://den.oeiuwq.com/explanation/parametric/) over `host`/`home`/`user`.
-- Context-aware [dependencies](https://den.oeiuwq.com/explanation/context-system/); `host<->user` [bidirectional](https://den.oeiuwq.com/guides/bidirectional/) contributions.
+- Context-aware [dependencies](https://den.oeiuwq.com/explanation/context-system/); `host<->user` [bidirectional](https://den.oeiuwq.com/guides/configure-aspects/) contributions.
 - [Share](https://den.oeiuwq.com/guides/namespaces/) aspects across repos. [Routable](templates/example/modules/aspects/eg/routes.nix) configs.
 - Custom [factories](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/ci/modules/homes.nix#L20) for any Nix `class`. Per-host `stable`/`unstable` channels.
 - Freeform [schemas](https://den.oeiuwq.com/reference/schema/) (no `specialArgs`) with [base](https://github.com/vic/den/pull/119) modules.

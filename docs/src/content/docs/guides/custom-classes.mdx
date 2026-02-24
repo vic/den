@@ -5,7 +5,7 @@ description: Create new Nix configuration classes with den._.forward.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`modules/aspects/provides/forward.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) · [CI tests](https://github.com/vic/den/blob/main/templates/ci/modules/forward.nix)</Aside>
+<Aside title="Use the Source, Luke" icon="github">[`modules/aspects/provides/forward.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) · [CI tests](https://github.com/vic/den/blob/main/templates/ci/modules/forward.nix)</Aside>
 
 ## What Are Custom Classes?
 
@@ -20,45 +20,28 @@ and inserts them into a target class at a specified path.
 
 ## Example: Custom Class to NixOS
 
-Forward a `custom` class into NixOS top-level:
+Forward a new `hjem` class into NixOS top-level:
 
 ```nix
 { den, lib, ... }:
 let
-  forwarded = { class, aspect-chain }:
+  hjem = { host }: { class, aspect-chain }:
     den._.forward {
-      each = lib.singleton class;
-      fromClass = _: "custom";
-      intoClass = _: "nixos";
-      intoPath = _: [ ];
-      fromAspect = _: lib.head aspect-chain;
+      each = host.users;
+      fromClass = user: "hjem";
+      intoClass = user: class;
+      intoPath = user: [ "hjem" "users" user.userName ]
+      fromAspect = user: den.aspects.${user.aspect};
     };
 in {
-  den.aspects.igloo = {
-    includes = [ forwarded ];
-    custom.networking.hostName = "from-custom-class";
-  };
+  # host forwards user hjem modules into nixos level.
+  den.aspects.igloo = { includes = [ hjem ]; };
+
+  # user aspect has hjem class
+  den.aspects.tux.hjem  = { ... };
 }
 ```
 
-## Example: Forward into a Subpath
-
-Insert configs into a nested submodule:
-
-```nix
-den.aspects.igloo = {
-  includes = [ forwarded ];
-  nixos.imports = [
-    { options.fwd-box = lib.mkOption {
-        type = lib.types.submoduleWith { modules = [ myModule ]; };
-    }; }
-  ];
-  src.items = [ "from-src-class" ];
-};
-```
-
-With `intoPath = _: [ "fwd-box" ]`, the `src` class configs merge into
-`nixos.fwd-box`.
 
 ## How Home-Manager Uses Forward
 

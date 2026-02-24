@@ -5,7 +5,7 @@ description: All built-in opt-in aspects shipped with Den.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`modules/aspects/provides/`](https://github.com/vic/den/tree/main/modules/aspects/provides)</Aside>
+<Aside title="Use the Source, Luke" icon="github">[`modules/aspects/provides/`](https://github.com/vic/den/tree/main/modules/aspects/provides) · Tests: [`batteries/`](https://github.com/vic/den/tree/main/templates/ci/modules/features/batteries)</Aside>
 
 ## Overview
 
@@ -15,7 +15,7 @@ All are opt-in — include them explicitly where needed.
 ## define-user
 
 Defines a user at OS and Home-Manager levels.
-([source](https://github.com/vic/den/blob/main/modules/aspects/provides/define-user.nix))
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/define-user.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/define-user.nix))
 
 ```nix
 den.default.includes = [ den._.define-user ];
@@ -31,7 +31,7 @@ den.default.includes = [ den._.define-user ];
 ## primary-user
 
 Makes a user an administrator.
-([source](https://github.com/vic/den/blob/main/modules/aspects/provides/primary-user.nix))
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/primary-user.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/primary-user.nix))
 
 ```nix
 den.aspects.vic.includes = [ den._.primary-user ];
@@ -47,7 +47,7 @@ den.aspects.vic.includes = [ den._.primary-user ];
 ## user-shell
 
 Sets default shell at OS and HM levels.
-([source](https://github.com/vic/den/blob/main/modules/aspects/provides/user-shell.nix))
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/user-shell.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/user-shell.nix))
 
 ```nix
 den.aspects.vic.includes = [ (den._.user-shell "fish") ];
@@ -63,7 +63,7 @@ den.aspects.vic.includes = [ (den._.user-shell "fish") ];
 ## unfree
 
 Enables unfree packages by name.
-([source](https://github.com/vic/den/blob/main/modules/aspects/provides/unfree/unfree-predicate-builder.nix) · [predicate](https://github.com/vic/den/blob/main/modules/aspects/provides/unfree/unfree.nix))
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/unfree/unfree-predicate-builder.nix) · [predicate](https://github.com/vic/den/blob/main/modules/aspects/provides/unfree/unfree.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/unfree.nix))
 
 ```nix
 den.aspects.laptop.includes = [ (den._.unfree [ "discord" ]) ];
@@ -82,6 +82,7 @@ Set unfree packages on the **host** aspect instead.
 ## tty-autologin
 
 Automatic tty login.
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/tty-autologin.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/tty-autologin.nix))
 
 ```nix
 den.aspects.laptop.includes = [ (den._.tty-autologin "root") ];
@@ -94,7 +95,7 @@ den.aspects.laptop.includes = [ (den._.tty-autologin "root") ];
 ## import-tree
 
 Auto-imports non-dendritic Nix files by class directory.
-([source](https://github.com/vic/den/blob/main/modules/aspects/provides/import-tree.nix))
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/import-tree.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/import-tree.nix))
 
 ```nix
 den.aspects.laptop.includes = [ (den._.import-tree ./path) ];
@@ -115,6 +116,7 @@ den._.import-tree._.home ./homes   # per home: ./homes/<name>/_<class>
 ## inputs' (flake-parts)
 
 Provides per-system `inputs'` as a module argument.
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/flake-parts/inputs.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/flake-parts.nix))
 
 ```nix
 den.default.includes = [ den._.inputs' ];
@@ -125,6 +127,7 @@ den.default.includes = [ den._.inputs' ];
 ## self' (flake-parts)
 
 Provides per-system `self'` as a module argument.
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/flake-parts/self.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/batteries/flake-parts.nix))
 
 ```nix
 den.default.includes = [ den._.self' ];
@@ -135,7 +138,7 @@ den.default.includes = [ den._.self' ];
 ## forward
 
 Creates custom Nix classes by forwarding configs between classes.
-([source](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) · [usage guide](/guides/custom-classes/))
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward.nix) · [usage guide](/guides/custom-classes/))
 
 ```nix
 den._.forward {
@@ -154,12 +157,14 @@ Returns an aspect. Used internally for Home-Manager integration.
 HM integration is handled by
 `den.ctx.hm-host` and `den.ctx.hm-user` context types, which are
 activated automatically when hosts have HM users.
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/home-manager/))
 
 All `homeManager` class settings are forwarded to os-level `home-manager.users.<userName>`.
 
 ## user
 
 The `user` class is automatically handled by Den and forwards to os-level `users.users.<userName>`
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/os-user.nix))
 
 You can write:
 

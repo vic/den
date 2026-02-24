@@ -5,11 +5,11 @@ description: Library functions for parametric dispatch and context handling.
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="tip">Source: [`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) · [`nix/fn-can-take.nix`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix) · [`nix/den-brackets.nix`](https://github.com/vic/den/blob/main/nix/den-brackets.nix)</Aside>
+<Aside title="Use the Source, Luke" icon="github">[`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) · [`nix/fn-can-take.nix`](https://github.com/vic/den/blob/main/nix/fn-can-take.nix) · [`nix/den-brackets.nix`](https://github.com/vic/den/blob/main/nix/den-brackets.nix) · Tests: [`parametric.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/parametric.nix) · [`angle-brackets.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/angle-brackets.nix)</Aside>
 
 ## den.lib.parametric
 
-Creates a parametric aspect. Alias for `parametric.withOwn parametric.atLeast`.
+Creates a parametric aspect. Alias for `(parametric.withOwn parametric.atLeast)`.
 
 ```nix
 den.lib.parametric { nixos.x = 1; includes = [ f ]; }
@@ -21,6 +21,8 @@ Includes owned configs, statics, and dispatches to functions via `atLeast`.
 
 Dispatches **only** to functions whose required args are a subset of context:
 
+**does include owned config, atLeast only forwards context**.
+
 ```nix
 F = parametric.atLeast { includes = [ a b ]; };
 ```
@@ -28,6 +30,8 @@ F = parametric.atLeast { includes = [ a b ]; };
 ### parametric.exactly
 
 Dispatches **only** to functions whose args match context exactly:
+
+**does include owned config, atLeast only forwards context**.
 
 ```nix
 F = parametric.exactly { includes = [ a b ]; };
@@ -37,6 +41,9 @@ F = parametric.exactly { includes = [ a b ]; };
 
 Replaces context with a fixed attribute set:
 
+Ignores any given context at call site, and replaces with a fixed one.
+Behaves like `parametric`, includes owned + static includes + function includes.
+
 ```nix
 F = parametric.fixedTo { x = 1; } aspect;
 ```
@@ -44,6 +51,7 @@ F = parametric.fixedTo { x = 1; } aspect;
 ### parametric.expands
 
 Merges extra attributes into received context:
+Behaves like `parametric`, includes owned + static includes + function includes.
 
 ```nix
 F = parametric.expands { extra = 1; } aspect;
@@ -52,8 +60,10 @@ F = parametric.expands { extra = 1; } aspect;
 ### parametric.withOwn
 
 Combinator: adds owned + statics on top of a dispatch functor:
+This is how `parametric` function itself uses `parametric.atLeast`.
 
 ```nix
+# an exactly variant of parametric.
 F = parametric.withOwn parametric.exactly aspect;
 ```
 
@@ -69,6 +79,8 @@ den.lib.take.atLeast ({ host, ... }: { nixos.x = 1; })
 
 Wraps function to only be called when context has at least the required args.
 
+Produces an empty attrset if the context has not atLeast the expected args.
+
 ### take.exactly
 
 ```nix
@@ -76,6 +88,8 @@ den.lib.take.exactly ({ host }: { nixos.x = 1; })
 ```
 
 Only called when context has exactly these args, no more.
+
+Produces an empty attrset otherwise.
 
 ### take.unused
 
@@ -89,6 +103,8 @@ Returns `result`, ignoring the first argument. Used internally.
 
 Function signature introspection:
 
+Does not care about values, only about attribute names.
+
 ```nix
 den.lib.canTake { x = 1; } someFunction
 # => true if someFunction can take at least { x }
@@ -99,7 +115,7 @@ den.lib.canTake.exactly { x = 1; y = 2; } someFunction
 
 ## den.lib.aspects
 
-Re-export of `flake-aspects` library. Provides:
+Re-export of [`flake-aspects`](https://github.com/vic/flake-aspects) library. Provides:
 - `aspects.types.aspectsType` — module type for aspect trees
 - `aspects.types.providerType` — type for aspect providers
 - `aspects.forward` — class forwarding implementation
@@ -114,7 +130,7 @@ den.lib.isFn someValue  # => bool
 
 ## den.lib.owned
 
-Extracts only owned configs from an aspect (removes `includes`, `__functor`):
+Extracts only owned configs from an aspect (**removes** `includes`, `__functor` from someAspect):
 
 ```nix
 den.lib.owned someAspect  # => { nixos = ...; darwin = ...; }
@@ -124,8 +140,11 @@ den.lib.owned someAspect  # => { nixos = ...; darwin = ...; }
 
 Creates a functor that only resolves static includes from an aspect:
 
+The new aspect ignores owned configs, and functional includes that are not 
+of type (ground flake-aspects): `{ class, aspect-chain }: {...}`
+
 ```nix
-den.lib.statics someAspect { class = "nixos"; aspect-chain = []; }
+den.lib.statics someAspect # => <aspect with only static includes>
 ```
 
 ## den.lib.isStatic

@@ -1,0 +1,136 @@
+---
+title: Configure Aspects
+description: Recipes for configuring aspects — owned configs, includes, providers, and bidirectional dependencies.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside title="Use the Source, Luke" icon="github">
+[`modules/aspects/`](https://github.com/vic/den/tree/main/modules/aspects) · Tests: [`features/user-host-bidirectional-config.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-bidirectional-config.nix)
+</Aside>
+
+## Static Host Config
+
+Set NixOS/Darwin/HM options directly on an aspect:
+
+```nix
+den.aspects.igloo = {
+  nixos = { pkgs, ... }: {
+    environment.systemPackages = [ pkgs.hello ];
+  };
+  homeManager.programs.vim.enable = true;
+};
+```
+
+## Include Other Aspects
+
+Compose aspects with `includes`:
+
+```nix
+den.aspects.tux = {
+  includes = [
+    den.provides.primary-user
+    (den.provides.user-shell "fish")
+    den.aspects.base-tools
+  ];
+};
+```
+
+## Context-Aware Includes
+
+Functions in `includes` receive context and only activate when they match:
+
+```nix
+den.aspects.igloo.includes = [
+  den.aspects.video
+];
+
+den.aspects.video = den.lib.take.exactly ({ host, user }: {
+  nixos.users.users.${user.userName}.extraGroups = [ "video" ];
+});
+
+```
+
+This runs **once per user** on the host. A function taking `{ host }` only runs at the host level.
+
+## Host Configures Its Users
+
+A host aspect can contribute to user-level settings:
+
+```nix
+den.aspects.igloo = {
+  nixos.networking.hostName = "igloo";
+  homeManager.programs.direnv.enable = true;
+};
+```
+
+The `homeManager` config from a host aspect becomes the default for **all users** on that host.
+
+## User Configures Its Host
+
+A user aspect can contribute to the host's NixOS/Darwin config:
+
+```nix
+den.aspects.tux = {
+  nixos.users.users.tux.description = "cute penguin";
+  homeManager = { pkgs, ... }: {
+    home.packages = [ pkgs.htop ];
+  };
+};
+```
+
+The `nixos` config from a user aspect is applied to **every host** the user appears on.
+
+
+## Conditional Config by Host/User
+
+Use aspect arguments to specialize:
+
+```nix
+den.aspects.igloo.includes = [ den.aspects.tuxGit ];
+
+den.aspects.tuxGit = den.lib.take.exactly ({ host, user }:
+  if user.userName == "tux"
+  then { homeManager.programs.git.enable = true; }
+  else { }
+);
+```
+
+## Global Defaults
+
+Use `den.default` for settings that apply everywhere:
+
+```nix
+den.default = {
+  nixos.system.stateVersion = "25.11";
+  homeManager.home.stateVersion = "25.11";
+  includes = [
+    den.provides.define-user
+    (den.lib.take.exactly ({ host }: {
+      nixos.networking.hostName = host.hostName;
+    }))
+  ];
+};
+```
+
+Use `den.lib.take.exactly` to restrict a function to a specific context shape (e.g., only at host level, not user level).
+
+## Compose Named Sub-aspects
+
+Organize aspects hierarchically using `provides`:
+
+```nix
+den.aspects.gaming = {
+  nixos.programs.steam.enable = true;
+  provides.emulation.nixos.programs.retroarch.enable = true;
+  provides.streaming = {
+    nixos.services.sunshine.enable = true;
+    homeManager.programs.moonlight.enable = true;
+  };
+};
+
+den.aspects.my-pc.includes = [
+  den.aspects.gaming
+  den.aspects.gaming._.emulation
+];
+```

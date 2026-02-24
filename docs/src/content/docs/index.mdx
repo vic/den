@@ -9,7 +9,7 @@ hero:
       <img width="400" height="400" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
   actions:
     - text: NixOS Framework
-      link: /tutorials/getting-started/
+      link: /tutorials/overview/
       icon: right-arrow
     - text: Pure Nix Library
       link: /explanation/library-vs-framework
@@ -137,7 +137,7 @@ This same pattern works for any class — create your own context transformation
   # generic config for all hosts, users, homes.
   den.default.nixos.system.stateVersion = "25.11";
   den.default.homeManager.home.stateVersion = "25.11";
-  den.default.includes [ den._.inputs' ];
+  den.default.includes = [ den._.inputs' ];
 
 }
 ```
@@ -150,7 +150,7 @@ This same pattern works for any class — create your own context transformation
   </Card>
   <Card title="Bidirectional" icon="right-arrow">
     Hosts configure their users. Users contribute to their
-    hosts. [Aspects flow in both directions](/guides/bidirectional/) automatically.
+    hosts. [Aspects flow in both directions](/guides/configure-aspects/) automatically.
   </Card>
   <Card title="Batteries Included" icon="add-document">
     Opt-in [aspects for common tasks](/guides/batteries/): define-user, primary-user,

@@ -3,8 +3,12 @@ title: Context System
 description: How den.ctx defines, transforms, and propagates context.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
 
-> Use the Source, Luke: [`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix)
+
+<Aside title="Use the Source, Luke" icon="github">
+[`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix)
+</Aside>
 
 ## What Is a Context?
 
@@ -32,26 +36,36 @@ graph LR
 
 Each context type is defined in `den.ctx`. Context types are
 [aspect submodules](/explanation/aspects/) — they inherit `includes`, `provides`,
-`description`, and owned freeform configs from `flake-aspects`'s `aspectSubmodule`.
-Den adds only the `into` option for context transformations:
+`description`, and owned freeform configs from `flake-aspects`'s `aspect` type.
+**Den adds only the `into` option for context transformations**
 
 ```nix
 den.ctx.foobar = {
   description = "The {foo, bar} context";
-  _.foobar = { foo, bar }: den.aspects.${foo}._.${bar};
-  _.baz = { foo, bar, baz }: { /* host contribution to baz */ };
+
+  # the aspect responsible for configuring the foobar context
+  provides.foobar = { foo, bar }: den.aspects.${foo}._.${bar};
+
+  # foobar contributions to the baz context
+  provides.baz = { baz }: {  };
+
+  # cutting-point for including other aspects
   includes = [ /* parametric aspects */ ];
+
+  # context transformations
   into = {
+    # how to produce baz context from a foobar one.
     baz = { foo, bar }: [{ baz = computeBaz foo bar; }];
   };
 };
 ```
 
+
 | Component | Purpose |
-|-----------|---------||
-| `description` | Human-readable description (from aspectSubmodule) |
-| `provides.${name}` / `_.${name}` | Self-named provider: given a context, find aspect responsible for configuration |
-| `provides.${target}` / `_.${target}` | Cross-provider: source's contribution to a target context (called per transformation) |
+|-----------|---------|
+| `description` | Human-readable description |
+| `provides.${name}` | Self-named provider: given a context, find aspect responsible for configuration |
+| `provides.${target}` | Cross-provider: source's contribution to a target context (called per transformation) |
 | `includes` | Parametric aspects activated for this context (aspect cutting-point) |
 | `into` | Transformations fan-out into other context types |
 
@@ -67,8 +81,8 @@ When applied, `ctxApply` walks the full `into` graph depth-first,
 collecting `(source, ctxDef, ctx)` triples, then deduplicates:
 
 1. **First visit** to a context type — `fixedTo`: owned + static + parametric dispatch
-2. **Subsequent visits** — `atLeast`: parametric dispatch only
-3. **Self-named provider** (`provides.${name}`) is always called
+2. **Subsequent visits** — `atLeast`: parametric dispatch only, **user must take care**
+3. **Self-named provider** (`provides.${name}`) is always called when context is used
 4. **Cross-provider** (`source.provides.${target}`) is called if the source defines one
 
 ```mermaid
