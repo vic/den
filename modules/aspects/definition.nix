@@ -1,4 +1,3 @@
-# create aspect dependencies from hosts/users
 {
   lib,
   den,
@@ -7,22 +6,41 @@
 let
   inherit (den.lib) parametric;
 
-  makeAspect = from: {
-    ${from.aspect} = parametric { ${from.class} = { }; };
-  };
+  mkAspect = aspect: classes: { ${aspect} = parametric (lib.genAttrs classes (_: { })); };
+
+  toClasses =
+    from:
+    if from ? classes then
+      map (c: {
+        aspect = from.aspect;
+        class = c;
+      }) from.classes
+    else
+      [
+        {
+          aspect = from.aspect;
+          class = from.class;
+        }
+      ];
 
   hosts = map builtins.attrValues (builtins.attrValues den.hosts);
   homes = map builtins.attrValues (builtins.attrValues den.homes);
-  aspectClass = from: { inherit (from) aspect class; };
+
+  groupByAspect =
+    pairs:
+    lib.foldl' (
+      acc: { aspect, class }: acc // { ${aspect} = (acc.${aspect} or [ ]) ++ [ class ]; }
+    ) { } pairs;
 
   deps = lib.pipe hosts [
     (lib.flatten)
     (map (h: builtins.attrValues h.users))
     (users: users ++ hosts ++ homes)
     (lib.flatten)
-    (map aspectClass)
+    (lib.concatMap toClasses)
     (lib.unique)
-    (map makeAspect)
+    (groupByAspect)
+    (lib.mapAttrsToList mkAspect)
   ];
 in
 {

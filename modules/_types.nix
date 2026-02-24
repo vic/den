@@ -106,7 +106,11 @@ let
       options = {
         name = strOpt "user configuration name" name;
         userName = strOpt "user account name" config.name;
-        class = strOpt "home management nix class" "homeManager";
+        classes = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          description = "home management nix classes";
+          default = [ "homeManager" ];
+        };
         aspect = strOpt "main aspect name" config.name;
       };
     }
