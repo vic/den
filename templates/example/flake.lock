@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1770736414,
-        "narHash": "sha256-x5xdJgUxNflO9j2sJHIHnPujDy6eAWJPCMQml5y9XB4=",
+        "lastModified": 1771520882,
+        "narHash": "sha256-9SeTZ4Pwr730YfT7V8Azb8GFbwk1ZwiQDAwft3qAD+o=",
         "owner": "nix-darwin",
         "repo": "nix-darwin",
-        "rev": "7c952d9a524ffbbd5b5edca38fe6d943499585cc",
+        "rev": "6a7fdcd5839ec8b135821179eea3b58092171bcf",
         "type": "github"
       },
       "original": {
@@ -22,11 +22,11 @@
     },
     "den": {
       "locked": {
-        "lastModified": 1771580315,
-        "narHash": "sha256-C32B1+oba7eV+ZBndmVPltNk1eYuj94haLnzJ0FEdW8=",
+        "lastModified": 1771905052,
+        "narHash": "sha256-6MjNHGtaIUBlc45g7ZJm9/xRWdBgGkpn8MQPU0Ozsn4=",
         "owner": "vic",
         "repo": "den",
-        "rev": "68052f29fe7f5d4e452fb1eb56874054e5cba1c9",
+        "rev": "0c108ece5371a78e576b28d7b36369ed15e6d059",
         "type": "github"
       },
       "original": {
@@ -52,11 +52,11 @@
     },
     "flake-file": {
       "locked": {
-        "lastModified": 1770893152,
-        "narHash": "sha256-DuZHf9EaQQ2iiUloYj4374VCsfDQ7kGuWC7037BDSpE=",
+        "lastModified": 1771897754,
+        "narHash": "sha256-SQhPQRbs35fQ8ZE7tbfHsf2eu5r+oICyZL1SpGIPvGg=",
         "owner": "vic",
         "repo": "flake-file",
-        "rev": "1515b77c3c1dd08ab394e840603fc152e059d13e",
+        "rev": "619d2212482c104fd3bbc815d80c6227b1b01338",
         "type": "github"
       },
       "original": {
@@ -92,11 +92,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1770818644,
-        "narHash": "sha256-DYS4jIRpRoKOzJjnR/QqEd/MlT4OZZpt8CrBLv+cjsE=",
+        "lastModified": 1771851181,
+        "narHash": "sha256-gFgE6mGUftwseV3DUENMb0k0EiHd739lZexPo5O/sdQ=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "0acbd1180697de56724821184ad2c3e6e7202cd7",
+        "rev": "9a4b494b1aa1b93d8edf167f46dc8e0c0011280c",
         "type": "github"
       },
       "original": {
@@ -107,11 +107,11 @@
     },
     "import-tree": {
       "locked": {
-        "lastModified": 1763762820,
-        "narHash": "sha256-ZvYKbFib3AEwiNMLsejb/CWs/OL/srFQ8AogkebEPF0=",
+        "lastModified": 1771045967,
+        "narHash": "sha256-oYO4poyw0Sb/db2PigqugMlDwsvwLg6CSpFrMUWxA3Q=",
         "owner": "vic",
         "repo": "import-tree",
-        "rev": "3c23749d8013ec6daa1d7255057590e9ca726646",
+        "rev": "c968d3b54d12cf5d9c13f16f7c545a06c9d1fde6",
         "type": "github"
       },
       "original": {
@@ -122,18 +122,15 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1770843696,
-        "narHash": "sha256-LovWTGDwXhkfCOmbgLVA10bvsi/P8eDDpRudgk68HA8=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "2343bbb58f99267223bc2aac4fc9ea301a155a16",
-        "type": "github"
+        "lastModified": 1771423170,
+        "narHash": "sha256-V/p5M4cAMbu/MJBDn5YABy5QJgCFpsgrnXVVc2Uo5+k=",
+        "rev": "bcc4a9d9533c033d806a46b37dc444f9b0da49dd",
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre948338.bcc4a9d9533c/nixexprs.tar.xz"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
       }
     },
     "root": {
@@ -148,23 +145,7 @@
         "nixpkgs": "nixpkgs",
         "nixpkgs-lib": [
           "nixpkgs"
-        ],
-        "systems": "systems"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
+        ]
       }
     }
   },
