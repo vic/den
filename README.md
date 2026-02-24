@@ -13,9 +13,6 @@
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://vic.github.io/dendrix/Dendritic-Ecosystem.html#vics-dendritic-libraries) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://github.com/sponsors/vic)
 
-> **Den as a Library**: domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).\
-> **Den as Framework**: uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.\
-> [Learn more →](https://den.oeiuwq.com/explanation/library-vs-framework/)
 
 <table>
 <tr>
@@ -24,17 +21,45 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-- [Dendritic](https://den.oeiuwq.com/explanation/core-principles/): **same** concern, **different** Nix classes.
-- [Flake optional](https://den.oeiuwq.com/guides/no-flakes/). Stable/unstable Nix, with/without flake-parts.
-- [DRY](modules/aspects/provides/unfree/unfree.nix) & [`class`-generic](modules/aspects/provides/primary-user.nix) — [parametric](https://den.oeiuwq.com/explanation/parametric/) over `host`/`home`/`user`.
-- Context-aware [dependencies](https://den.oeiuwq.com/explanation/context-system/); `host<->user` [bidirectional](https://den.oeiuwq.com/guides/configure-aspects/) contributions.
-- [Share](https://den.oeiuwq.com/guides/namespaces/) aspects across repos. [Routable](templates/example/modules/aspects/eg/routes.nix) configs.
-- Custom [factories](https://github.com/vic/den/blob/f5c44098e4855e07bf5cbcec00509e75ddde4220/templates/ci/modules/homes.nix#L20) for any Nix `class`. Per-host `stable`/`unstable` channels.
-- Freeform [schemas](https://den.oeiuwq.com/reference/schema/) (no `specialArgs`) with [base](https://github.com/vic/den/pull/119) modules.
-- [Batteries](https://den.oeiuwq.com/guides/batteries/): opt-in, replaceable. [`<angle/brackets>`](https://den.oeiuwq.com/guides/angle-brackets/) resolution.
-- [Incremental migration](https://den.oeiuwq.com/guides/migrate/). [Tested](templates/ci). REPL [debugging](https://den.oeiuwq.com/guides/debug/).
 
-More batteries? → [vic/denful](https://github.com/vic/denful)
+### [Documentation](https://den.oeiuwq.com)
+### [Batteries](https://den.oeiuwq.com/guides/batteries/)
+### [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
+### [Community](https://github.com/vic/den/discussions)
+
+
+**Den as a [Library](https://den.oeiuwq.com/explanation/library-vs-framework/)**:
+
+domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).  
+
+**Den as [Framework](https://den.oeiuwq.com/explanation/context-pipeline/)**:
+
+uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.
+
+
+
+### Templates: 
+
+[default](https://den.oeiuwq.com/tutorials/default/): +flake-file +flake-parts +home-manager
+
+[minimal](https://den.oeiuwq.com/tutorials/minimal): +flakes -flake-parts -home-manager
+
+[noflake](https://den.oeiuwq.com/tutorials/noflake): -flakes +npins +lib.evalModules +nix-maid
+
+[example](https://den.oeiuwq.com/tutorials/example): cross-platform
+
+[ci](https://den.oeiuwq.com/tutorials/ci): Each feature tested as code examples
+
+[bogus](https://den.oeiuwq.com/tutorials/bogus): Isolated test for bug reproduction
+
+### Examples:
+
+[`vic/vix`](https://github.com/vic/vix): author spends more time in Den itself (-flakes)
+
+[`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): beautiful organization (+flake-parts)
+
+[GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code)
+
 
 **❄️ Try it:**
 
@@ -43,9 +68,6 @@ nix run github:vic/den
 nix flake init -t github:vic/den && nix run .#vm
 ```
 
-Templates: [default](templates/default) · [minimal](templates/minimal) · [noflake](templates/noflake) · [example](templates/example) · [ci](templates/ci) · [bogus](templates/bogus)
-
-Examples: [`vic/vix`](https://github.com/vic/vix) · [`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig) · [GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code)
 
 </div>
 </td>
@@ -112,5 +134,3 @@ $ home-manager   switch --flake .#vic
 </td>
 </tr>
 </table>
-
-[Documentation](https://den.oeiuwq.com) · [Batteries](modules/aspects/provides) · [Tests](templates/ci) · [Community](https://github.com/vic/den/discussions)
