@@ -13,12 +13,14 @@ Everyone is welcome. The only rule: be mindful and respectful.
 
 ## Real-World Examples
 
-- [`vic/vix`](https://github.com/vic/vix) — Den author's personal infra
-- [`quasigod.xyz/nixconfig`](https://tangled.org/quasigod.xyz/nixconfig)
+- [`vic/vix`](https://github.com/vic/vix) — Den author's personal infra.
+- [`quasigod.xyz/nixconfig`](https://tangled.org/quasigod.xyz/nixconfig) - From [Unify](https://codeberg.org/quasigod/unify) framework author. Now using Den: beautiful code organization, usage of angle-brackets and provides.
+- [`drupol/infra`](https://github.com/drupol/infra/pull/124) - PR from author of famous ["Flipping the Configuration Matrix"](https://not-a-number.io/2025/refactoring-my-infrastructure-as-code-configurations/) blog-post, adopting Den.
+
 - [GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code) — find more
 
 
-## Ecosystem
+# Ecosystem
 
 - [flake-aspects](https://github.com/vic/flake-aspects) — aspect composition library
 - [import-tree](https://github.com/vic/import-tree) — recursive module imports

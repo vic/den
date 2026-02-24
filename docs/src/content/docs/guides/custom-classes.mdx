@@ -67,7 +67,7 @@ persys = { class, aspect-chain }: den._.forward {
   fromClass = _: "persys";
   intoClass = _: class;
   intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
-  fromAspect = _: lib.last aspect-chain;
+  fromAspect = _: lib.head aspect-chain;
   guard = { options, ... }: options ? environment.persistance;
 };
 
