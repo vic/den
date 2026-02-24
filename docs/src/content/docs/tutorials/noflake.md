@@ -93,7 +93,7 @@ This file resolves npins sources into a flake-compatible `inputs` attrset. It re
 ```
 
 Notable differences from the flake templates:
-- Uses [nix-maid](https://github.com/vic/nix-maid) instead of Home-Manager (lighter alternative)
+- Uses [nix-maid](https://github.com/viperML/nix-maid) instead of Home-Manager (lighter alternative)
 - User config is done directly in `nixos` class (no HM class needed)
 
 ## Build
