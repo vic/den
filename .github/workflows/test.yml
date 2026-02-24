@@ -55,8 +55,11 @@ jobs:
       - run: nix flake check ./templates/minimal --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
   bogus:
     needs: [non-draft]
-    name: bogus
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    name: Bogus ${{matrix.os}}
+    runs-on: ${{matrix.os}}
     steps:
       - uses: wimpysworld/nothing-but-nix@main
       - uses: cachix/install-nix-action@v31
@@ -72,14 +75,20 @@ jobs:
       - run: nix flake check ./templates/bogus --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
   tests:
     needs: [non-draft]
-    name: tests
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    name: Tests ${{matrix.os}}
+    runs-on: ${{matrix.os}}
     steps:
       - uses: wimpysworld/nothing-but-nix@main
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#ci
       - run: sed -i "s@\"github:vic/den\"@\"github:vic/den/$GITHUB_SHA\"@" flake.nix
+        if: matrix.os == 'ubuntu-latest'
+      - run: sed -i '' "s@\"github:vic/den\"@\"github:vic/den/$GITHUB_SHA\"@" flake.nix
+        if: matrix.os == 'macos-latest'
       - run: |
           cat <<-EOF > modules/ci-runtime.nix
           { lib, ... }:

@@ -1,6 +1,6 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
-  systems = [ "x86_64-linux" ];
+  systems = lib.systems.flakeExposed;
 
   imports = [ inputs.nix-unit.modules.flake.default ];
 
