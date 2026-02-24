@@ -14,7 +14,7 @@
     provides.alice =
       { user, ... }:
       {
-        homeManager.programs.helix.enable = user.name == "alice";
+        homeManager.programs.tmux.enable = user.name == "alice";
       };
   };
 }
