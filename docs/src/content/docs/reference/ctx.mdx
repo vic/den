@@ -101,7 +101,9 @@ host's `mainModule` to use a completely custom context flow.
 | `provides.user` | `{ host, user }:` host's contribution to user contexts (cross-provider) |
 | `into.default` | `lib.singleton` (pass-through) |
 | `into.user` | Enumerate `host.users` |
-| `into.hm-host` | Detect HM support (from `hm-detect.nix`) |
+| `into.hm-host` | Detect HM support (from `hm-os.nix`) |
+| `into.maid-host` | Detect nix-maid support (from `maid-os.nix`) |
+| `into.hjem-host` | Detect hjem support (from `hjem-os.nix`) |
 
 ### den.ctx.user
 
@@ -144,7 +146,7 @@ restrict matching if needed.
 
 **Detection criteria** (all must be true):
 1. Host class is `nixos` or `darwin`
-2. At least one user has `class = "homeManager"`
+2. At least one user has `"homeManager"` in their `classes`
 3. `inputs.home-manager` exists, or host has a custom `hm-module` attribute
 
 If detection fails, the HM pipeline is skipped entirely.
@@ -167,3 +169,41 @@ An internal context type used by `hm-user`. It combines:
 This ensures that when the `homeManager` class is forwarded into
 `home-manager.users.<name>`, it receives contributions from both
 the user's aspect and the host's aspect.
+
+### den.ctx.maid-host
+
+| Field | Value |
+|-------|-------|
+| `description` | Host with nix-maid users |
+| `provides.maid-host` | `{ host }:` imports nix-maid NixOS module |
+| `into.maid-user` | Enumerate maid-class users |
+
+**Detection criteria** (all must be true):
+1. Host class is `nixos` or `darwin`
+2. At least one user has `"maid"` in their `classes`
+3. `inputs.nix-maid` exists, or host has a custom `maid-module` attribute
+
+### den.ctx.maid-user
+
+| Field | Value |
+|-------|-------|
+| `provides.maid-user` | `{ host, user }:` forward maid class to `users.users.<name>.maid` |
+
+### den.ctx.hjem-host
+
+| Field | Value |
+|-------|-------|
+| `description` | Host with hjem users |
+| `provides.hjem-host` | `{ host }:` imports hjem NixOS module |
+| `into.hjem-user` | Enumerate hjem-class users |
+
+**Detection criteria** (all must be true):
+1. Host class is `nixos` or `darwin`
+2. At least one user has `"hjem"` in their `classes`
+3. `inputs.hjem` exists, or host has a custom `hjem-module` attribute
+
+### den.ctx.hjem-user
+
+| Field | Value |
+|-------|-------|
+| `provides.hjem-user` | `{ host, user }:` forward hjem class to `hjem.users.<name>` |

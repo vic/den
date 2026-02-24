@@ -106,8 +106,10 @@ den.aspects.igloo.includes = [
       intoClass = _: "nixos";
       intoPath = _: [ ];
       fromAspect = _: lib.head aspect-chain;
+      guard = { options, ... }: options ? custom; # optional
     })
 ];
 ```
 
-This is how Home-Manager integration is implemented internally.
+This is how Home-Manager, nix-maid, and hjem integrations are implemented internally.
+Use `guard` to forward only when target options exist.

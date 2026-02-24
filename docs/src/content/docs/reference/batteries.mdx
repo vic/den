@@ -147,10 +147,12 @@ den._.forward {
   intoClass = _: "nixos";
   intoPath = _: [ "target" "path" ];
   fromAspect = _: sourceAspect;
+  guard = { options, ... }: options ? target; # optional
 }
 ```
 
-Returns an aspect. Used internally for Home-Manager integration.
+Returns an aspect. Supports optional `guard` for conditional forwarding.
+Used internally for Home-Manager, nix-maid, and hjem integrations.
 
 ## home-manager
 
@@ -160,6 +162,24 @@ activated automatically when hosts have HM users.
 ([source](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/) · [tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/home-manager/))
 
 All `homeManager` class settings are forwarded to os-level `home-manager.users.<userName>`.
+
+## maid
+
+nix-maid integration is handled by `den.ctx.maid-host` and `den.ctx.maid-user`,
+activated when hosts have users with `"maid"` in their `classes`.
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/maid/))
+
+Forwards `maid` class settings to os-level `users.users.<userName>.maid`.
+Requires `inputs.nix-maid` or a custom `host.maid-module`.
+
+## hjem
+
+hjem integration is handled by `den.ctx.hjem-host` and `den.ctx.hjem-user`,
+activated when hosts have users with `"hjem"` in their `classes`.
+([source](https://github.com/vic/den/blob/main/modules/aspects/provides/hjem/))
+
+Forwards `hjem` class settings to os-level `hjem.users.<userName>`.
+Requires `inputs.hjem` or a custom `host.hjem-module`.
 
 ## user
 

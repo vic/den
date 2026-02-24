@@ -1,0 +1,250 @@
+---
+title: Overview
+description: Everything Den
+---
+
+import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+## Core Concepts
+
+<CardGrid>
+  <Card title="Context Transformation" icon="rocket">
+    Declarative pipeline that flows configuration through named context types — host, user, home, and custom.
+    <LinkButton href="/explanation/core-principles" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Context-Aware Aspects" icon="puzzle">
+    Aspects are functions of context. A single aspect can target NixOS, Home-Manager, Darwin, and more — resolved automatically by context.
+    <LinkButton href="/explanation/aspects" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Context Pipeline" icon="list-format">
+    Stage-by-stage flow from host entry through user enumeration, HM detection, deduplication, and standalone homes.
+    <LinkButton href="/explanation/context-pipeline" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Context System" icon="setting">
+    Named context types with `den.ctx` schema — providers, includes, transformations, fan-out, and 10+ built-in context types.
+    <LinkButton href="/explanation/context-system" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Parametric Aspects" icon="seti:config">
+    `den.lib.parametric` with matching variants: `atLeast`, `exactly`, `fixedTo`, `expands`, `withOwn`, and `take` functions.
+    <LinkButton href="/explanation/parametric" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Library vs Framework" icon="open-book">
+    Den's dual nature — use the pure library for custom pipelines, or the framework for NixOS/Darwin/HM. All parts optional and replaceable.
+    <LinkButton href="/explanation/library-vs-framework" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Configuration & Schema
+
+<CardGrid>
+  <Card title="Declare Hosts & Users" icon="laptop">
+    Define hosts with class detection, custom attributes, multiple users, standalone HM, base modules, and custom instantiation.
+    <LinkButton href="/guides/declare-hosts" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Configure Aspects" icon="pencil">
+    Static host config, context-aware includes, bidirectional user/host config, conditional config, global defaults, and named sub-aspects.
+    <LinkButton href="/guides/configure-aspects" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Schema Reference" icon="document">
+    Entity schemas for `den.hosts`, `den.homes`, `den.base` — host options, user options, home options, class detection, and instantiation.
+    <LinkButton href="/reference/schema" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Output & Build" icon="seti:favicon">
+    How Den builds `nixosConfigurations`, `darwinConfigurations`, and `homeConfigurations`. Output placement, main module resolution.
+    <LinkButton href="/reference/output" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Aspects Reference" icon="seti:folder-config">
+    Aspect attribute table, automatic creation from `den.hosts`/`den.homes`, resolution via `flake-aspects`, `den.aspects` and `den.provides`.
+    <LinkButton href="/reference/aspects" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Context Reference" icon="seti:pipeline">
+    All built-in context types in detail: host, user, default, home, hm-host, hm-user, maid-host, maid-user, hjem-host, hjem-user.
+    <LinkButton href="/reference/ctx" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Home & User Management
+
+<CardGrid>
+  <Card title="Home Manager Integration" icon="seti:home">
+    Automatic HM detection, host-managed users, standalone HM, `useGlobalPkgs`, custom modules, `osConfig` access, and context hooks.
+    <LinkButton href="/guides/home-manager" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Custom Classes" icon="add-document">
+    Create new Nix classes with `den._.forward` — hjem, maid, containers, VMs, guarded forward with conditions.
+    <LinkButton href="/guides/custom-classes" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="User Classes" icon="seti:users">
+    Default `homeManager` class, multiple user classes, per-class aspect resolution, OS user class forwarding.
+    <LinkButton href="/tutorials/ci" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Bidirectional Config" icon="random">
+    Host-owned config applies to all users; user-owned config applies to all hosts. Static, parametric, and function-based.
+    <LinkButton href="/guides/configure-aspects" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Standalone Homes" icon="seti:home">
+    Standalone `homeConfigurations` output — aspect config, custom username, `den.ctx.home` context, independent of any host.
+    <LinkButton href="/guides/home-manager" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Hjem & Maid Classes" icon="seti:folder-config">
+    Built-in hjem and maid user class support — forwarding, merge with NixOS, automatic class detection.
+    <LinkButton href="/guides/custom-classes" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="OS User Class" icon="seti:users">
+    Forward user descriptions, access OS args like `pkgs`, mergeable options across user/host/NixOS boundaries.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Batteries Included
+
+<CardGrid>
+  <Card title="define-user" icon="seti:users">
+    `den._.define-user` — creates `isNormalUser`, sets home directory, works at user, host, or default level.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="primary-user" icon="star">
+    `den._.primary-user` — adds wheel and networkmanager groups to the primary user.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="user-shell" icon="seti:shell">
+    `den._.user-shell` — sets the user shell on both OS and Home-Manager simultaneously.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="unfree" icon="approve-check">
+    `den._.unfree` — sets `allowUnfreePredicate` on both NixOS and Home-Manager.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="tty-autologin" icon="seti:log">
+    `den._.tty-autologin` — creates a getty autologin service for the user.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="import-tree" icon="seti:folder-src">
+    `den._.import-tree._.host` — auto-imports host directories based on class, handles missing dirs gracefully.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="inputs' & self'" icon="seti:nix">
+    `den._.inputs'` and `den._.self'` — provide flake-parts special args (`inputs'`, `self'`) inside aspects.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="forward" icon="right-arrow">
+    `den._.forward` — forward aspect config into custom Nix classes with optional guard conditions.
+    <LinkButton href="/reference/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Batteries Guide" icon="open-book">
+    Overview and usage guide for all built-in batteries — when to use each one, practical examples, and composition patterns.
+    <LinkButton href="/guides/batteries" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Library API
+
+<CardGrid>
+  <Card title="den.lib Reference" icon="seti:code-search">
+    Full API: `parametric`, `take`, `canTake`, `aspects`, `isFn`, `owned`, `statics`, `isStatic`, `__findFile`.
+    <LinkButton href="/reference/lib" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Angle Brackets" icon="seti:bracket-dot">
+    Opt-in `<den/...>` shorthand — access `<den.lib>`, `<den/import-tree/host>`, namespaces like `<ns/path>`.
+    <LinkButton href="/guides/angle-brackets" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Namespaces" icon="seti:folder-dist">
+    Define local namespaces, consume remote ones, nested provides, expose as flake output, merge multiple sources.
+    <LinkButton href="/guides/namespaces" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Cross-Provider Contexts" icon="random">
+    `den.ctx.*.into.*` cross-provider derivation — transform config between context types, per-value providers.
+    <LinkButton href="/reference/ctx" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Host Propagation" icon="list-format">
+    Full propagation: owned, static, lax, exact, atLeast contexts with default includes, hm-host, and hm-user stages.
+    <LinkButton href="/explanation/context-pipeline" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Default Includes" icon="seti:default">
+    `den.default.includes` — global defaults applied to all hosts/users, dynamic class resolution, hostname from context.
+    <LinkButton href="/explanation/context-pipeline" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Schema Base Modules" icon="document">
+    `den.base.conf`, `den.base.host`, `den.base.user`, `den.base.home` — extend entity schemas with custom modules.
+    <LinkButton href="/reference/schema" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Custom Instantiation" icon="setting">
+    Override `instantiate` for standalone HM with `osConfig` special arg, or custom deployment targets.
+    <LinkButton href="/guides/declare-hosts" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Conditional Config" icon="approve-check">
+    Conditional NixOS imports based on host/user attributes. Per-user HM config. Static aspects in defaults.
+    <LinkButton href="/guides/configure-aspects" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="External Providers" icon="external">
+    Consume aspects from external flakes. Provider flake integration, deep nested namespace aspects.
+    <LinkButton href="/guides/namespaces" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Getting Started
+
+<CardGrid>
+  <Card title="Minimal Template" icon="seti:mint">
+    Smallest possible setup — one host, one user, no extra deps. Single `flake.nix` + `modules/den.nix`.
+    <LinkButton href="/tutorials/minimal" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Default Template" icon="star">
+    Recommended starting point with flake-parts, Home-Manager, and VM testing. Full file walkthrough.
+    <LinkButton href="/tutorials/default" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Example Template" icon="seti:code-climate">
+    Advanced: cross-platform hosts, namespaces, angle brackets, bidirectional providers, custom routes.
+    <LinkButton href="/tutorials/example" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="No-Flake Template" icon="seti:lock">
+    Using Den with stable Nix via npins. No flakes required. Works with nix-maid.
+    <LinkButton href="/tutorials/noflake" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Bogus / Bug Report" icon="warning">
+    Bug reproduction template with nix-unit. `denTest` helper and available test fixtures.
+    <LinkButton href="/tutorials/bogus" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Templates Overview" icon="open-book">
+    Comparison table of all 6 templates, quick start commands, project structure.
+    <LinkButton href="/tutorials/overview" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Advanced & Operations
+
+<CardGrid>
+  <Card title="Migration Guide" icon="right-caret">
+    Incremental adoption from flake-parts, import existing modules, mix Den with existing `nixosSystem`, recommended path.
+    <LinkButton href="/guides/migrate" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Debugging" icon="warning">
+    `builtins.trace`, `builtins.break`, REPL inspection, manually resolving aspects, common issues.
+    <LinkButton href="/guides/debug" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="CI Test Suite" icon="seti:test">
+    40+ test files covering every feature. Run tests, write new ones, understand test harness (`denTest`, `evalDen`).
+    <LinkButton href="/tutorials/ci" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>
+
+## Community & Project
+
+<CardGrid>
+  <Card title="Motivation & History" icon="heart">
+    Why Den exists — from vic/vix through blueprint, snowfall, and flake-parts to dendritic design.
+    <LinkButton href="/motivation" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Community" icon="github">
+    GitHub Discussions, Zulip Chat, Matrix channel, real-world examples, ecosystem projects.
+    <LinkButton href="/community" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Contributing" icon="add-document">
+    Report bugs, contribute PRs, run tests, format code.
+    <LinkButton href="/contributing" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+  <Card title="Sponsor" icon="heart">
+    Support Den development via GitHub Sponsors.
+    <LinkButton href="/sponsor" variant="minimal" icon="right-arrow">Learn More</LinkButton>
+  </Card>
+</CardGrid>

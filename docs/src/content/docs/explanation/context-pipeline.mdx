@@ -79,8 +79,8 @@ includes are dispatched (owned and static configs are **deduplicated**).
 
 ### 7. Home-Manager Detection
 
-`den.ctx.host.into.hm-host` checks if the host has users with `homeManager`
-class and a supported OS. If so, it activates `den.ctx.hm-host`.
+`den.ctx.host.into.hm-host` checks if the host has users with `"homeManager"`
+in their `classes` list and a supported OS. If so, it activates `den.ctx.hm-host`.
 
 ### 8. HM Module Import (host-level)
 
@@ -98,7 +98,7 @@ For each HM user, `ctx.hm-user` uses `den._.forward` to take
 (see [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix)):
 
 1. **OS class is supported** — the host's class is `nixos` or `darwin`
-2. **HM users exist** — at least one user has `class = "homeManager"`
+2. **HM users exist** — at least one user has `"homeManager"` in their `classes`
 3. **HM module available** — `inputs.home-manager` exists, or the host has a custom `hm-module`
 
 All three must be true. Hosts without users, or with only non-HM users, skip the entire HM pipeline.

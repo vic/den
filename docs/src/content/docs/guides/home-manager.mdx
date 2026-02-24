@@ -13,7 +13,7 @@ import { Aside } from '@astrojs/starlight/components';
 ## Automatic HM Detection
 
 Den automatically detects hosts that need Home-Manager. When a host has
-users with `class = "homeManager"` (the default), Den:
+users with `"homeManager"` in their `classes` list (the default), Den:
 
 1. Imports the Home-Manager NixOS/Darwin module
 2. Creates a `homeManager` class for each user

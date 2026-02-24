@@ -18,7 +18,9 @@ submodule. This is exactly how Home-Manager integration works internally.
 `den._.forward` creates an aspect that takes configs from a source class
 and inserts them into a target class at a specified path.
 
-## Example: Custom Class to NixOS
+## Example: How Den forwards `hjem` user class to NixOS
+
+Den already integrates nix-maid and hjem just like home-manager.
 
 Forward a new `hjem` class into NixOS top-level:
 
@@ -38,34 +40,44 @@ in {
   den.aspects.igloo = { includes = [ hjem ]; };
 
   # user aspect has hjem class
+  # settings at host become nixos.hjem.users.<userName> = ...;
   den.aspects.tux.hjem  = { ... };
 }
 ```
 
 
-## How Home-Manager Uses Forward
-
-Den's Home-Manager integration is built on `forward`:
-
-```nix
-den._.forward {
-  each = lib.singleton true;
-  fromClass = _: "homeManager";
-  intoClass = _: host.class;
-  intoPath = _: [ "home-manager" "users" user.userName ];
-  fromAspect = _: userAspect;
-}
-```
-
-This takes all `homeManager` class configs from user aspects and inserts them
-into `home-manager.users.<name>` on the host's OS configuration.
-
 ## Use Cases
 
 - **User environments**: Forward a `user` class into `users.users.<name>`
+- **nix-maid / hjem**: Built-in integrations, see [batteries](/guides/batteries/)
 - **Containerization**: Forward a `container` class into systemd-nspawn configs
 - **VM configs**: Forward a `vm` class into microvm or QEMU settings
+- **Guarded classes**: Forward only when target options exist (eg, Impermanence)
 - **Custom tools**: Forward into any Nix-configurable system (NixVim, etc.)
+
+## Guarded Forward
+
+Use `guard` to conditionally forward only when target options exist:
+
+```nix
+# Custom `persys` forwards config into nixos.environment.persistance."/nix/persist/system"
+# only if environment.persistance option is present.
+persys = { class, aspect-chain }: den._.forward {
+  each = lib.singleton true;
+  fromClass = _: "persys";
+  intoClass = _: class;
+  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
+  fromAspect = _: lib.last aspect-chain;
+  guard = { options, ... }: options ? environment.persistance;
+};
+
+den.hosts.my-laptop.includes = [ persys ];
+
+# becomes nixos.environment.persistance."/nix/persist/system".hideMounts = true;
+den.hosts.my-laptop.persys.hideMounts = true;
+```
+
+When the guard returns `false`, forwarded settings are silently ignored.
 
 ## Creating Your Own
 
@@ -78,3 +90,5 @@ The `forward` function parameters:
 | `intoClass` | Target class name (string) |
 | `intoPath` | Attribute path in target (list of strings) |
 | `fromAspect` | Source aspect to read from |
+| `guard` | Optional: `{ options, ... }@args -> bool` — forward only when true |
+| `adaptArgs` | Optional: args->specialArgs for the intermediate submodule |

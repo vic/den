@@ -27,6 +27,7 @@ export default defineConfig({
 				{
 					label: 'Den',
 					items: [
+						{ label: 'Overview', slug: 'overview' },
 						{ label: 'Motivation', slug: 'motivation', },
 						{ label: 'Community', slug: 'community' },
 						{ label: 'Contributing', slug: 'contributing' },
