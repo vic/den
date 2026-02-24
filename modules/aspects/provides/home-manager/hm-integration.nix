@@ -23,7 +23,9 @@ let
 
   intoHmUsers =
     { host }:
-    map (user: { inherit host user; }) (lib.filter (u: u.class == hmClass) (lib.attrValues host.users));
+    map (user: { inherit host user; }) (
+      lib.filter (u: lib.elem hmClass u.classes) (lib.attrValues host.users)
+    );
 
   forwardedToHost =
     { host, user }:

@@ -37,10 +37,7 @@ let
     }
   );
   userAspect = take.exactly (
-    { host, user }:
-    {
-      ${user.class}.imports = [ unfreeModule ];
-    }
+    { host, user }: lib.mkMerge (map (c: { ${c}.imports = [ unfreeModule ]; }) user.classes)
   );
   homeAspect = take.exactly (
     { home }:

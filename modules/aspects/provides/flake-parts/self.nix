@@ -1,4 +1,9 @@
-{ den, withSystem, ... }:
+{
+  den,
+  lib,
+  withSystem,
+  ...
+}:
 let
   inherit (den.lib.take) unused;
   inherit (den.lib) parametric;
@@ -44,7 +49,7 @@ let
       user,
       host,
     }:
-    mkAspect user.class host.system;
+    lib.mkMerge (map (c: mkAspect c host.system) user.classes);
 
   homeAspect = { home }: mkAspect home.class home.system;
 in

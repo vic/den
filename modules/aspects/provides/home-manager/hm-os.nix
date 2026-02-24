@@ -33,7 +33,7 @@ let
     let
       is-os-supported = builtins.elem host.class hm-os-classes;
       has-hm-module = (host ? hm-module) || (inputs ? home-manager);
-      hm-users = builtins.filter (u: u.class == hm-class) (lib.attrValues host.users);
+      hm-users = builtins.filter (u: lib.elem hm-class u.classes) (lib.attrValues host.users);
       has-hm-users = builtins.length hm-users > 0;
       is-hm-host = is-os-supported && has-hm-users && has-hm-module;
     in
