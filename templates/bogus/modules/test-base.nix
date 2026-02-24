@@ -27,6 +27,7 @@ let
     };
 
   denModule = {
+    imports = [ inputs.den.flakeModule ];
     den.default.homeManager.home.stateVersion = "26.05";
     den.default.nixos = {
       system.stateVersion = "26.05";
@@ -36,7 +37,6 @@ let
   };
 
   testModule = {
-    imports = [ inputs.den.flakeModule ];
     options.flake.nixosConfigurations = lib.mkOption { };
     options.flake.homeConfigurations = lib.mkOption { };
     options.flake.packages = lib.mkOption { };
@@ -47,7 +47,6 @@ let
   helpersModule =
     { config, ... }:
     let
-
       iceberg = config.flake.nixosConfigurations.iceberg.config;
       igloo = config.flake.nixosConfigurations.igloo.config;
       tuxHm = igloo.home-manager.users.tux;
@@ -98,7 +97,7 @@ in
     inputs.nix-unit.modules.flake.default
   ];
 
-  systems = [ "x86_64-linux" ];
+  systems = lib.systems.flakeExposed;
   flake.packages.x86_64-linux.hello = inputs.nixpkgs.legacyPackages.x86_64-linux.hello;
 
   perSystem.nix-unit = {

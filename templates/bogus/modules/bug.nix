@@ -6,28 +6,19 @@
       {
         den,
         lib,
-        igloo,
-        tuxHm,
+        igloo, # igloo = nixosConfigurations.igloo.config
+        tuxHm, # tuxHm = igloo.home-manager.users.tux
         ...
       }:
       {
+        # replace <system> if you are reporting a bug in MacOS
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        den.ctx.hm-host.includes = [ (den._.unfree [ "discord" ]) ];
+        # do something for testing
+        den.aspects.tux.user.description = "The Penguin";
 
-        expr =
-          let
-            discord-host = igloo.nixpkgs.config.allowUnfreePredicate { pname = "discord"; };
-            discord-user = tuxHm.nixpkgs.config.allowUnfreePredicate { pname = "discord"; };
-          in
-          {
-            inherit discord-host discord-user;
-          };
-
-        expected = {
-          discord-host = true;
-          discord-user = false;
-        };
+        expr = igloo.users.users.tux.description;
+        expected = "The Penguin";
       }
     );
 
