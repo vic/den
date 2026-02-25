@@ -24,5 +24,16 @@
       }
     );
 
+    test-user-class-works = denTest (
+      { den, igloo, ... }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+        den.aspects.tux.includes = [ (den._.unfree [ "vscode" ]) ];
+
+        expr = !(igloo.users.users.tux ? unfree);
+        expected = true;
+      }
+    );
+
   };
 }

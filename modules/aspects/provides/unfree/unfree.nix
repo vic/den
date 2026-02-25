@@ -1,4 +1,3 @@
-{ den, ... }:
 let
   description = ''
     A class generic aspect that enables unfree packages by name.
@@ -15,9 +14,18 @@ let
   __functor =
     _self: allowed-names:
     { class, aspect-chain }:
-    den.lib.take.unused aspect-chain {
-      ${class}.unfree.packages = allowed-names;
-    };
+    if
+      (builtins.elem class [
+        "nixos"
+        "darwin"
+        "homeManager"
+      ])
+    then
+      {
+        ${class}.unfree.packages = allowed-names;
+      }
+    else
+      { };
 in
 {
   den.provides.unfree = {
