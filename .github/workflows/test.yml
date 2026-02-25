@@ -3,76 +3,20 @@ on:
     branches: [main]
   pull_request:
     types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
+  pull_request_review:
+    types: [submitted]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   non-draft:
     runs-on: ubuntu-latest
+    if: ${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}
     steps:
-      - run: test "true" = "${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}"
-  flake-check:
-    needs: [non-draft]
-    name: nix flake check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: cachix/install-nix-action@v31
-      - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
-  noflake:
-    needs: [non-draft]
-    name: noflake
-    runs-on: ubuntu-latest
-    steps:
-      - uses: wimpysworld/nothing-but-nix@main
-      - uses: cachix/install-nix-action@v31
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - uses: actions/checkout@v4
-      - run: sed -i 's@# den.outPath@den.outPath@' templates/noflake/with-inputs.nix
-      - run: |
-          cat <<-EOF > templates/noflake/modules/ci-runtime.nix
-          {
-            _module.args.CI = true;
-          }
-          EOF
-          git add templates/noflake/modules/ci-runtime.nix
-      - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
-  minimal:
-    needs: [non-draft]
-    name: minimal
-    runs-on: ubuntu-latest
-    steps:
-      - uses: wimpysworld/nothing-but-nix@main
-      - uses: cachix/install-nix-action@v31
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v4
       - run: |
-          cat <<-EOF > templates/minimal/modules/ci-runtime.nix
-          {
-            _module.args.CI = true;
-          }
-          EOF
-          git add templates/minimal/modules/ci-runtime.nix
-      - run: nix flake check -L ./templates/minimal --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
-  bogus:
-    needs: [non-draft]
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    name: Bogus ${{matrix.os}}
-    runs-on: ${{matrix.os}}
-    steps:
-      - uses: wimpysworld/nothing-but-nix@main
-      - uses: cachix/install-nix-action@v31
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - uses: actions/checkout@v4
-      - run: |
-          cat <<-EOF > templates/bogus/modules/ci-runtime.nix
-          {
-            _module.args.CI = true;
-          }
-          EOF
-          git add templates/bogus/modules/ci-runtime.nix
-      - run: nix flake check -L ./templates/bogus --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+          git fetch --depth 1 origin refs/heads/main
+          test "refs/heads/main" == "${{github.ref}}" || (git diff --name-only origin/main..${{ github.sha }} -- | grep '.nix')
   tests:
     needs: [non-draft]
     strategy:
@@ -99,8 +43,77 @@ jobs:
       - run: nix flake update den
       - run: nix flake metadata
       - run: nix flake check -L
-  template:
+  flake-check:
     needs: [non-draft]
+    name: nix flake check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: cachix/install-nix-action@v31
+      - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  approved:
+    needs: [non-draft]
+    name: approved
+    runs-on: ubuntu-latest
+    if: ${{github.actor == github.repository_owner || github.event.review.state == 'approved'}}
+    steps:
+      - run: true
+  noflake:
+    needs: [approved]
+    name: noflake
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
+      - run: sed -i 's@# den.outPath@den.outPath@' templates/noflake/with-inputs.nix
+      - run: |
+          cat <<-EOF > templates/noflake/modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+          git add templates/noflake/modules/ci-runtime.nix
+      - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
+  minimal:
+    needs: [approved]
+    name: minimal
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
+      - run: |
+          cat <<-EOF > templates/minimal/modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+          git add templates/minimal/modules/ci-runtime.nix
+      - run: nix flake check -L ./templates/minimal --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  bogus:
+    needs: [approved]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    name: Bogus ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v4
+      - run: |
+          cat <<-EOF > templates/bogus/modules/ci-runtime.nix
+          {
+            _module.args.CI = true;
+          }
+          EOF
+          git add templates/bogus/modules/ci-runtime.nix
+      - run: nix flake check -L ./templates/bogus --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  template:
+    needs: [approved]
     strategy:
       # max-parallel: 1
       matrix:

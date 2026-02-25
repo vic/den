@@ -25,7 +25,7 @@ in
     bogus.path = ../templates/bogus;
     bogus.description = "For bug reproduction";
   };
-  packages = import ./template-packages.nix;
+  packages = import ./flake-packages.nix;
   namespace = import ./namespace.nix;
   lib = import ./lib.nix;
 }
