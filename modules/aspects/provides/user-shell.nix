@@ -19,7 +19,7 @@ let
         { pkgs, ... }:
         {
           programs.${shell}.enable = true;
-          users.users.${user.userName}.shell = pkgs.${shell};
+          users.defaultUserShell = pkgs.${shell};
         };
       darwin = nixos;
       homeManager.programs.${shell}.enable = true;
