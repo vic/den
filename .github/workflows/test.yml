@@ -54,7 +54,7 @@ jobs:
     needs: [non-draft]
     name: approved
     runs-on: ubuntu-latest
-    if: ${{github.actor == github.repository_owner || github.event.review.state == 'approved'}}
+    if: ${{github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'approved')}}
     steps:
       - run: true
   noflake:
