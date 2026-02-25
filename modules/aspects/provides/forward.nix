@@ -53,6 +53,7 @@ let
       freeformMod = {
         config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
       };
+      adapterKey = lib.concatStringsSep "_" intoPath;
       adapter = {
         includes = [
           (den.lib.aspects.forward (
@@ -63,12 +64,13 @@ let
                 "fwd"
                 "adapter"
                 fromClass
+                adapterKey
               ];
             }
           ))
         ];
         ${intoClass} = args: {
-          options.den.fwd.adapter.${fromClass} = lib.mkOption {
+          options.den.fwd.adapter.${fromClass}.${adapterKey} = lib.mkOption {
             default = { };
             type = lib.types.submoduleWith {
               specialArgs = if adaptArgs == null then args else adaptArgs args;
@@ -77,7 +79,7 @@ let
           };
           config =
             if (guard == null || guard args) then
-              lib.setAttrByPath intoPath args.config.den.fwd.adapter.${fromClass}
+              lib.setAttrByPath intoPath args.config.den.fwd.adapter.${fromClass}.${adapterKey}
             else
               { };
         };
