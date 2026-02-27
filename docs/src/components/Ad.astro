@@ -1,4 +1,153 @@
 ---
-
+import { LinkButton, Icon } from '@astrojs/starlight/components';
 ---
 
+<section class="sponsor-card">
+  <div class="content">
+    <div class="header">
+      <Icon name="heart" size="2.5rem" class="heart-icon" />
+      <h3><code>vic/den</code>?</h3>
+    </div>
+
+    <LinkButton href="https://dendritic.oeiuwq.com/sponsor" variant="primary">Become a Sponsor</LinkButton>
+    
+    <p class="description">
+      den is part of <a href="https://dendritic.oeiuwq.com">@vic's Dendritic Ecosystem</a> — made with love and maintained with passion.
+    </p>
+
+    <ul class="ecosystem">
+      <li><a href="https://github.com/vic/import-tree">import-tree</a></li>
+      <li><a href="https://github.com/vic/flake-aspects">flake-aspects</a></li>
+      <li><a href="https://github.com/vic/with-inputs">with-inputs</a></li>
+      <li><a href="https://github.com/vic/flake-file">flake-file</a></li>
+      <li><a href="https://github.com/vic/denful">denful</a></li>
+      <li><a href="https://github.com/vic/dendrix">dendrix</a></li>
+    </ul>
+
+  </div>
+</section>
+
+<style>
+  .sponsor-card {
+    border-radius: 1rem;
+    padding: 2rem 1.5rem;
+    margin: 2rem 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    max-width: 20em;
+  }
+
+  .sponsor-card:hover {
+    background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .content {
+    color: white;
+    text-align: center;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .heart-icon {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  .description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 1rem 0 1.5rem 0;
+    opacity: 0.95;
+  }
+
+  .description a {
+    color: white;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  .description a:hover {
+    opacity: 0.85;
+  }
+
+  .ecosystem {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .ecosystem li {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .ecosystem a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+
+  .ecosystem a:hover {
+    opacity: 0.85;
+    text-decoration: underline;
+  }
+
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    padding: 0.875rem 1.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    cursor: pointer;
+  }
+
+  .cta-button:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+  }
+
+  .cta-button:active {
+    transform: scale(0.98);
+  }
+</style>
