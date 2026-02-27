@@ -6,20 +6,20 @@ import { LinkButton, Icon } from '@astrojs/starlight/components';
   <div class="content">
     <div class="header">
       <Icon name="heart" size="2.5rem" class="heart-icon" />
-      <h3><code>vic/den</code>?</h3>
+      <h4><code>vic/den</code>?</h4>
     </div>
 
     <LinkButton href="https://dendritic.oeiuwq.com/sponsor" variant="primary">Become a Sponsor</LinkButton>
     
     <p class="description">
-      den is part of <a href="https://dendritic.oeiuwq.com">@vic's Dendritic Ecosystem</a> — made with love and maintained with passion.
+      Den is part of <a href="https://dendritic.oeiuwq.com">@vic's Dendritic Ecosystem</a> — made with love and maintained with passion.
     </p>
 
     <ul class="ecosystem">
       <li><a href="https://github.com/vic/import-tree">import-tree</a></li>
       <li><a href="https://github.com/vic/flake-aspects">flake-aspects</a></li>
-      <li><a href="https://github.com/vic/with-inputs">with-inputs</a></li>
       <li><a href="https://github.com/vic/flake-file">flake-file</a></li>
+      <li><a href="https://github.com/vic/with-inputs">with-inputs</a></li>
       <li><a href="https://github.com/vic/denful">denful</a></li>
       <li><a href="https://github.com/vic/dendrix">dendrix</a></li>
     </ul>
@@ -43,9 +43,32 @@ import { LinkButton, Icon } from '@astrojs/starlight/components';
     transform: translateY(-2px);
   }
 
+  .content * {
+    color: var(--sl-color-fg);
+  }
+
   .content {
-    color: white;
     text-align: center;
+  }
+
+  .content:hover * {
+    color: white;
+  }
+
+  .content a:link {
+    color: inherit;
+  }
+
+  .content a.primary:link {
+    color: var(--sl-color-bg);
+  }
+
+  .content a.primary:visited {
+    color: var(--sl-color-bg);
+  }
+
+  .content a:visited {
+    color: inherit;
   }
 
   .header {
@@ -84,7 +107,6 @@ import { LinkButton, Icon } from '@astrojs/starlight/components';
   }
 
   .description a {
-    color: white;
     font-weight: 600;
     text-decoration: underline;
     text-decoration-thickness: 2px;
@@ -113,7 +135,6 @@ import { LinkButton, Icon } from '@astrojs/starlight/components';
   }
 
   .ecosystem a {
-    color: white;
     text-decoration: none;
     font-weight: 500;
     transition: opacity 0.2s;
@@ -129,7 +150,6 @@ import { LinkButton, Icon } from '@astrojs/starlight/components';
     align-items: center;
     gap: 0.5rem;
     background: rgba(255, 255, 255, 0.25);
-    color: white;
     padding: 0.875rem 1.75rem;
     border-radius: 0.75rem;
     font-weight: 600;
