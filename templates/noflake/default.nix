@@ -1,4 +1,6 @@
 let
+  sources = import ./npins;
+  with-inputs = import sources.with-inputs sources { };
 
   outputs =
     inputs:
@@ -11,4 +13,4 @@ let
     }).config;
 
 in
-import ./with-inputs.nix outputs
+with-inputs outputs

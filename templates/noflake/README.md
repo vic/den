@@ -2,7 +2,9 @@
 
 This template provides an example Den setup with stable Nix (no-flakes), no flake-parts and nix-maid instead of home-manager.
 
-It configures a NixOS host with one user.
+It uses [npins](https://github.com/andir/npins) to lock dependencies and [with-inputs](https://github.com/vic/with-inputs) to provide flakes-like inputs resolution.
+
+It configures a single NixOS host with one user.
 
 Try it with:
 

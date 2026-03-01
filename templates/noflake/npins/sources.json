@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "0c108ece5371a78e576b28d7b36369ed15e6d059",
-      "url": "https://github.com/vic/den/archive/0c108ece5371a78e576b28d7b36369ed15e6d059.tar.gz",
-      "hash": "sha256-6MjNHGtaIUBlc45g7ZJm9/xRWdBgGkpn8MQPU0Ozsn4="
+      "revision": "1589b0a3cc727e8f208945f9acb7d8e92f097d7b",
+      "url": "https://github.com/vic/den/archive/1589b0a3cc727e8f208945f9acb7d8e92f097d7b.tar.gz",
+      "hash": "sha256-Gk5ZJVGffwflZsflgjXF4TzwKbji+a+4+y2+H2zylqo="
     },
     "flake-aspects": {
       "type": "Git",
@@ -22,9 +22,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "8297f3bc41ad79b9f01d56d0dd92f7aac51bacfb",
-      "url": "https://github.com/vic/flake-aspects/archive/8297f3bc41ad79b9f01d56d0dd92f7aac51bacfb.tar.gz",
-      "hash": "sha256-bcCOG2CW23/Eww/zULJf1xd0Shz2zS4c2AJWwLALyJ8="
+      "revision": "88bac0fd89f3d9ce8f157debc57875ca470535e8",
+      "url": "https://github.com/vic/flake-aspects/archive/88bac0fd89f3d9ce8f157debc57875ca470535e8.tar.gz",
+      "hash": "sha256-enmt9g1FJGIBVzPcLa208nLP9QTUbRrJUXWT40GTQho="
     },
     "import-tree": {
       "type": "Git",
@@ -35,9 +35,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "3c23749d8013ec6daa1d7255057590e9ca726646",
-      "url": "https://github.com/vic/import-tree/archive/3c23749d8013ec6daa1d7255057590e9ca726646.tar.gz",
-      "hash": "sha256-ZvYKbFib3AEwiNMLsejb/CWs/OL/srFQ8AogkebEPF0="
+      "revision": "205675fa599ff8a74b6c8c2cc5149cdaeac76f5f",
+      "url": "https://github.com/vic/import-tree/archive/205675fa599ff8a74b6c8c2cc5149cdaeac76f5f.tar.gz",
+      "hash": "sha256-4TRO+jUycfR3g4KAbyK0wQEEJ7Xcmid2Ry+tWv4HPLw="
     },
     "nix-maid": {
       "type": "Git",
@@ -55,8 +55,24 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre937085.6308c3b21396/nixexprs.tar.xz",
-      "hash": "sha256-RuGWBqXVEsZwwBvRGS/nRrA6PQyOQwVaAu139Z853Bk="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre955350.c0f3d81a7ddb/nixexprs.tar.xz",
+      "hash": "sha256-BHKMR414WpfUddNyUtx2GR1VPl0R9sWGQs/opgYm9rc="
+    },
+    "with-inputs": {
+      "type": "GitRelease",
+      "repository": {
+        "type": "GitHub",
+        "owner": "vic",
+        "repo": "with-inputs"
+      },
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
+      "submodules": false,
+      "version": "v0.1.0",
+      "revision": "8eeec49f4d349ddee87aa6a60ba7f8b25781f747",
+      "url": "https://api.github.com/repos/vic/with-inputs/tarball/refs/tags/v0.1.0",
+      "hash": "sha256-5TOTPl8CYewaDoV5O7zvezQeA/NrXx3tzjstOMc2oN8="
     }
   },
   "version": 7
