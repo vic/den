@@ -9,8 +9,10 @@
     boot.loader.grub.enable = false;
   };
 
-  # tux user on igloo host.
-  den.hosts.x86_64-linux.igloo.users.tux = { };
+  # tux user on igloo host, using nix-maid
+  den.hosts.x86_64-linux.igloo.users.tux = {
+    classes = [ "maid" ];
+  };
 
   # host aspect
   den.aspects.igloo = {
@@ -25,18 +27,14 @@
 
   # user aspect
   den.aspects.tux = {
-    # user configures the host it lives in
-    nixos = {
-      # hipster-tux uses nix-maid instead of home-manager.
-      imports = [ inputs.nix-maid.nixosModules.default ];
+    # user configures host nixos.users.users.tux.isNormalUser.
+    # Read docs about the `user` class.
+    user.isNormalUser = true;
 
-      users.users.tux = {
-        isNormalUser = true;
-        maid.file.home.".gitconfig".text = ''
-          [user]
-            name=Tux
-        '';
-      };
-    };
+    # maid class
+    maid.file.home.".gitconfig".text = ''
+      [user]
+        name=Tux
+    '';
   };
 }
