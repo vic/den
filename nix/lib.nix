@@ -13,7 +13,9 @@ let
     aspect
     // {
       __functor = self: ctx: {
-        includes = builtins.filter (x: x != { }) (map (apply ctx) (builtins.filter isFn self.includes));
+        includes = builtins.filter (x: x != { }) (
+          map (apply ctx) (builtins.filter isFn (self.includes or [ ]))
+        );
       };
     };
 
@@ -35,7 +37,7 @@ let
         self:
         { class, aspect-chain }:
         {
-          includes = map (applyStatics { inherit class aspect-chain; }) self.includes;
+          includes = map (applyStatics { inherit class aspect-chain; }) (self.includes or [ ]);
         };
     };
 
