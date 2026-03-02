@@ -1,11 +1,11 @@
-{ lib, ... }:
+{ lib, den, ... }:
 let
   description = ''
     Sets user as *primary*.
 
     On NixOS adds wheel and networkmanager groups.
     On Darwin sets user as system.primaryUser
-    On WSL sets wsl.defaultUser if host has an `wsl` attribute.
+    On WSL sets defaultUser if host has `wsl` support.
 
     ## Usage
 
@@ -15,13 +15,10 @@ let
 
   userToHostContext =
     { user, host, ... }:
-    let
-      on-wsl.nixos.wsl.defaultUser = user.userName;
-    in
     {
       inherit description;
-      includes = lib.optionals (host ? wsl) [ on-wsl ];
       darwin.system.primaryUser = user.userName;
+      wsl.defaultUser = user.userName;
       nixos.users.users.${user.userName} = {
         isNormalUser = true;
         extraGroups = [
@@ -33,5 +30,5 @@ let
 
 in
 {
-  den.provides.primary-user = userToHostContext;
+  den.provides.primary-user = den.lib.take.exactly userToHostContext;
 }
