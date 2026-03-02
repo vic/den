@@ -57,33 +57,17 @@ Build with:
 home-manager switch --flake .#vic
 ```
 
-The following standalone Home-Manager example showcases
-custom input channels and output attribute.
-
-```nix
-den.homes.x86_64-linux.tux-at-igloo = {
-  intoAttr = [ "homeConfigurations" "tux@igloo" ];
-  userName = "tux";
-  instantiate = { pkgs, modules }:
-    inputs.home-manager-stable.lib.homeManagerConfiguration {
-      inherit modules;
-      pkgs = inputs.self.nixpkgs-stable.legacyPackages.x86_64-linux;
-      extraSpecialArgs.osConfig = inputs.self.nixosConfigurations.igloo.config;
-    };
-};
-```
-
 ## Multiple Hosts, Shared Users
 
 The same user aspect applies to every host it appears on:
 
-```nix
+```nix "vic"
 den.hosts.x86_64-linux.desktop.users.vic = { };
 den.hosts.x86_64-linux.server.users.vic = { };
 den.hosts.aarch64-darwin.mac.users.vic = { };
 ```
 
-All three machines share `den.aspects.vic` configurations.
+All three machines share same `den.aspects.vic` user aspect.
 
 ## Freeform Attributes
 
@@ -136,6 +120,23 @@ Override where configurations are placed:
 ```nix
 den.hosts.x86_64-linux.wsl-box = {
   intoAttr = [ "wslConfigurations" "my-wsl" ];
+  wsl.enable = true;
   users.wsl = { };
 };
 ```
+
+Custom nixpkgs instance, home-manager osConfig and output attribute:
+
+```nix
+den.homes.x86_64-linux.tux-at-igloo = {
+  aspect = "tux"; # Use den.aspects.tux for configuration
+  intoAttr = [ "homeConfigurations" "tux@igloo" ];
+  instantiate = { pkgs, modules }:
+    inputs.home-manager-stable.lib.homeManagerConfiguration {
+      inherit modules;
+      pkgs = inputs.self.nixpkgs-stable.legacyPackages.x86_64-linux;
+      extraSpecialArgs.osConfig = inputs.self.nixosConfigurations.igloo.config;
+    };
+};
+```
+
