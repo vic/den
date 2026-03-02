@@ -27,7 +27,7 @@ For each entry in `den.hosts` and `den.homes`, Den:
 1. **Resolves the main module** — applies the context pipeline to produce a
    single Nix module containing all class-specific configurations
 2. **Calls the instantiate function** — passes the module to the platform builder
-3. **Places the result** — puts it at `flake.<intoAttr>.<name>`
+3. **Places the result** — puts it at `flake.<intoAttr>`
 
 ## OS Configurations
 
@@ -64,17 +64,16 @@ Results are folded into `flake` by `intoAttr`:
 
 | Class | Default `intoAttr` |
 |-------|-------------------|
-| `nixos` | `nixosConfigurations` |
-| `darwin` | `darwinConfigurations` |
-| `systemManager` | `systemConfigs` |
-| `homeManager` | `homeConfigurations` |
+| `nixos` | `nixosConfigurations.<name>` |
+| `darwin` | `darwinConfigurations.<name>` |
+| `systemManager` | `systemConfigs.<name>` |
+| `homeManager` | `homeConfigurations.<name>` |
 
 Override `intoAttr` to place configs elsewhere:
 
 ```nix
-den.hosts.x86_64-linux.my-wsl = {
-  intoAttr = "wslConfigurations";
-  users.vic = { };
+den.homes.x86_64-linux.tux = {
+  intoAttr = [  "homeConfigurations" "tux@igloo" ];
 };
 ```
 
@@ -87,9 +86,9 @@ computed internally as:
 graph TD
   Entity["host / home definition"]
   Entity -->|"ctx.host / ctx.home"| Intent["Apply context pipeline"]
-  Intent -->|"aspect.resolve { class }"| Module["Single Nix module"]
-  Module --> Instantiate["instantiate function"]
-  Instantiate --> Output["flake.<intoAttr>.<name>"]
+  Intent -->|"aspect.resolve { class }"| Module["Obtain Nix module"]
+  Module --> Instantiate["instantiate configuration"]
+  Instantiate --> Output["set value into flake.<intoAttr>"]
 ```
 
 The context pipeline collects contributions from:
