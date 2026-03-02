@@ -25,7 +25,8 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "hjem" ];
-          hjem-module = mockHjemModule;
+          hjem.enable = true;
+          hjem.module = mockHjemModule;
         };
 
         den.aspects.tux.hjem.theme = "nord";
@@ -45,7 +46,8 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "hjem" ];
-          hjem-module = mockHjemModule;
+          hjem.enable = true;
+          hjem.module = mockHjemModule;
         };
 
         den.aspects.tux.hjem.tags = [ "from-hjem" ];
@@ -64,11 +66,12 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux = { };
-          hjem-module = mockHjemModule;
+          hjem.enable = false;
+          hjem.module = mockHjemModule;
         };
 
-        expr = igloo.networking.hostName;
-        expected = "nixos";
+        expr = igloo ? hjem;
+        expected = false;
       }
     );
 

@@ -62,11 +62,11 @@ export default defineConfig({
 					items: [
 						{ label: 'Declare Hosts & Users', slug: 'guides/declare-hosts' },
 						{ label: 'Configure Aspects', slug: 'guides/configure-aspects' },
-						{ label: 'Home-Manager Integration', slug: 'guides/home-manager' },
+						{ label: 'Custom Nix Classes', slug: 'guides/custom-classes' },
+						{ label: 'Homes Integration', slug: 'guides/home-manager' },
 						{ label: 'Use Batteries', slug: 'guides/batteries' },
 						{ label: 'Share with Namespaces', slug: 'guides/namespaces' },
 						{ label: 'Angle Brackets Syntax', slug: 'guides/angle-brackets' },
-						{ label: 'Custom Nix Classes', slug: 'guides/custom-classes' },
 						{ label: 'Migrate to Den', slug: 'guides/migrate' },
 						{ label: 'Debug Configurations', slug: 'guides/debug' },
 					],

@@ -29,7 +29,8 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "maid" ];
-          maid-module = mockMaidModule;
+          nix-maid.enable = true;
+          nix-maid.module = mockMaidModule;
         };
 
         den.aspects.tux.maid.description = "maid-tux";
@@ -49,7 +50,8 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "maid" ];
-          maid-module = mockMaidModule;
+          nix-maid.enable = true;
+          nix-maid.module = mockMaidModule;
         };
 
         den.aspects.tux.maid.tags = [ "from-maid" ];
@@ -68,11 +70,12 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux = { };
-          maid-module = mockMaidModule;
+          nix-maid.enable = false;
+          nix-maid.module = mockMaidModule;
         };
 
-        expr = igloo.networking.hostName;
-        expected = "nixos";
+        expr = igloo ? users.tux.maid;
+        expected = false;
       }
     );
 

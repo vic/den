@@ -19,5 +19,6 @@
 
   den.aspects.tux = {
     includes = [ den.provides.primary-user ];
+    user.extraGroups = [ "audio" ];
   };
 }
