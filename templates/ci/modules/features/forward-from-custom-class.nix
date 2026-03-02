@@ -73,5 +73,46 @@
       }
     );
 
+    test-custom-git-class-fowards-to-hm-then-nixos = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      let
+        forwarded =
+          { class, aspect-chain }:
+          den._.forward {
+            each = lib.singleton class;
+            fromClass = _: "git";
+            intoClass = _: "homeManager";
+            intoPath = _: [
+              "programs"
+              "git"
+            ];
+            fromAspect = _: lib.head aspect-chain;
+            adaptArgs =
+              { config, ... }:
+              {
+                osConfig = config;
+              };
+          };
+      in
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.aspects.igloo.homeManager.home.stateVersion = "25.11";
+
+        den.aspects.tux = {
+          includes = [ forwarded ];
+          git.userEmail = "root@linux.com";
+        };
+
+        expr = igloo.home-manager.users.tux.programs.git.userEmail;
+        expected = "root@linux.com";
+      }
+    );
+
   };
 }
