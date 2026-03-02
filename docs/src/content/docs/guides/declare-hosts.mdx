@@ -34,6 +34,7 @@ den.hosts.x86_64-linux.my-laptop = {
   hostName = "yavanna";        # default: my-laptop
   class = "nixos";             # default: guessed from platform
   aspect = "workstation";      # default: my-laptop
+  intoAttr = [ "nixosConfigurations" "yavanna" ]; # default: [ "nixosConfigurations" "my-laptop" ]
   users.vic = {
     userName = "vborja";       # default: vic
     aspect = "oeiuwq";         # default: vic
@@ -54,6 +55,22 @@ Build with:
 
 ```console
 home-manager switch --flake .#vic
+```
+
+The following standalone Home-Manager example showcases
+custom input channels and output attribute.
+
+```nix
+den.homes.x86_64-linux.tux-at-igloo = {
+  intoAttr = [ "homeConfigurations" "tux@igloo" ];
+  userName = "tux";
+  instantiate = { pkgs, modules }:
+    inputs.home-manager-stable.lib.homeManagerConfiguration {
+      inherit modules;
+      pkgs = inputs.self.nixpkgs-stable.legacyPackages.x86_64-linux;
+      extraSpecialArgs.osConfig = inputs.self.nixosConfigurations.igloo.config;
+    };
+};
 ```
 
 ## Multiple Hosts, Shared Users
@@ -118,7 +135,7 @@ Override where configurations are placed:
 
 ```nix
 den.hosts.x86_64-linux.wsl-box = {
-  intoAttr = "wslConfigurations";
+  intoAttr = [ "wslConfigurations" "my-wsl" ];
   users.wsl = { };
 };
 ```

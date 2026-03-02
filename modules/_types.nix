@@ -76,13 +76,22 @@ let
               `nixos`:  nixosConfigurations
               `systemManager`: systemConfigs
             '';
-            example = lib.literalExpression ''"nixosConfigurations"'';
-            type = lib.types.str;
+            example = lib.literalExpression ''[  "nixosConfigurations" hostName ]'';
+            type = lib.types.listOf lib.types.str;
             default =
               {
-                nixos = "nixosConfigurations";
-                darwin = "darwinConfigurations";
-                systemManager = "systemConfigs";
+                nixos = [
+                  "nixosConfigurations"
+                  config.name
+                ];
+                darwin = [
+                  "darwinConfigurations"
+                  config.name
+                ];
+                systemManager = [
+                  "systemConfigs"
+                  config.name
+                ];
               }
               .${config.class};
           };
@@ -187,11 +196,14 @@ let
               Depending on class, defaults to:
               `homeManager`: homeConfigurations
             '';
-            example = lib.literalExpression ''"homeConfigurations"'';
-            type = lib.types.str;
+            example = lib.literalExpression ''[  "homeConfigurations" userName ]'';
+            type = lib.types.listOf lib.types.str;
             default =
               {
-                homeManager = "homeConfigurations";
+                homeManager = [
+                  "homeConfigurations"
+                  config.name
+                ];
               }
               .${config.class};
           };

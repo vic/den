@@ -9,12 +9,10 @@ let
     builder: cfg:
     let
       items = map builtins.attrValues (builtins.attrValues cfg);
-      buildItem = item: {
-        inherit (item) name intoAttr;
-        value = builder item;
-      };
+      buildItem = item: lib.setAttrByPath item.intoAttr (builder item);
+      built = map buildItem (lib.flatten items);
     in
-    map buildItem (lib.flatten items);
+    built;
 
   osConfiguration =
     host:
@@ -32,18 +30,8 @@ let
       modules = [ home.mainModule ];
     };
 
-  cfgs = (build osConfiguration config.den.hosts) ++ (build homeConfiguration config.den.homes);
-
-  outputs =
-    acc: item:
-    acc
-    // {
-      ${item.intoAttr} = (acc.${item.intoAttr} or { }) // {
-        ${item.name} = item.value;
-      };
-    };
-
+  configs = (build osConfiguration config.den.hosts) ++ (build homeConfiguration config.den.homes);
 in
 {
-  flake = lib.foldl outputs { } cfgs;
+  config.flake = lib.mkMerge configs;
 }
