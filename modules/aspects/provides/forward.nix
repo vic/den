@@ -33,7 +33,11 @@ let
     See also: https://github.com/vic/den/issues/160, https://github.com/vic/flake-aspects/pull/31
   '';
 
-  forward =
+  forwardEach = fwd: {
+    includes = map (item: forwardOne (fwd // { each = [ item ]; })) fwd.each;
+  };
+
+  forwardOne =
     {
       guard ? null,
       adaptArgs ? null,
@@ -91,6 +95,6 @@ in
 {
   den.provides.forward = {
     inherit description;
-    __functor = _self: forward;
+    __functor = _self: forwardEach;
   };
 }

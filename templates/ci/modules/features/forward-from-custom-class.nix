@@ -1,6 +1,6 @@
 { denTest, ... }:
 {
-  flake.tests.forward = {
+  flake.tests.forward-custom-class = {
 
     test-forward-custom-class-to-nixos = denTest (
       {
@@ -111,6 +111,53 @@
 
         expr = igloo.home-manager.users.tux.programs.git.userEmail;
         expected = "root@linux.com";
+      }
+    );
+
+    test-custom-nix-class-fowards-to-both-hm-and-nixos = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      let
+        forwarded =
+          { class, aspect-chain }:
+          den._.forward {
+            each = [
+              "nixos"
+              "homeManager"
+            ];
+            fromClass = _: "nix";
+            intoClass = lib.id;
+            intoPath = _: [ "nix" ];
+            fromAspect = _: lib.head aspect-chain;
+            adaptArgs =
+              { config, ... }:
+              {
+                osConfig = config;
+              };
+          };
+      in
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.aspects.igloo.homeManager.home.stateVersion = "25.11";
+
+        den.aspects.tux = {
+          includes = [ forwarded ];
+          nix.settings.allowed-users = [ "tux" ];
+        };
+
+        expr = {
+          os = igloo.nix.settings.allowed-users;
+          hm = igloo.home-manager.users.tux.nix.settings.allowed-users;
+        };
+        expected = {
+          os = [ "tux" ];
+          hm = [ "tux" ];
+        };
       }
     );
 

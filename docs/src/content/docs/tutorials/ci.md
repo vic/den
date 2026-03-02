@@ -102,7 +102,7 @@ modules/
 |-----------|---------------|
 | [angle-brackets.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/angle-brackets.nix) | All bracket resolution paths |
 | [namespaces.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/namespaces.nix) | Local, remote, merged namespaces |
-| [forward.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward.nix) | Custom class forwarding |
+| [forward-from-custom-class.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-from-custom-class.nix) | Custom class forwarding |
 | [homes.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/homes.nix) | Standalone Home-Manager configs |
 | [schema-base-modules.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/schema-base-modules.nix) | `den.base.{host,user,home,conf}` |
 
