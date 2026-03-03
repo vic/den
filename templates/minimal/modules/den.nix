@@ -3,7 +3,9 @@
   # we can import this flakeModule even if we dont have flake-parts as input!
   imports = [ inputs.den.flakeModule ];
 
-  den.hosts.x86_64-linux.igloo.users.tux = { };
+  den.hosts.x86_64-linux.igloo.users.tux = {
+    classes = [ ]; # no homeManager
+  };
 
   den.aspects.igloo = {
     nixos =
