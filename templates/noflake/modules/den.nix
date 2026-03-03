@@ -10,8 +10,9 @@
   };
 
   # tux user on igloo host, using nix-maid
-  den.hosts.x86_64-linux.igloo.users.tux = {
-    classes = [ "maid" ];
+  den.hosts.x86_64-linux.igloo = {
+    nix-maid.enable = true;
+    users.tux.classes = [ "maid" ];
   };
 
   # host aspect

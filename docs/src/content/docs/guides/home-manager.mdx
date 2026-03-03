@@ -1,5 +1,5 @@
 ---
-title: Home-Manager Integration
+title: Homes Integration (hm / hjem / nix-maid, etc)
 description: Integrate Home-Manager into NixOS/Darwin hosts or use standalone.
 ---
 
@@ -8,36 +8,70 @@ import { Aside } from '@astrojs/starlight/components';
 
 <Aside title="Use the Source, Luke" icon="github">
 [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix) · [`hm-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-integration.nix)
+
+[`hjem-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/hjem/hjem-os.nix) · [`hjem-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/hjem/hjem-integration.nix)
+
+[`maid-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/maid/maid-os.nix) · [`maid-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/maid/maid-integration.nix)
+
 </Aside>
 
-## Automatic HM Detection
+Den supports different Nix libraries for managing user home files.
+All of them have Nix classes implemented using `den.provides.forward` 
+and you can create custom home-like classes following the same pattern.
 
-Den automatically detects hosts that need Home-Manager. When a host has
-users with `"homeManager"` in their `classes` list (the default), Den:
+- `user` class. NixOS and nix-Darwin builtin `users.users.<userName>` submodule.
+- `homeManager` class. Enabled via `host.home-manager.enable`
+- `hjem` class. Enabled via `host.hjem.enable`
+- `maid` class. Enabled via `host.nix-maid.enable`.
 
-1. Imports the Home-Manager NixOS/Darwin module
-2. Creates a `homeManager` class for each user
-3. Forwards `homeManager` configs into `home-manager.users.<name>`
+Class names follow the Nix class used by the module system of these projects
+not the project name, e.g: [`homeManager`](https://github.com/nix-community/home-manager/blob/f140aa04d7d14f8a50ab27f3691b5766b17ae961/modules/default.nix#L32).
 
-No explicit opt-in needed — just declare users.
+Except for the `user` class which is always enabled, other home classes
+are opt-in features, enabled via the host configuration:
 
-```mermaid
-graph LR
-  Host["{host}"] -->|"hm-detect"| Check{"class ∈ nixos,darwin?<br/>HM users exist?<br/>HM module available?"}
-  Check -->|"yes"| HM["ctx.hm-host<br/>imports HM module"]
-  HM -->|"per user"| FW["forward homeManager<br/>→ home-manager.users.‹name›"]
-  Check -->|"no"| Skip["HM pipeline skipped"]
+```nix
+# per host:
+den.hosts.x86_64-linux.igloo.home-manager = {
+  enable = true;
+
+  # optionally with custom stable/unstable HM input
+  module = inputs.home-manager-unstable.nixosModules.default;
+};
+
+# Globally (or conditionally on host)
+den.base.host = { host, ... }: {
+   home-manager.enable = host.name == "igloo";
+};
 ```
+
+## Multi Home support.
+
+User can choose to manage some files with home-manager instead or in
+addition to nix-maid and hjem. For example, when migrating away from home-manager into other libraries, you might want to keep your stuff working as you move progressively.
+
+Users define a `<user>.classes = [ "homeManager" ]` (default) where they
+explicitly enable the different home libraries they use.
 
 ## Host-Managed Users
 
 ```nix
 den.hosts.x86_64-linux.igloo.users.tux = { };
-den.default.homeManager.home.stateVersion = "25.11";
 
+# host meta configuration (capabilities), HM always enabled.
+den.base.host.home-manager.enable = lib.mkDefault true;
+
+# homeManager default settings
+den.default.homeManager.home.stateVersion = lib.mkDefault "25.11";
+
+# NixOS/Nix-Darwin user class.
+den.aspects.tux.user.description = "The Penguin";
+
+# homeManager class
 den.aspects.tux.homeManager.programs.vim.enable = true;
 ```
 
+User description forwarded into `igloo.users.users.tux.description`.
 The vim config is forwarded into `igloo.home-manager.users.tux`.
 
 ## Standalone Home-Manager
@@ -52,38 +86,25 @@ den.aspects.vic.homeManager.programs.fish.enable = true;
 
 Build with `home-manager switch --flake .#vic`.
 
-## The define-user Battery
+## Context types for Home enabled hosts.
 
-Use `den._.define-user` to automatically set username and home directory:
+Each Home integration in Den defines a context 
+transformation from `den.ctx.host -> den.ctx.${name}-host`.
 
-```nix
-den.default.includes = [ den._.define-user ];
-```
+For example, `den.ctx.hm-host` is the aspect for Home-Manager enabled hosts.
+Similarly `den.ctx.maid-host` and `den.ctx.hjem-host`.
 
-This sets `home.username`, `home.homeDirectory`, and
-`users.users.<name>` on both NixOS and Darwin.
+## useGlobalPkgs at Home Manager enabled hosts
 
-## useGlobalPkgs
-
-Configure Home-Manager to use the host's nixpkgs:
+Configure a NixOS option only for Home-Manager hosts 
+so they can use the host's nixpkgs:
 
 ```nix
 den.ctx.hm-host.nixos.home-manager.useGlobalPkgs = true;
 ```
 
 This only activates for hosts that actually have Home-Manager users.
-Hosts without users are unaffected.
-
-## Custom HM Module
-
-Override the Home-Manager module source:
-
-```nix
-den.hosts.x86_64-linux.igloo = {
-  hm-module = inputs.home-manager-unstable.nixosModules.home-manager;
-  users.tux = { };
-};
-```
+Hosts without Home-Manager users are unaffected.
 
 ## Standalone with osConfig
 
@@ -104,16 +125,4 @@ den.aspects.pingu.homeManager = { osConfig, ... }: {
 };
 ```
 
-## Context Hooks
 
-Use `den.ctx.hm-host` to configure things only when HM is active:
-
-```nix
-den.ctx.hm-host.nixos.home-manager.useGlobalPkgs = true;
-den.ctx.hm-host.includes = [
-  { nixos.home-manager.backupFileExtension = "bak"; }
-];
-```
-
-These only apply to hosts that have Home-Manager users with
-a supported OS (NixOS or Darwin).

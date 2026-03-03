@@ -9,26 +9,38 @@ let
   maidOsClasses = [
     "nixos"
   ];
-  maidModule = host: host.maid-module or inputs.nix-maid.nixosModules.default;
+
+  hostConf =
+    { host, ... }:
+    {
+      options.nix-maid = {
+        enable = lib.mkEnableOption "Enable nix-maid";
+        module = lib.mkOption {
+          type = lib.types.deferredModule;
+          default = inputs.nix-maid.nixosModules.default;
+        };
+      };
+    };
 
   maidDetect =
     { host }:
     let
       isOsSupported = builtins.elem host.class maidOsClasses;
-      hasMaidModule = (host ? maid-module) || (inputs ? nix-maid);
       maidUsers = builtins.filter (u: lib.elem maidClass u.classes) (lib.attrValues host.users);
       hasMaidUsers = builtins.length maidUsers > 0;
-      isMaidHost = isOsSupported && hasMaidUsers && hasMaidModule;
+      isMaidHost = host.nix-maid.enable && isOsSupported && hasMaidUsers;
     in
     lib.optional isMaidHost { inherit host; };
 
-in
-{
-  den.ctx.host.into.maid-host = maidDetect;
+  ctx.host.into.maid-host = maidDetect;
 
-  den.ctx.maid-host._.maid-host =
+  ctx.maid-host._.maid-host =
     { host }:
     {
-      ${host.class}.imports = [ (maidModule host) ];
+      ${host.class}.imports = [ host.nix-maid.module ];
     };
+in
+{
+  den.ctx = ctx;
+  den.base.host.imports = [ hostConf ];
 }

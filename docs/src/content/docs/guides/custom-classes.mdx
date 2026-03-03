@@ -45,6 +45,35 @@ in {
 }
 ```
 
+Example: A git class that forwards to home-manager.
+
+```nix
+gitClass =
+  { class, aspect-chain }:
+  den._.forward {
+    each = lib.singleton true;
+    fromClass = _: "git";
+    intoClass = _: "homeManager";
+    intoPath = _: [
+      "programs"
+      "git"
+    ];
+    fromAspect = _: lib.head aspect-chain;
+    adaptArgs =
+      { config, ... }:
+      {
+	osConfig = config;
+      };
+  };
+
+den.aspects.tux = {
+  includes = [ gitClass ];
+  git.userEmail = "root@linux.com";
+};
+```
+
+This will set at host: `igloo.home-manager.users.tux.programs.git.userEmail`
+
 
 ## Use Cases
 
