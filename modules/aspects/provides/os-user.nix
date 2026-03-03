@@ -48,7 +48,8 @@ in
 {
   den.ctx.user.includes = [ fwd ];
 
-  den.lib.host-has-user-with-class = host: class:
+  den.lib.host-has-user-with-class =
+    host: class:
     lib.pipe host.users [
       (lib.attrValues)
       (map (user: lib.elem class user.classes))

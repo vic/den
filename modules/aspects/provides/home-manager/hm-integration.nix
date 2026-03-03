@@ -43,7 +43,7 @@ let
 
 in
 {
-  den.provides.home-manager = {};
+  den.provides.home-manager = { };
 
   den.ctx.home.description = "Standalone Home-Manager config provided by home aspect";
   den.ctx.home._.home = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};

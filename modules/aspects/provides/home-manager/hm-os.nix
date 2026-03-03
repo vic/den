@@ -32,9 +32,9 @@ let
     {
       options.home-manager = {
         enable = lib.mkOption {
-	  type = lib.types.bool;
-	  default = den.lib.host-has-user-with-class host hm-class;
-	};
+          type = lib.types.bool;
+          default = den.lib.host-has-user-with-class host hm-class;
+        };
         module = lib.mkOption {
           type = lib.types.deferredModule;
           default = inputs.home-manager."${host.class}Modules".home-manager;

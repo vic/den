@@ -15,9 +15,9 @@ let
     {
       options.nix-maid = {
         enable = lib.mkOption {
-	  type = lib.types.bool;
-	  default = den.lib.host-has-user-with-class host maidClass;
-	};
+          type = lib.types.bool;
+          default = den.lib.host-has-user-with-class host maidClass;
+        };
         module = lib.mkOption {
           type = lib.types.deferredModule;
           default = inputs.nix-maid.nixosModules.default;
