@@ -15,7 +15,10 @@ let
     { host, ... }:
     {
       options.hjem = {
-        enable = lib.mkEnableOption "Enable hjem";
+        enable = lib.mkOption {
+	  type = lib.types.bool;
+	  default = den.lib.host-has-user-with-class host hjemClass;
+	};
         module = lib.mkOption {
           type = lib.types.deferredModule;
           default = inputs.hjem."${host.class}Modules".default;

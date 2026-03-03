@@ -29,7 +29,6 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "maid" ];
-          nix-maid.enable = true;
           nix-maid.module = mockMaidModule;
         };
 
@@ -50,7 +49,6 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "maid" ];
-          nix-maid.enable = true;
           nix-maid.module = mockMaidModule;
         };
 
@@ -70,7 +68,6 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux = { };
-          nix-maid.enable = false;
           nix-maid.module = mockMaidModule;
         };
 

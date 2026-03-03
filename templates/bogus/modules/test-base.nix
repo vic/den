@@ -28,7 +28,6 @@ let
 
   denModule = {
     imports = [ inputs.den.flakeModule ];
-    den.base.host.home-manager.enable = true;
     den.default.homeManager.home.stateVersion = "26.05";
     den.default.nixos = {
       system.stateVersion = "26.05";

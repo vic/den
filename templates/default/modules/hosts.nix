@@ -2,10 +2,7 @@
 # then config their aspects in as many files you want
 {
   # tux user at igloo host.
-  den.hosts.x86_64-linux.igloo = {
-    users.tux = { };
-    home-manager.enable = true;
-  };
+  den.hosts.x86_64-linux.igloo.users.tux = { };
 
   # define an standalone home-manager for tux
   # den.homes.x86_64-linux.tux = { };

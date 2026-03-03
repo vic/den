@@ -25,7 +25,6 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "hjem" ];
-          hjem.enable = true;
           hjem.module = mockHjemModule;
         };
 
@@ -46,7 +45,6 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux.classes = [ "hjem" ];
-          hjem.enable = true;
           hjem.module = mockHjemModule;
         };
 
@@ -66,7 +64,6 @@ in
       {
         den.hosts.x86_64-linux.igloo = {
           users.tux = { };
-          hjem.enable = false;
           hjem.module = mockHjemModule;
         };
 

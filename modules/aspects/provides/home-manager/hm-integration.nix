@@ -43,29 +43,7 @@ let
 
 in
 {
-  den.provides.home-manager =
-    _:
-    throw ''
-      NOTICE: den.provides.home-manager aspect is not needed anymore.
-
-      Enabling Home Manager is now made via the host config:
-
-      Per host: 
-
-         den.hosts.x86_64-linux.igloo.home-manager.enable = true;
-
-      On ALL hosts: 
-
-         den.base.host.home-manager.enable = true;
-
-      See <den/home-manager/hm-os.nix>
-
-      If you had includes at den._.home-manager, you can use:
-
-         den.ctx.hm-host.includes = [ ... ];
-
-      For attaching aspects to home-manager enabled hosts.
-    '';
+  den.provides.home-manager = {};
 
   den.ctx.home.description = "Standalone Home-Manager config provided by home aspect";
   den.ctx.home._.home = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
