@@ -18,7 +18,7 @@ submodule. This is exactly how Home-Manager integration works internally.
 `den._.forward` creates an aspect that takes configs from a source class
 and inserts them into a target class at a specified path.
 
-## Example: How Den forwards `hjem` user class to NixOS
+### Example: How Den forwards `hjem` user class to NixOS
 
 Den already integrates nix-maid and hjem just like home-manager.
 
@@ -45,7 +45,7 @@ in {
 }
 ```
 
-Example: A git class that forwards to home-manager.
+### Example: A git class that forwards to home-manager.
 
 ```nix
 gitClass =
@@ -54,16 +54,9 @@ gitClass =
     each = lib.singleton true;
     fromClass = _: "git";
     intoClass = _: "homeManager";
-    intoPath = _: [
-      "programs"
-      "git"
-    ];
+    intoPath = _: [ "programs" "git" ];
     fromAspect = _: lib.head aspect-chain;
-    adaptArgs =
-      { config, ... }:
-      {
-	osConfig = config;
-      };
+    adaptArgs = lib.id;
   };
 
 den.aspects.tux = {
@@ -74,6 +67,28 @@ den.aspects.tux = {
 
 This will set at host: `igloo.home-manager.users.tux.programs.git.userEmail`
 
+### Example: A `nix` class that propagates settings to NixOS and HomeManager
+
+> Contributed by @musjj
+
+```nix
+nixClass =
+  { class, aspect-chain }:
+  den._.forward {
+    each = [ "nixos" "homeManager" ];
+    fromClass = _: "nix";
+    intoClass = lib.id;
+    intoPath = _: [ "nix" "settings" ];
+    fromAspect = _: lib.head aspect-chain;
+    adaptArgs = lib.id;
+  };
+
+nix-allowed = { user, ... }: {
+  nix.allowed-users = [ user.userName ];
+};
+
+den.aspects.tux.includes = [ nixClass nix-allowed ];
+```
 
 ## Use Cases
 
