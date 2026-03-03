@@ -4,7 +4,7 @@
   imports = [ inputs.den.flakeModule ];
 
   den.hosts.x86_64-linux.igloo.users.tux = {
-    classes = [ ]; # no homeManager
+    classes = [ "user" ]; # no homeManager
   };
 
   den.aspects.igloo = {
