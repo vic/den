@@ -1,97 +1,119 @@
 ---
-title: Entity Schema Reference
-description: Host, user, and home configuration options.
+title: Schema
+description: Host, user, and home declaration options, base modules, and freeform types.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
+<Aside title="Source" icon="github">
+[`modules/options.nix`](https://github.com/vic/den/blob/main/modules/options.nix) --
+[`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix)
+</Aside>
 
-<Aside title="Use the Source, Luke" icon="github">[`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix) · [`modules/options.nix`](https://github.com/vic/den/blob/main/modules/options.nix) · Tests: [`host-options.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/host-options.nix) · [`schema-base-modules.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/schema-base-modules.nix) · [`homes.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/homes.nix)</Aside>
+## `den.hosts`
 
-`den.base` provides extensible schemas for `host`/`user`/`home`.
+Type: `attrsOf systemType`
 
-## den.hosts
+Keyed by system string (e.g., `"x86_64-linux"`). Each system contains
+host definitions as freeform attribute sets.
 
 ```nix
-den.hosts.<system>.<name> = { ... };
+den.hosts.x86_64-linux.myhost = {
+  users.vic = {};
+};
 ```
 
-### Host Options
+### Host options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `name` | str | attr name | Host configuration name |
-| `hostName` | str | `name` | Network hostname |
-| `system` | str | parent key | Platform (e.g., `x86_64-linux`) |
-| `class` | str | guessed | `nixos`, `darwin`, or `systemManager` |
-| `aspect` | str | `name` | Main aspect name |
-| `description` | str | auto | Human-readable description |
-| `users` | attrset | `{}` | User definitions |
-| `instantiate` | function | auto | Builder function |
-| `intoAttr` | str | auto | Flake output attribute |
-| `mainModule` | module | auto | Resolved NixOS/Darwin module |
-| *freeform* | anything | — | Custom attributes |
+| `name` | `str` | attr name | Configuration name |
+| `hostName` | `str` | `name` | Network hostname |
+| `system` | `str` | parent key | Platform (e.g., `x86_64-linux`) |
+| `class` | `str` | auto | `"nixos"` or `"darwin"` based on system |
+| `aspect` | `str` | `name` | Main aspect name for this host |
+| `description` | `str` | auto | `class.hostName@system` |
+| `users` | `attrsOf userType` | `{}` | User accounts on this host |
+| `instantiate` | `raw` | auto | OS builder function |
+| `intoAttr` | `listOf str` | auto | Flake output path |
+| `*` | `den.base.host` options | | Options from base module |
+| `*` |  | | free-form attributes |
 
-### Class Detection
+### `instantiate` defaults
 
-| System suffix | Default class | Default intoAttr |
-|--------------|---------------|------------------|
-| `*-linux` | `nixos` | `nixosConfigurations` |
-| `*-darwin` | `darwin` | `darwinConfigurations` |
-
-### Instantiation
-
-| Class | Default function |
-|-------|-----------------|
+| Class | Default |
+|-------|---------|
 | `nixos` | `inputs.nixpkgs.lib.nixosSystem` |
 | `darwin` | `inputs.darwin.lib.darwinSystem` |
 | `systemManager` | `inputs.system-manager.lib.makeSystemConfig` |
 
-## User Options
+### `intoAttr` defaults
 
-```nix
-den.hosts.<system>.<host>.users.<name> = { ... };
-```
+| Class | Default |
+|-------|---------|
+| `nixos` | `[ "nixosConfigurations" name ]` |
+| `darwin` | `[ "darwinConfigurations" name ]` |
+| `systemManager` | `[ "systemConfigs" name ]` |
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `name` | str | attr name | User configuration name |
-| `userName` | str | `name` | OS account name |
-| `class` | str | `homeManager` | Home management class |
-| `aspect` | str | `name` | Main aspect name |
-| *freeform* | anything | — | Custom attributes |
+## `den.hosts.<sys>.<host>.users`
 
-## den.homes
+Type: `attrsOf userType`
 
-```nix
-den.homes.<system>.<name> = { ... };
-```
-
-### Home Options
+### User options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `name` | str | attr name | Home configuration name |
-| `userName` | str | `name` | User account name |
-| `system` | str | parent key | Platform system |
-| `class` | str | `homeManager` | Home management class |
-| `aspect` | str | `name` | Main aspect name |
-| `description` | str | auto | Human-readable description |
-| `pkgs` | attrset | auto | Nixpkgs instance |
-| `instantiate` | function | auto | Builder function |
-| `intoAttr` | str | `homeConfigurations` | Flake output attribute |
-| `mainModule` | module | auto | Resolved HM module |
-| *freeform* | anything | — | Custom attributes |
+| `name` | `str` | attr name | User configuration name |
+| `userName` | `str` | `name` | System account name |
+| `classes` | `listOf str` | `[ "homeManager" ]` | Home management classes |
+| `aspect` | `str` | `name` | Main aspect name |
+| `*` | `den.base.user` options | | Options from base module |
+| `*` |  | | free-form attributes |
 
-## den.base
+Freeform: additional attributes pass through to the user module.
 
-Base modules applied to all entities of a type:
+## `den.homes`
+
+Type: `attrsOf homeSystemType`
+
+Standalone home-manager configurations, keyed by system string.
 
 ```nix
-den.base.conf = { ... }: { };  # hosts + users + homes
-den.base.host = { host, ... }: { };
-den.base.user = { user, ... }: { };
-den.base.home = { home, ... }: { };
+den.homes.x86_64-linux.vic = {};
 ```
 
-`den.base.conf` is automatically imported by host, user, and home.
+### Home options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `name` | `str` | attr name | Home configuration name |
+| `userName` | `str` | `name` | User account name |
+| `system` | `str` | parent key | Platform system |
+| `class` | `str` | `"homeManager"` | Home management class |
+| `aspect` | `str` | `name` | Main aspect name |
+| `description` | `str` | auto | `home.userName@system` |
+| `pkgs` | `raw` | `inputs.nixpkgs.legacyPackages.$sys` | Nixpkgs instance |
+| `instantiate` | `raw` | `inputs.home-manager.lib.homeManagerConfiguration` | Builder |
+| `intoAttr` | `listOf str` | `[ "homeConfigurations" name ]` | Output path |
+| `*` | `den.base.home` options | | Options from base module |
+| `*` |  | | free-form attributes |
+
+## `den.base`
+
+Base modules merged into all hosts, users, or homes.
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `den.base.conf` | `deferredModule` | Applied to host, user, and home |
+| `den.base.host` | `deferredModule` | Applied to all hosts (imports `conf`) |
+| `den.base.user` | `deferredModule` | Applied to all users (imports `conf`) |
+| `den.base.home` | `deferredModule` | Applied to all homes (imports `conf`) |
+
+```nix
+den.base.conf = { lib, ... }: {
+  # shared across all host/user/home declarations
+};
+den.base.host = { ... }: {
+  # host-specific base config
+};
+```

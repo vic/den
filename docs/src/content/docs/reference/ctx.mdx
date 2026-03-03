@@ -1,209 +1,142 @@
 ---
-title: den.ctx Reference
-description: Context type definitions and their built-in implementations.
+title: den.ctx
+description: Context types, into transformations, and provides.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside title="Use the Source, Luke" icon="github">[`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix) · [`modules/aspects/defaults.nix`](https://github.com/vic/den/blob/main/modules/aspects/defaults.nix) · Tests: [`context/`](https://github.com/vic/den/tree/main/templates/ci/modules/features/context) · [`host-propagation.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/host-propagation.nix)</Aside>
+<Aside title="Source" icon="github">
+[`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) --
+[`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix)
+</Aside>
 
-## Context Type Schema
+## `den.ctx`
 
-Each `den.ctx.<name>` is an [aspect submodule](/explanation/aspects/) extended
-with context transformations. It inherits all options from `flake-aspects`'s
-`aspect`-type and adds `into`, and a couple of conventions:
+Type: `lazyAttrsOf ctxType`
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `description` | `str` | Human-readable description |
-| `provides.${name}` | `ctx → aspect` | Self-named provider: locates the aspect for this context |
-| `provides.${target}` | `ctx → aspect` | Cross-provider: source's contribution to target contexts |
-| `into` | `attrset of (ctx → list)` | Transformations to other contexts |
-| `includes` | `list of aspect` | Parametric aspects activated for this context |
+A map of context type names to context type definitions. Each context type
+defines how data flows through the evaluation pipeline.
 
-Context types are also functors — callable as functions:
+## Context Type Options
 
-```nix
-aspect = den.ctx.host { host = den.hosts.x86_64-linux.igloo; };
-```
+Each `den.ctx.<name>` has:
 
-## ctxApply (internal)
+### `description`
 
-When a context type is applied, `ctxApply` walks the full `into` graph
-and deduplicates includes using a seen-set:
+Type: `str`
 
-```nix
-ctxApply = ctxName: _self: ctx:
-  let
-    pairs = collectPairs null den.ctx.${ctxName} ctx;
-  in
-  { includes = dedupIncludes pairs; };
-```
+Human-readable description of this context type.
 
-**collectPairs** recursively walks `into` transformations, producing
-`(source, ctxDef, ctx)` triples for every reachable context type.
-The `source` tracks which context type produced the transformation.
+### `_` (alias: `provides`)
 
-**dedupIncludes** processes triples with a seen-set keyed by context name:
+Type: `attrsOf providerType`
 
-- **First visit**: `fixedTo ctx (cleanCtx ctxDef)` — dispatches owned, static, and parametric includes — plus self-provider and cross-provider
-- **Subsequent visits**: `atLeast (cleanCtx ctxDef) ctx` — dispatches only parametric includes — plus self-provider and cross-provider
-
-For each triple, three providers are called:
-1. **Self-provider** `ctxDef.provides.${ctxDef.name}` — the target's own aspect lookup
-2. **Cross-provider** `source.provides.${ctxDef.name}` — the source's contribution to this target (if defined)
-
-## Transformation Types
-
-All `into` transformations have the type `source → [ target ]`:
-
-- **Fan-out**: `{ host }: map (u: { inherit host user; }) users` — one host produces N contexts
-- **Conditional**: `{ host }: lib.optional (test host) { inherit host; }` — zero or one
-- **Pass-through**: `lib.singleton` — forward the same data as-is
-
-An empty list means the target context is not created. This enables
-conditional activation like HM detection without any explicit `if` logic
-in the pipeline.
-
-## Contexts as Cutting-Points
-
-Context types have their own owned configs and `includes`, making them
-aspect-like cutting-points in the pipeline:
+Maps context names to provider functions. When this context is processed,
+each provider is called with the current context data and returns aspect fragments.
 
 ```nix
-den.ctx.hm-host.nixos.home-manager.useGlobalPkgs = true;
-den.ctx.hm-host.includes = [
-  ({ host, ... }: { nixos.home-manager.backupFileExtension = "bak"; })
-];
+den.ctx.host._.host = { host }:
+  parametric.fixedTo { inherit host; } den.aspects.${host.aspect};
 ```
 
+### `into`
 
-## Extending Context Flow
+Type: `lazyAttrsOf (functionTo (listOf raw))`
 
-Add transformations to existing context types from any module:
+Maps other context type names to transformation functions. Each function
+takes the current context data and returns a list of new context values.
 
 ```nix
-den.ctx.hm-host.into.foo = { host }: [ { foo = host.name; } ];
-den.ctx.foo._.foo = { foo }: { funny.names = [ foo ]; };
+den.ctx.host.into.user = { host }:
+  map (user: { inherit host user; }) (lib.attrValues host.users);
 ```
 
-The module system merges these definitions. You can also override a
-host's `mainModule` to use a completely custom context flow.
+### `includes`
+
+Aspect includes attached to this context type. Used by batteries to inject
+behavior at specific pipeline stages.
+
+### `modules`
+
+Additional modules merged into the resolved output.
 
 ## Built-in Context Types
 
-### den.ctx.host
+### `den.ctx.host`
 
-| Field | Value |
-|-------|-------|
-| `description` | OS |
-| `provides.host` | `{ host }:` fixedTo host aspect |
-| `provides.user` | `{ host, user }:` host's contribution to user contexts (cross-provider) |
-| `into.default` | `lib.singleton` (pass-through) |
-| `into.user` | Enumerate `host.users` |
-| `into.hm-host` | Detect HM support (from `hm-os.nix`) |
-| `into.maid-host` | Detect nix-maid support (from `maid-os.nix`) |
-| `into.hjem-host` | Detect hjem support (from `hjem-os.nix`) |
+Context data: `{ host }`
 
-### den.ctx.user
+Produced for each `den.hosts.<system>.<name>` entry.
 
-| Field | Value |
-|-------|-------|
-| `description` | OS user |
-| `provides.user` | `{ host, user }:` fixedTo user aspect |
-| `into.default` | `lib.singleton` (pass-through) |
+Providers:
+- `_.host` -- `fixedTo { host }` on the host's aspect.
+- `_.user` -- `atLeast` on the host's aspect with `{ host, user }`.
 
-### den.ctx.default
+Transitions:
+- `into.default` -- identity (for default aspect).
+- `into.user` -- one `{ host, user }` per `host.users` entry.
+- `into.hm-host` -- (from `hm-os.nix`) if HM enabled and has HM users.
+- `into.wsl-host` -- (from `wsl.nix`) if WSL enabled on NixOS host.
+- `into.hjem-host` -- (from `hjem-os.nix`) if hjem enabled.
+- `into.maid-host` -- (from `maid-os.nix`) if nix-maid enabled.
 
-| Field | Value |
-|-------|-------|
-| `provides.default` | `_: { }` (empty — just a dispatcher) |
+### `den.ctx.user`
 
-Aliased as `den.default` via `lib.mkAliasOptionModule`.
-Writing `den.default.foo` is identical to `den.ctx.default.foo`.
+Context data: `{ host, user }`
 
-Host/user/home context types transforms into `default`, so `den.default.includes`
-functions run at each of their pipeline stages. However, owned and static configs
-are **automatically deduplicated** — only the first visit gets them.
-Parametric functions still run at every stage; use `take.exactly` to
-restrict matching if needed.
+Providers:
+- `_.user` -- `fixedTo { host, user }` on the user's aspect.
 
-### den.ctx.home
+Transitions:
+- `into.default` -- identity.
 
-| Field | Value |
-|-------|-------|
-| `description` | Standalone Home-Manager config |
-| `provides.home` | `{ home }:` fixedTo home aspect |
-| `into.default` | `lib.singleton` |
+### `den.ctx.home`
 
-### den.ctx.hm-host
+Context data: `{ home }`
 
-| Field | Value |
-|-------|-------|
-| `description` | Host with HM-supported OS and HM users |
-| `provides.hm-host` | `{ host }:` imports HM NixOS/Darwin module |
-| `into.hm-user` | Enumerate HM-class users |
+Produced for each `den.homes.<system>.<name>` entry.
 
-**Detection criteria** (all must be true):
-1. Host class is `nixos` or `darwin`
-2. At least one user has `"homeManager"` in their `classes`
-3. `inputs.home-manager` exists, or host has a custom `hm-module` attribute
+Providers:
+- `_.home` -- `fixedTo { home }` on the home's aspect.
 
-If detection fails, the HM pipeline is skipped entirely.
+### `den.ctx.hm-host`
 
-### den.ctx.hm-user
+Context data: `{ host }`
 
-| Field | Value |
-|-------|-------|
-| `description` | Internal — forwards HM class to host |
-| `provides.hm-user` | `{ host, user }:` forward homeManager into host |
+Providers:
+- `provides.hm-host` -- imports HM OS module.
 
-### den.ctx.hm-internal-user (internal)
+Transitions:
+- `into.hm-user` -- per HM-class user.
 
-An internal context type used by `hm-user`. It combines:
-- The user context (`den.ctx.user { host, user }`)
-- Owned configs from the host aspect
-- Static includes from the host aspect
-- Parametric includes from the host aspect matching `{ host, user }`
+### `den.ctx.hm-user`
 
-This ensures that when the `homeManager` class is forwarded into
-`home-manager.users.<name>`, it receives contributions from both
-the user's aspect and the host's aspect.
+Context data: `{ host, user }`
 
-### den.ctx.maid-host
+Providers:
+- `_.hm-user` -- forwards `homeManager` class to `home-manager.users.<userName>`.
 
-| Field | Value |
-|-------|-------|
-| `description` | Host with nix-maid users |
-| `provides.maid-host` | `{ host }:` imports nix-maid NixOS module |
-| `into.maid-user` | Enumerate maid-class users |
+### `den.ctx.wsl-host`
 
-**Detection criteria** (all must be true):
-1. Host class is `nixos` or `darwin`
-2. At least one user has `"maid"` in their `classes`
-3. `inputs.nix-maid` exists, or host has a custom `maid-module` attribute
+Context data: `{ host }`
 
-### den.ctx.maid-user
+Providers:
+- `provides.wsl-host` -- imports WSL module, creates `wsl` class forward.
 
-| Field | Value |
-|-------|-------|
-| `provides.maid-user` | `{ host, user }:` forward maid class to `users.users.<name>.maid` |
+## Custom Context Types
 
-### den.ctx.hjem-host
+Define new contexts to extend the pipeline:
 
-| Field | Value |
-|-------|-------|
-| `description` | Host with hjem users |
-| `provides.hjem-host` | `{ host }:` imports hjem NixOS module |
-| `into.hjem-user` | Enumerate hjem-class users |
+```nix
+{
+  den.ctx.gpu = {
+    description = "GPU-enabled host";
+    _.gpu = { host }: {
+      nixos.hardware.nvidia.enable = true;
+    };
+  };
 
-**Detection criteria** (all must be true):
-1. Host class is `nixos` or `darwin`
-2. At least one user has `"hjem"` in their `classes`
-3. `inputs.hjem` exists, or host has a custom `hjem-module` attribute
-
-### den.ctx.hjem-user
-
-| Field | Value |
-|-------|-------|
-| `provides.hjem-user` | `{ host, user }:` forward hjem class to `hjem.users.<name>` |
+  den.ctx.host.into.gpu = { host }:
+    lib.optional (host ? gpu) { inherit host; };
+}
+```

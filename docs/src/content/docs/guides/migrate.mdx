@@ -1,0 +1,119 @@
+---
+title: Migrate to Den
+description: Incremental migration from existing NixOS/Darwin setups.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Strategy
+
+Migration to Den is incremental. You do not need to rewrite everything at once.
+
+<Steps>
+
+1. Add Den as Input
+
+    Add Den to your flake and import the flake module:
+
+    ```nix
+    {
+      inputs.den.url = "github:vic/den";
+      inputs.import-tree.url = "github:vic/import-tree";
+      inputs.flake-aspects.url = "github:vic/flake-aspects";
+
+      outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; }
+        (inputs.import-tree ./modules);
+    }
+    ```
+
+    ```nix
+    # modules/den.nix
+    { inputs, ... }: {
+      imports = [ inputs.den.flakeModule ];
+    }
+    ```
+
+2. Declare Hosts
+
+    Move your host declarations into `den.hosts`:
+
+    ```nix
+    {
+      den.hosts.x86_64-linux.laptop.users.alice = { };
+    }
+    ```
+
+3. Import Existing Modules
+
+    Use `den.provides.import-tree` to load your existing non-dendritic modules:
+
+    ```nix
+    # modules/legacy.nix
+    { den, ... }: {
+      den.ctx.host.includes = [
+        (den.provides.import-tree._.host ./hosts)
+      ];
+      den.ctx.user.includes = [
+        (den.provides.import-tree._.user ./users)
+      ];
+    }
+    ```
+
+    With this directory structure:
+
+    ```
+    hosts/
+      laptop/
+        _nixos/
+          hardware.nix
+          networking.nix
+        _homeManager/
+          shell.nix
+    users/
+      alice/
+        _homeManager/
+          git.nix
+        _nixos/
+          groups.nix
+    ```
+
+    Files under `_nixos/` are imported as NixOS modules, `_homeManager/` as
+    Home Manager modules, etc. This requires `inputs.import-tree`.
+
+4. Extract Aspects
+
+    Gradually extract features from your legacy modules into Den aspects:
+
+    ```nix
+    # modules/dev-tools.nix
+    {
+      den.aspects.dev-tools = {
+        nixos = { pkgs, ... }: {
+          environment.systemPackages = with pkgs; [ git vim tmux ];
+        };
+        homeManager.programs.git.enable = true;
+      };
+    }
+    ```
+
+    ```nix
+    # modules/laptop.nix
+    { den, ... }: {
+      den.aspects.laptop.includes = [ den.aspects.dev-tools ];
+    }
+    ```
+
+5. Remove Legacy
+
+    As aspects replace legacy modules, remove the corresponding files from
+    `hosts/` and `users/`. Eventually remove `den.provides.import-tree` usage.
+
+</Steps>
+
+## Tips
+
+- **Start with one host.** Migrate a single machine first to learn the pattern.
+- **Keep legacy working.** `import-tree` loads your existing files alongside
+  Den aspects -- they coexist without conflicts.
+- **Use batteries.** Replace manual user/shell/HM setup with `den.provides.*`.
+- **Test with VM.** Use `nix run .#vm` to validate changes before applying to hardware.

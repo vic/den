@@ -1,114 +1,114 @@
 ---
 title: Share with Namespaces
-description: Share and consume aspect libraries across repositories.
+description: Publish and consume aspect libraries across flakes.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside title="Use the Source, Luke" icon="github">[`nix/namespace.nix`](https://github.com/vic/den/blob/main/nix/namespace.nix)</Aside>
+<Aside title="Source" icon="github">
+[`nix/namespace.nix`](https://github.com/vic/den/blob/main/nix/namespace.nix)
+</Aside>
 
-## What Are Namespaces?
+## What are Namespaces
 
-Namespaces let you organize aspects into named collections that can be
-shared across flakes and consumed by others.
+A **namespace** creates a scoped aspect library under `den.ful.<name>`.
+Namespaces can be:
+- **Local**: defined in your flake, consumed internally.
+- **Exported**: exposed via `flake.denful.<name>` for other flakes to consume.
+- **Imported**: merged from upstream flakes into your local `den.ful`.
 
-This is unlike your `den.aspects.<name>` namespace which is private,
-because you wont likely want to share your user/host configurations.
-
-Namespaces are for re-usable aspects you are willing to share with others.
-
-## Define a Local Namespace
+## Creating a Namespace
 
 ```nix
-{ inputs, ... }: {
-  imports = [ (inputs.den.namespace "ns" false) ];
-  ns.tools.nixos.programs.vim.enable = true;
+# modules/namespace.nix
+{ inputs, den, ... }: {
+  # Create "my" namespace (not exported to flake outputs)
+  imports = [ (inputs.den.namespace "my" false) ];
+
+  # Or create and export "eg" namespace
+  imports = [ (inputs.den.namespace "eg" true) ];
 }
 ```
 
-The first argument is the aspect namespace name.
-It will be provided as module argument: `{ lib, ns, ... }`
-so you can access aspects from the namespace.
+This creates:
+- `den.ful.eg` -- the namespace attrset (aspects type).
+- `eg` -- a module argument alias to `den.ful.eg`.
+- `flake.denful.eg` -- flake output (if exported).
 
-The second argument controls output:
-- `false` — local only, not exposed as flake output
-- `true` — exposed at `flake.denful.ns`
-- A list of sources — merge from external inputs
+## Populating a Namespace
 
-## Consume Remote Namespaces
-
-Import aspects from another flake's `flake.denful.provider` output:
+Define aspects under the namespace using any module:
 
 ```nix
-{ inputs, ... }: {
-  imports = [
-    (inputs.den.namespace "provider" [ true inputs.other-flake ])
+# modules/aspects/vim.nix
+{
+  eg.vim = {
+    homeManager.programs.vim.enable = true;
+  };
+}
+```
+
+```nix
+# modules/aspects/desktop.nix
+{ eg, ... }: {
+  eg.desktop = {
+    includes = [ eg.vim ];
+    nixos.services.xserver.enable = true;
+  };
+}
+```
+
+## Using Namespaced Aspects
+
+Reference them by their namespace:
+
+```nix
+{ eg, ... }: {
+  den.aspects.laptop.includes = [
+    eg.desktop
+    eg.vim
   ];
-
-  den.aspects.igloo.includes = [ provider.tools._.editors ];
 }
 ```
 
-Multiple sources are merged by the module system.
+## Importing from Upstream
 
-## Nested Provides in Namespaces
-
-Namespaces support the full aspect tree with `provides`:
+Merge aspects from other flakes:
 
 ```nix
-ns.root.provides.branch.provides.leaf.nixos.truth = true;
-# access via:
-ns.root._.branch._.leaf
+# modules/namespace.nix
+{ inputs, ... }: {
+  # Import "shared" namespace from upstream, merging with local definitions
+  imports = [ (inputs.den.namespace "shared" [ inputs.team-config ]) ];
+}
 ```
 
-## Expose as Flake Output
+The namespace function accepts:
+- A **boolean** (`true`/`false`) for local/exported namespaces.
+- A **list of sources** to merge from upstream flakes.
+  Each source's `flake.denful.<name>` is merged into `den.ful.<name>`.
 
-When the second argument is `true` (or a list containing `true`),
-the namespace appears at `config.flake.denful.<name>`:
+## Enabling Angle Brackets
 
-```nix
-imports = [ (inputs.den.namespace "ns" true) ];
-ns.foo.nixos.truth = true;
-# available at config.flake.denful.ns
-```
-
-Other flakes can then consume it:
+When using namespaces, enable angle bracket syntax for terser references:
 
 ```nix
-inputs.your-flake.denful.ns
-```
-
-## Merge Multiple Sources
-
-Combine local, remote, and output in one namespace:
-
-```nix
-imports = [
-  (inputs.den.namespace "ns" [
-    inputs.sourceA
-    inputs.sourceB
-    true  # also expose as output
-  ])
-];
-
-ns.gear.nixos.data = [ "local" ];
-# merges with sourceA and sourceB's denful.ns.gear
-```
-
-## Use with Angle Brackets
-
-When `__findFile` is in scope, namespace aspects are accessible via
-angle brackets:
-
-```nix
-{ __findFile, ... }: {
+{ den, ... }: {
   _module.args.__findFile = den.lib.__findFile;
-
-  den.aspects.igloo.includes = [ <ns/tools> ];
 }
 ```
 
-## Real-World: denful
+Then reference deep aspects with `<namespace/path>`:
 
-[denful](https://github.com/vic/denful) is a (WIP) community aspect distribution
-built on Den namespaces — a lazyvim-like approach to Nix configurations.
+```nix
+den.aspects.laptop.includes = [ <eg/desktop> ];
+```
+
+## Architecture
+
+```mermaid
+flowchart LR
+  upstream["upstream flake"] -->|"flake.denful.shared"| merge["den.ful.shared"]
+  local["local modules"] -->|"shared.vim = ..."| merge
+  merge --> consumer["den.aspects.*.includes"]
+```

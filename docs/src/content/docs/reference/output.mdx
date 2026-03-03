@@ -1,37 +1,30 @@
 ---
-title: Configuration Output
-description: How Den builds and outputs final NixOS, Darwin, and Home-Manager configurations.
+title: Output
+description: How Den builds flake outputs from host and home declarations.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside title="Use the Source, Luke" icon="github">[`modules/config.nix`](https://github.com/vic/den/blob/main/modules/config.nix) · [`modules/output.nix`](https://github.com/vic/den/blob/main/modules/output.nix) · Tests: [`default-includes.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/default-includes.nix) · [`home-manager/`](https://github.com/vic/den/tree/main/templates/ci/modules/features/home-manager)</Aside>
+<Aside title="Source" icon="github">
+[`modules/config.nix`](https://github.com/vic/den/blob/main/modules/config.nix) --
+[`modules/output.nix`](https://github.com/vic/den/blob/main/modules/output.nix)
+</Aside>
 
-## Overview
+## Build pipeline
 
-Den transforms `den.hosts` and `den.homes` declarations into standard Nix
-configurations placed on `flake.nixosConfigurations`, `flake.darwinConfigurations`,
-and `flake.homeConfigurations`.
+Den converts `den.hosts` and `den.homes` declarations into flake outputs
+through a unified pipeline:
 
 ```mermaid
 graph LR
-  H["den.hosts"] -->|"osConfiguration"| NC["flake.nixosConfigurations"]
-  H -->|"osConfiguration"| DC["flake.darwinConfigurations"]
-  HM["den.homes"] -->|"homeConfiguration"| HC["flake.homeConfigurations"]
+  H[den.hosts] --> B[build]
+  M[den.homes] --> B
+  B --> F[flake.*Configurations]
 ```
 
-## The Build Process
+### Host instantiation
 
-For each entry in `den.hosts` and `den.homes`, Den:
-
-1. **Resolves the main module** — applies the context pipeline to produce a
-   single Nix module containing all class-specific configurations
-2. **Calls the instantiate function** — passes the module to the platform builder
-3. **Places the result** — puts it at `flake.<intoAttr>`
-
-## OS Configurations
-
-Each host in `den.hosts.<system>.<name>` builds via:
+For each host in `den.hosts`, Den calls:
 
 ```nix
 host.instantiate {
@@ -42,12 +35,16 @@ host.instantiate {
 }
 ```
 
-The `mainModule` is the result of applying `den.ctx.host { host }` and
-resolving the aspect tree for the host's class.
+`host.mainModule` is internally computed by resolving the host's aspect
+with its context (`den.ctx.host`), collecting all class-specific config
+and dispatched includes.
 
-## Home Configurations
+The result is placed at `flake.<intoAttr>` -- by default
+`flake.nixosConfigurations.<name>` or `flake.darwinConfigurations.<name>`.
 
-Each home in `den.homes.<system>.<name>` builds via:
+### Home instantiation
+
+For each home in `den.homes`, Den calls:
 
 ```nix
 home.instantiate {
@@ -56,53 +53,34 @@ home.instantiate {
 }
 ```
 
-Where `home.pkgs` defaults to `inputs.nixpkgs.legacyPackages.<system>`.
+The result lands at `flake.homeConfigurations.<name>` by default.
 
-## Output Placement
+## `output.nix` -- flake-parts compatibility
 
-Results are folded into `flake` by `intoAttr`:
+When `inputs.flake-parts` is absent, Den defines its own `options.flake`
+option (adapted from flake-parts, MIT licensed) so that output generation
+works identically with or without flake-parts.
 
-| Class | Default `intoAttr` |
-|-------|-------------------|
-| `nixos` | `nixosConfigurations.<name>` |
-| `darwin` | `darwinConfigurations.<name>` |
-| `systemManager` | `systemConfigs.<name>` |
-| `homeManager` | `homeConfigurations.<name>` |
+This means Den can produce `nixosConfigurations`, `darwinConfigurations`,
+`homeConfigurations`, and any custom output attribute regardless of
+whether flake-parts is loaded.
 
-Override `intoAttr` to place configs elsewhere:
+## Custom output paths
+
+Override `intoAttr` on any host or home to place outputs at a custom path:
 
 ```nix
-den.homes.x86_64-linux.tux = {
-  intoAttr = [  "homeConfigurations" "tux@igloo" ];
+den.hosts.x86_64-linux.myhost = {
+  intoAttr = [ "nixosConfigurations" "custom-name" ];
 };
 ```
 
-## Main Module Resolution
+## Custom instantiation
 
-The bridge between Den's schema and final modules is the `mainModule`,
-computed internally as:
+Override `instantiate` to use a different builder or add `specialArgs`:
 
-```mermaid
-graph TD
-  Entity["host / home definition"]
-  Entity -->|"ctx.host / ctx.home"| Intent["Apply context pipeline"]
-  Intent -->|"aspect.resolve { class }"| Module["Obtain Nix module"]
-  Module --> Instantiate["instantiate configuration"]
-  Instantiate --> Output["set value into flake.<intoAttr>"]
+```nix
+den.hosts.x86_64-linux.myhost = {
+  instantiate = inputs.nixos-unstable.lib.nixosSystem;
+};
 ```
-
-The context pipeline collects contributions from:
-- The entity's own aspect (host aspect or home aspect)
-- User aspects (for hosts with users)
-- `den.default` includes
-- Context-specific includes (`den.ctx.*.includes`)
-- Batteries and namespace aspects
-
-All contributions for the matching class are merged into one module.
-
-## Without Flake-Parts
-
-When `inputs.flake-parts` is not present, Den provides a minimal
-`options.flake` definition so that configuration outputs have a place
-to be collected. This allows Den to work standalone or with any
-module evaluation system.

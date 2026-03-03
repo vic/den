@@ -126,5 +126,5 @@ Den places configurations under the `flake` attribute following the flake output
 
 ## Next Steps
 
-- Read [Use Without Flakes](/guides/no-flakes/) for more details on flake-free usage
+- Read [Core Principles](/explanation/core-principles/) to understand how Den works without flakes
 - Consider the [Minimal template](/tutorials/minimal/) if you want flakes but not flake-parts

@@ -1,208 +1,99 @@
 ---
-title: OS Context Pipeline
-description: The complete data flow from host declaration to final configuration.
+title: Context Pipeline
+description: How host/user/home declarations transform into NixOS/Darwin/HM configurations.
 ---
 
+import { Steps, Aside } from '@astrojs/starlight/components';
 
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside title="Use the Source, Luke" icon="github">
-[`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) · [`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix) · HM: [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix) · [`hm-integration.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-integration.nix)
+<Aside title="Source" icon="github">
+[`modules/context/os.nix`](https://github.com/vic/den/blob/main/modules/context/os.nix) --
+[`modules/context/types.nix`](https://github.com/vic/den/blob/main/modules/context/types.nix) --
+[`modules/config.nix`](https://github.com/vic/den/blob/main/modules/config.nix)
 </Aside>
 
-## The NixOS/nix-Darwin Pipeline
+## Pipeline Overview
 
-When Den evaluates a host configuration, data flows through a pipeline
-of context transformations. Here is the complete picture:
-
-```mermaid
-graph TD
-  Host["den.hosts.x86_64-linux.igloo"]
-  Host -->|"initial context"| CtxHost["ctx.host { host }"]
-
-  CtxHost -->|"_.host"| HA["den.aspects.igloo<br/>(fixedTo { host })"]
-  CtxHost -->|"into.default"| CtxDef1["<b>ctx.default</b> { host }"]
-  CtxHost -->|"into.user<br/>(per user)"| CtxUser["ctx.user { host, user }"]
-  CtxHost -->|"into.hm-host<br/>(if HM detected)"| CtxHM["ctx.hm-host { host }"]
-
-  CtxUser -->|"_.user (self)"| UA["den.aspects.tux<br/>(fixedTo { host, user })"]
-  CtxHost -->|"_.user (cross)"| XP["host aspect includes<br/>matching { host, user }"]
-  CtxUser -->|"into.default"| CtxDef2["<b>ctx.default</b> { host, user }"]
-
-  CtxHM -->|"_.hm-host"| HMmod["Import HM module"]
-  CtxHM -->|"into.hm-user<br/>(per HM user)"| CtxHMU["ctx.hm-user { host, user }"]
-
-  CtxHMU -->|"forward homeManager<br/>into host"| FW["home-manager.users.tux"]
-
-  CtxDef1 -->|"includes"| DI1["<b>den.default.{class}</b> ()<br/>den.default.includes<br/>(host-context funcs)"]
-  CtxDef2 -->|"includes"| DI2["den.default.includes<br/>(user-context funcs)"]
-```
-
-## Stage by Stage
-
-### 1. Host Entry
-
-Den reads `den.hosts.x86_64-linux.igloo` and applies the initial context `den.ctx.host`:
-
-```nix
-den.ctx.host { host = den.hosts.x86_64-linux.igloo; }
-```
-
-### 2. Host Aspect Resolution
-
-`den.ctx.host.provides.host` (aliased as `_.host`) locates `den.aspects.igloo`
-and fixes it to the host context. All owned configs and static includes from the
-host aspect are collected.
-
-### 3. Default configs (host-level)
-
-`den.ctx.host.into.default` produces `{ host }` for `den.ctx.default`, which
-activates `den.default.includes` functions matching `{ host, ... }`.
-
-### 4. User Enumeration
-
-`den.ctx.host.into.user` maps over `host.users`, producing one
-`den.ctx.user { host, user }` per user.
-
-### 5. User Aspect Resolution
-
-Two providers contribute to user context:
-- `den.ctx.user.provides.user` (self-provider) — locates the user's own aspect (`den.aspects.tux`)
-- `den.ctx.host.provides.user` (cross-provider) — the host's contribution, dispatching host aspect includes matching `{ host, user }`
-
-### 6. Default configs (user-level)
-
-`ctx.user.into.default` activates `den.default.includes` again, this time
-with `{ host, user }` — functions needing user context now match.
-Because `den.ctx.default` was already visited in stage 3, only parametric
-includes are dispatched (owned and static configs are **deduplicated**).
-
-### 7. Home-Manager Detection
-
-`den.ctx.host.into.hm-host` checks if the host has users with `"homeManager"`
-in their `classes` list and a supported OS. If so, it activates `den.ctx.hm-host`.
-
-### 8. HM Module Import (host-level)
-
-`den.ctx.hm-host.provides.hm-host` imports the Home-Manager NixOS/Darwin module.
-
-### 9. HM User config collection (user-level)
-
-For each HM user, `ctx.hm-user` uses `den._.forward` to take
-`homeManager` class configs and insert them into
-`home-manager.users.<name>` on the host.
-
-## Home-Manager Detection Criteria
-
-`ctx.host.into.hm-host` does not always activate. It checks three conditions
-(see [`hm-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/home-manager/hm-os.nix)):
-
-1. **OS class is supported** — the host's class is `nixos` or `darwin`
-2. **HM users exist** — at least one user has `"homeManager"` in their `classes`
-3. **HM module available** — `inputs.home-manager` exists, or the host has a custom `hm-module`
-
-All three must be true. Hosts without users, or with only non-HM users, skip the entire HM pipeline.
-
-## Automatic Deduplication
-
-`den.default` (alias for `den.ctx.default`) is reached at **`{host}`**, **`{host, user}`**,
-and **`{home}`** context stages — once for the host context and once per user.
-
-Den's `ctxApply` automatically deduplicates includes using a seen-set:
-
-- **First visit** to a context type: includes **owned + static + parametric** configs via `fixedTo`
-- **Subsequent visits**: includes only **parametric** configs via `atLeast`
-
-Additionally, for each context, two providers are called:
-- **Self-provider** (`provides.${name}`) — the target's own aspect lookup
-- **Cross-provider** (`source.provides.${target}`) — the source's contribution (if defined)
+When Den evaluates a host, it walks a pipeline of context transformations:
 
 ```mermaid
-graph TD
-  H["ctx.host { host }"] -->|"into.default (1st visit)"| D1["ctx.default { host }<br/><b>fixedTo</b>: owned + statics + parametric<br/>+ self-provider + cross-provider"]
-  H -->|"into.user"| U["ctx.user { host, user }"]
-  U -->|"into.default (2nd visit)"| D2["ctx.default { host, user }<br/><b>atLeast</b>: parametric only<br/>+ self-provider + cross-provider"]
+flowchart TD
+  start["den.hosts.x86_64-linux.laptop"] --> host["den.ctx.host {host}"]
+  host -->|"_.host"| owned["Owned config: fixedTo {host} aspects.laptop"]
+  host -->|"_.user"| userctx["atLeast aspects.laptop {host, user}"]
+  host -->|"into.user"| user["den.ctx.user {host, user} (per user)"]
+  user -->|"_.user"| userown["fixedTo {host,user} aspects.alice"]
+  host -->|"into.hm-host"| hmhost["den.ctx.hm-host {host}"]
+  hmhost -->|"import HM module"| hmmod["home-manager OS module"]
+  hmhost -->|"into.hm-user"| hmuser["den.ctx.hm-user {host, user}"]
+  hmuser -->|"forward homeManager class"| fwd["home-manager.users.alice"]
 ```
 
-This means:
+<Steps>
+1. Host Context
 
-- **Owned** configs and **static** includes from `den.default` appear **exactly once**
-- **Parametric** functions in `den.default.includes` still run at every stage
-  (each may match different context shapes)
-- Options of `types.package` or `types.listOf` no longer get duplicate entries
+	For each entry in `den.hosts.<system>.<name>`, Den creates a `{host}` context.
+	The host context type (`den.ctx.host`) contributes:
 
-<Aside>
-For parametric includes in `den.default.includes`, use `den.lib.take.exactly`
-to restrict which context stages a function matches:
+	- `_.host` -- Applies the host's own aspect with `fixedTo { host }`, making
+	  all owned configs available for the host's class.
+	- `_.user` -- For each user, applies the host's aspect with `atLeast { host, user }`,
+	  activating parametric includes that need both host and user.
 
-```nix
-den.default.includes = [ den.aspects.foo ];
-den.aspects.foo = take.exactly ({ host }: { nixos.x = 1; });
-```
+2. User Context
 
-This function runs only with `{ host }` context, not with `{ host, user }`.
-</Aside>
+	`into.user` maps each `host.users` entry into a `{host, user}` context.
+	The user context type (`den.ctx.user`) contributes:
 
-## Standalone Home-Manager
+	- `_.user` -- Applies the user's own aspect with `fixedTo { host, user }`.
 
-For `den.ctx.home`, the pipeline is shorter:
+3. Derived Contexts
 
-```mermaid
-graph TD
-  Home["den.homes.x86_64-linux.tux"]
-  Home -->|"creates"| CtxHome["ctx.home { home }"]
-  CtxHome -->|"_.home"| HomeA["den.aspects.tux<br/>(fixedTo { home })"]
-  CtxHome -->|"into.default"| CtxDef["ctx.default { home }"]
-```
+	Batteries register additional `into.*` transformations on the host context:
 
-## den.default Is an Alias
+	| Transition | Condition | Produces |
+	|---|---|---|
+	| `into.hm-host` | `host.home-manager.enable && hasHmUsers` | `{host}` hm-host |
+	| `into.hm-user` | Per HM-class user on hm-host | `{host, user}` hm-user |
+	| `into.wsl-host` | `host.class == "nixos" && host.wsl.enable` | `{host}` wsl-host |
+	| `into.hjem-host` | `host.hjem.enable && hasHjemUsers` | `{host}` hjem-host |
+	| `into.hjem-user` | Per hjem-class user | `{host, user}` hjem-user |
+	| `into.maid-host` | `host.nix-maid.enable && hasMaidUsers` | `{host}` maid-host |
+	| `into.maid-user` | Per maid-class user | `{host, user}` maid-user |
 
-`den.default` is an alias for `den.ctx.default`. When you write:
+	Each derived context can contribute its own aspect definitions and import
+	the necessary OS-level modules (e.g., `home-manager.nixosModules.home-manager`).
 
-```nix
-den.default.homeManager.home.stateVersion = "25.11";
-den.default.includes = [ den._.define-user ];
-```
+3. Deduplication
 
-You are actually setting `den.ctx.default.homeManager...` and
-`den.ctx.default.includes`. This means `den.default` is a full
-context type — it has self-named providers, `into`, `includes`, and owned attributes.
+	`dedupIncludes` in `modules/context/types.nix` ensures:
 
-### How den.default Receives Data
+	- **First occurrence** of a context type uses `parametric.fixedTo`, which includes
+	  owned configs + statics + parametric matches.
+	- **Subsequent occurrences** use `parametric.atLeast`, which only includes
+	  parametric matches (owned/statics already applied).
 
-`host`, `user`, and `home` aspects **do not** include `den.default` directly.
-Instead, each context type transforms **into** `default`:
+	This prevents `den.default` configs from being applied twice when the same
+	aspect appears at multiple pipeline stages.
 
-```nix
-den.ctx.host.into.default = lib.singleton;  # passes { host }
-den.ctx.user.into.default = lib.singleton;  # passes { host, user }
-den.ctx.home.into.default = lib.singleton;  # passes { home }
-```
+4. Home Configurations
 
-This means `den.default` is reached through the declarative context
-pipeline, not by direct inclusion. The data flowing into `den.default`
-is whatever the source context provides.
+	Standalone `den.homes` entries go through a separate path:
 
-### Best Practices
+	```mermaid
+	flowchart TD
+	  home["den.homes.x86_64-linux.alice"] --> homectx["den.ctx.home {home}"]
+	  homectx --> resolve["fixedTo {home} aspects.alice"]
+	  resolve --> hmc["homeConfigurations.alice"]
+	```
 
-`den.default` is useful for global settings like `home.stateVersion`.
-However, prefer attaching parametric includes to the appropriate
-context type instead:
+	Home contexts have no host, so functions requiring `{ host }` are not activated.
+	Functions requiring `{ home }` run instead.
 
-| Instead of | Use |
-|-----------|-----|
-| `den.default.includes = [ hostFunc ]` | `den.ctx.host.includes = [ hostFunc ]` |
-| `den.default.includes = [ hmFunc ]` | `den.ctx.hm-host.includes = [ hmFunc ]` |
-| `den.default.nixos.x = 1` | `den.ctx.host.nixos.x = 1` |
+5. Output
 
-## Why This Design?
+	`modules/config.nix` collects all hosts and homes, calls `host.instantiate`
+	(defaults to `lib.nixosSystem`, `darwinSystem`, or `homeManagerConfiguration`
+	depending on class), and places results into `flake.nixosConfigurations`,
+	`flake.darwinConfigurations`, or `flake.homeConfigurations`.
 
-Each context type is **independent** and **composable**. You can:
-
-- Add new context types without modifying existing ones
-- Attach aspects to any stage of the pipeline
-- Create custom transformations for domain-specific needs
-- Override any built-in context behavior
-
-The pipeline is not hardcoded — it's declared through `den.ctx` definitions
-that you can inspect, extend, and customize.
+</Steps>

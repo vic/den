@@ -118,7 +118,7 @@ let
         classes = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           description = "home management nix classes";
-          default = [ "homeManager" ];
+          default = [ "user" ];
         };
         aspect = strOpt "main aspect name" config.name;
       };
