@@ -177,3 +177,32 @@ nix-allowed = { user, ... }: { nix.allowed-users = [ user.userName ]; };
 # included at users who can fix things with nix.
 den.aspects.tux.includes = [ nix-allowed ];
 ```
+
+#### Example: An impermanence class
+
+The following example, creates a forwarding class that is propagated only
+when `environment.persistance` option is available in the host (the impermanence module was imported in host)
+
+One cool thing about these custom classes is that aspects can simply define
+settings at the new class, without having to worry if the options they depend or
+some capability is enabled.
+
+The froward-guard itself is reponsible checking in only one place, instead of having `mkIf` in a lot of places.
+
+```nix
+# Custom `persys` forwards config into nixos.environment.persistance."/nix/persist/system"
+# only if environment.persistance option is present.
+persys = { class, aspect-chain }: den._.forward {
+  each = lib.singleton true;
+  fromClass = _: "persys";
+  intoClass = _: class;
+  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
+  fromAspect = _: lib.head aspect-chain;
+  guard = { options, ... }@osArgs: options ? environment.persistance;
+};
+
+den.hosts.my-laptop.includes = [ persys ];
+
+# becomes nixos.environment.persistance."/nix/persist/system".hideMounts = true;
+den.aspects.my-laptop.persys.hideMounts = true;
+```
