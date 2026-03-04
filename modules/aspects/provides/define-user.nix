@@ -23,7 +23,7 @@ let
     if lib.hasSuffix "darwin" host.system then "/Users/${user.userName}" else "/home/${user.userName}";
 
   userContext =
-    { host, user, ... }:
+    { host, user }:
     {
       nixos.users.users.${user.userName} = {
         name = user.userName;
@@ -41,14 +41,14 @@ let
     };
 
   hmContext =
-    { home, ... }:
+    { home }:
     userContext {
       host.system = home.system;
       user.userName = home.userName;
     };
 in
 {
-  den.provides.define-user = den.lib.parametric {
+  den.provides.define-user = den.lib.parametric.exactly {
     inherit description;
     includes = [
       userContext

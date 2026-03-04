@@ -32,11 +32,11 @@ in
 {
   den.provides.user-shell =
     shell:
-    den.lib.parametric {
+    den.lib.parametric.exactly {
       inherit description;
       includes = [
-        ({ user, ... }: userShell shell user)
-        ({ home, ... }: userShell shell home)
+        ({ host, user }: userShell shell user)
+        ({ home }: userShell shell home)
       ];
     };
 }

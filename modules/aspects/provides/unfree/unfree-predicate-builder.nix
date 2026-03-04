@@ -30,23 +30,25 @@ let
       };
     };
 
-  osAspect = take.exactly (
+  osAspect =
     { host }:
     {
       ${host.class}.imports = [ unfreeModule ];
-    }
-  );
-  userAspect = take.exactly (
-    { host, user }: lib.mkMerge (map (c: { ${c}.imports = [ unfreeModule ]; }) user.classes)
-  );
-  homeAspect = take.exactly (
+    };
+
+  userAspect =
+    { host, user }:
+    lib.optionalAttrs (lib.elem "homeManager" user.classes) {
+      homeManager.imports = [ unfreeModule ];
+    };
+
+  homeAspect =
     { home }:
     {
       ${home.class}.imports = [ unfreeModule ];
-    }
-  );
+    };
 
-  aspect = parametric {
+  aspect = parametric.exactly {
     inherit description;
     includes = [
       osAspect
