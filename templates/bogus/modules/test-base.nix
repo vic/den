@@ -34,6 +34,7 @@ let
       boot.loader.grub.enable = lib.mkForce false;
       fileSystems."/".device = lib.mkForce "/dev/fake";
     };
+    den.base.user.classes = lib.mkDefault [ "homeManager " ];
   };
 
   testModule = {

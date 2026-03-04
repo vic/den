@@ -46,25 +46,27 @@ in
   den.provides.home-manager =
     _:
     throw ''
-       NOTICE: den.provides.home-manager aspect is not used anymore.
-       See https://den.oeiuwq.com/guides/home-manager/
+      NOTICE: den.provides.home-manager aspect is not used anymore.
+      See https://den.oeiuwq.com/guides/home-manager/
 
-       Home Manager is now enabled via host config:
+      Since den.ctx.hm-host requires least one user with homeManager class,
+      Home Manager is now enabled via options.
 
-          # den.ctx.hm-host requires least one user with homeManager class.
-          den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
+      For all users unless they set a value:
 
-      Globally:
+         den.base.user.classes = lib.mkDefault [ "homeManager" ];
 
-          den.base.user.classes = [ "homeManager" ];
+      On specific users:
 
-       See <den/home-manager/hm-os.nix>
+         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
 
-       If you had includes at den._.home-manager, you can use:
+      See <den/home-manager/hm-os.nix>
 
-          den.ctx.hm-host.includes = [ ... ];
+      If you had includes at den._.home-manager, you can use:
 
-       For attaching aspects to home-manager enabled hosts.
+         den.ctx.hm-host.includes = [ ... ];
+
+      For attaching aspects to home-manager enabled hosts.
     '';
 
   den.ctx.home.description = "Standalone Home-Manager config provided by home aspect";

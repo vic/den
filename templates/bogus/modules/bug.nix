@@ -12,10 +12,7 @@
       }:
       {
         # replace <system> if you are reporting a bug in MacOS
-        den.hosts.x86_64-linux.igloo.users.tux.classes = [
-          "user"
-          "homeManager"
-        ];
+        den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # do something for testing
         den.aspects.tux.user.description = "The Penguin";
