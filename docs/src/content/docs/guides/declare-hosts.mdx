@@ -1,142 +1,153 @@
 ---
 title: Declare Hosts & Users
-description: Define your infrastructure entities with Den's freeform schema.
+description: Define machines, users, and standalone homes with den.hosts and den.homes.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside title="Use the Source, Luke" icon="github">
+ 
+<Aside title="Source" icon="github">
 [`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix) · Reference: [Entity Schema](/reference/schema/)
 </Aside>
 
-## Hosts and Users
 
-Declare hosts with a single line per machine:
+## Host Declaration
 
-```nix
-den.hosts.x86_64-linux.my-laptop.users.vic = { };
-den.hosts.aarch64-darwin.macbook.users.vic = { };
-```
-
-This creates NixOS/Darwin configurations with users sharing the same home configuration, ready for:
-
-```console
-nixos-rebuild switch --flake .#my-laptop
-darwin-rebuild switch --flake .#macbook
-```
-
-## Customize Host Attributes
-
-Expand the attribute set for full control:
+`den.hosts` is keyed by `<system>.<name>`:
 
 ```nix
-den.hosts.x86_64-linux.my-laptop = {
-  hostName = "yavanna";        # default: my-laptop
-  class = "nixos";             # default: guessed from platform
-  aspect = "workstation";      # default: my-laptop
-  intoAttr = [ "nixosConfigurations" "yavanna" ]; # default: [ "nixosConfigurations" "my-laptop" ]
-  users.vic = {
-    userName = "vborja";       # default: vic
-    aspect = "oeiuwq";         # default: vic
-    classes = ["homeManager"]; # default: ["homeManager"]
+{
+  den.hosts.x86_64-linux.laptop.users.alice = { };
+
+  den.hosts.aarch64-darwin.mac = {
+    users.alice = { };
+    brew.apps = [ "iterm2" ];
   };
+}
+```
+
+Each host entry produces a configuration in `flake.nixosConfigurations` or
+`flake.darwinConfigurations` depending on its `class` (auto-detected from system).
+
+## Host Schema
+
+Hosts have these options (all with sensible defaults):
+
+| Option | Default | Description |
+|---|---|---|
+| `name` | attrset key | Configuration name |
+| `hostName` | `name` | Network hostname |
+| `system` | parent key | `x86_64-linux`, `aarch64-darwin`, etc. |
+| `class` | `"nixos"` or `"darwin"` | OS class, auto-detected from system |
+| `aspect` | `name` | Primary aspect name |
+| `instantiate` | class-dependent | `lib.nixosSystem`, `darwinSystem`, etc. |
+| `intoAttr` | class-dependent | Flake output path |
+| `users` | `{}` | User account definitions |
+| `*` | from `den.base.host` | Any option defined by base module |
+| `*` |  | Any other free-form attribute |
+
+## User Declaration
+
+Users are declared under a host:
+
+```nix
+den.hosts.x86_64-linux.laptop = {
+  users.alice = { };
+  users.bob.classes = [ "homeManager" "hjem" ];
 };
 ```
 
-## Standalone Home-Manager
+Each user has:
 
-For Home-Manager without a host OS:
+| Option | Default | Description |
+|---|---|---|
+| `name` | attrset key | User configuration name |
+| `userName` | `name` | System account name |
+| `aspect` | `name` | Primary aspect name |
+| `classes` | `[ "homeManager" ]` | Nix classes this user participates in |
+| `*` | from `den.base.user` | Any option defined by base module |
+| `*` |  | Any other free-form attribute |
 
-```nix
-den.homes.aarch64-darwin.vic = { };
-```
+## Standalone Homes
 
-Build with:
-
-```console
-home-manager switch --flake .#vic
-```
-
-## Multiple Hosts, Shared Users
-
-The same user aspect applies to every host it appears on:
-
-```nix "vic"
-den.hosts.x86_64-linux.desktop.users.vic = { };
-den.hosts.x86_64-linux.server.users.vic = { };
-den.hosts.aarch64-darwin.mac.users.vic = { };
-```
-
-All three machines share same `den.aspects.vic` user aspect.
-
-## Freeform Attributes
-
-Hosts and users accept arbitrary attributes. Use them for metadata
-that aspects can inspect:
+For systems without root access or for home-manager-only setups:
 
 ```nix
-den.hosts.x86_64-linux.my-laptop = {
-  isWarm = true;          # custom attribute
-  location = "studio";    # custom attribute
-  users.vic = { };
-};
+{
+  den.homes.x86_64-linux.alice = { };
+  den.homes.aarch64-darwin.alice = { };
+}
 ```
 
-Then in an aspect: `{ host, ... }: if host.isWarm then ...`
+Standalone homes produce `flake.homeConfigurations.<name>`.
+
+Home schema:
+
+| Option | Default | Description |
+|---|---|---|
+| `name` | attrset key | Home configuration name |
+| `userName` | `name` | User account name |
+| `system` | parent key | Platform system |
+| `class` | `"homeManager"` | Home class |
+| `aspect` | `name` | Primary aspect name |
+| `pkgs` | `inputs.nixpkgs.legacyPackages.${system}` | nixpkgs instance |
+| `instantiate` | `inputs.home-manager.lib.homeManagerConfiguration` | Builder function |
+| `*` | from `den.base.host` | Any option defined by base module |
+| `*` |  | Any other free-form attribute |
 
 ## Base Modules
 
-Add type-checked options to all hosts, users, or homes:
+`den.base.{host,user,home,conf}` provides shared configuration applied to all entities of each kind.
+
+Some batteries also extend base modules [see `hjem-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/hjem/hjem-os.nix#L50) which defines `hjem.module` option.
 
 ```nix
-den.base.host = { host, lib, ... }: {
-  options.vpn-alias = lib.mkOption { default = host.name; };
-};
+{
+  # Can be used to config each host
+  den.base.host.home-manager.enable = true;
 
-den.base.user = { user, lib, ... }: {
-  options.main-group = lib.mkOption { default = user.name; };
-};
+  # Can be used to add schema options with defaults
+  den.base.user = { user, lib, ... }: {
+    options.groupName = lib.mkOption { default = user.userName; };
+  };
 
-den.base.conf = { lib, ... }: {
-  options.org = lib.mkOption { default = "acme"; };
+  # Applied to every host and user and home.
+  den.base.conf = {
+    options.copyright = lib.mkOption { default = "Copy-Left"; };
+  };
+}
+```
+
+## Aspect Association
+
+Each host and user has an `aspect` attribute name (defaults to the config `name`).
+Den looks up `den.aspects.${aspect}` to find the configuration for that entity:
+
+```nix
+{
+  den.hosts.x86_64-linux.laptop.users.alice = { };
+  # Den uses den.aspects.laptop for the host
+  # Den uses den.aspects.alice for the user
+}
+```
+
+## Freeform Schema
+
+Host and user types use `freeformType`, so you can add arbitrary attributes:
+
+```nix
+den.hosts.x86_64-linux.laptop = {
+  users.alice = { };
+  gpu = "nvidia";  # custom attribute, accessible in aspects via host.gpu
 };
 ```
 
-`den.base.conf` applies to hosts, users, **and** homes.
-
-## Custom Instantiation
-
-Different `nixpkgs` channels per host:
+Access custom attributes in aspects:
 
 ```nix
-den.hosts.x86_64-linux.stable-server = {
-  instantiate = inputs.nixpkgs-stable.lib.nixosSystem;
-  users.admin = { };
-};
+den.aspects.laptop.includes = [
+  ({ host, ... }: lib.optionalAttrs (host ? gpu) {
+    nixos.hardware.nvidia.enable = true;
+  })
+];
 ```
-
-Override where configurations are placed:
-
-```nix
-den.hosts.x86_64-linux.wsl-box = {
-  intoAttr = [ "wslConfigurations" "my-wsl" ];
-  wsl.enable = true;
-  users.wsl = { };
-};
-```
-
-Custom nixpkgs instance, home-manager osConfig and output attribute:
-
-```nix
-den.homes.x86_64-linux.tux-at-igloo = {
-  aspect = "tux"; # Use den.aspects.tux for configuration
-  intoAttr = [ "homeConfigurations" "tux@igloo" ];
-  instantiate = { pkgs, modules }:
-    inputs.home-manager-stable.lib.homeManagerConfiguration {
-      inherit modules;
-      pkgs = inputs.self.nixpkgs-stable.legacyPackages.x86_64-linux;
-      extraSpecialArgs.osConfig = inputs.self.nixosConfigurations.igloo.config;
-    };
-};
-```
-

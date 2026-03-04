@@ -3,29 +3,6 @@ title: Debug Configurations
 description: Tools and techniques for debugging Den configurations.
 ---
 
-## builtins.trace
-
-Print values during evaluation:
-
-```nix
-den.aspects.foo = { user, ... }@context:
-  (builtins.trace context {
-    nixos = { };
-  });
-```
-
-## builtins.break
-
-Drop into a REPL at any evaluation point:
-
-```nix
-den.aspects.foo = { user, ... }@context:
-  (builtins.break context {
-    nixos = { };
-  });
-```
-
-
 ## REPL Inspection
 
 Load your flake and explore interactively:
@@ -37,13 +14,13 @@ nix-repl> nixosConfigurations.igloo.config.networking.hostName
 "igloo"
 ```
 
-## Expose den for Inspection
+## Expose `den` for Inspection
 
 Temporarily expose the `den` attrset as a flake output:
 
 ```nix
 { den, ... }: {
-  flake.den = den;  # remove when done
+  flake.den = den;  # remove after debugging
 }
 ```
 
@@ -53,6 +30,31 @@ Then in REPL:
 nix-repl> :lf .
 nix-repl> den.aspects.igloo
 nix-repl> den.hosts.x86_64-linux.igloo
+nix-repl> den.ctx
+```
+
+## Trace Context
+
+Print context values during evaluation:
+
+```nix
+den.aspects.laptop.includes = [
+  ({ host, ... }@ctx: builtins.trace ctx {
+    nixos.networking.hostName = host.hostName;
+  })
+];
+```
+
+## Break into REPL
+
+Drop into a REPL at any evaluation point:
+
+```nix
+den.aspects.laptop.includes = [
+  ({ host, ... }@ctx: builtins.break ctx {
+    nixos = { };
+  })
+];
 ```
 
 ## Manually Resolve an Aspect
@@ -60,14 +62,14 @@ nix-repl> den.hosts.x86_64-linux.igloo
 Test how an aspect resolves for a specific class:
 
 ```console
-nix-repl> module = den.aspects.foo.resolve { class = "nixos"; aspect-chain = []; }
+nix-repl> module = den.aspects.laptop.resolve { class = "nixos"; aspect-chain = []; }
 nix-repl> config = (lib.evalModules { modules = [ module ]; }).config
 ```
 
 For parametric aspects, apply context first:
 
 ```console
-nix-repl> aspect = den.aspects.foo { host = den.hosts.x86_64-linux.igloo; }
+nix-repl> aspect = den.aspects.laptop { host = den.hosts.x86_64-linux.laptop; }
 nix-repl> module = aspect.resolve { class = "nixos"; aspect-chain = []; }
 ```
 
@@ -75,22 +77,25 @@ nix-repl> module = aspect.resolve { class = "nixos"; aspect-chain = []; }
 
 ```console
 nix-repl> module = den.hosts.x86_64-linux.igloo.mainModule
-nix-repl> config = (lib.nixosSystem { modules = [ module ]; }).config
+nix-repl> cfg = (lib.nixosSystem { modules = [ module ]; }).config
+nix-repl> cfg.networking.hostName
 ```
 
 ## Common Issues
 
-**Duplicate values in lists**: Den automatically deduplicates owned and
-static configs from `den.default`, but parametric functions in
-`den.default.includes` still run at every context stage. Use
-`den.lib.take.exactly` to restrict matching:
+**Duplicate values in lists**: Den deduplicates owned and static configs
+from `den.default`, but parametric functions in `den.default.includes`
+run at every context stage. Use `den.lib.take.exactly` to restrict:
 
 ```nix
 den.lib.take.exactly ({ host }: { nixos.x = 1; })
 ```
 
-**Missing attribute**: The context doesn't have the expected parameter.
-Trace context keys to see what's available.
+**Missing attribute**: The context does not have the expected parameter.
+Trace context keys to see what is available.
 
-**Infinite recursion**: Aspects including each other in a cycle.
-Check your `includes` chains for circular dependencies.
+**Wrong class**: Check that `host.class` matches what you expect.
+Darwin hosts have `class = "darwin"`, not `"nixos"`.
+
+**Module not found**: Ensure the file is under `modules/` and not
+prefixed with `_` (excluded by import-tree).

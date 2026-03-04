@@ -31,6 +31,7 @@ let
     options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
     options.expected = lib.mkOption { };
+    config.den.base.user.classes = [ "homeManager" ];
   };
 
   helpersModule =

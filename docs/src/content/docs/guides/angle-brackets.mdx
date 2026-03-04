@@ -1,31 +1,23 @@
 ---
 title: Angle Brackets Syntax
-description: Opt-in shorthand for resolving deep aspect paths.
+description: <aspect/path> shorthand via __findFile.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
+<Aside title="Source" icon="github">
+[`nix/den-brackets.nix`](https://github.com/vic/den/blob/main/nix/den-brackets.nix)
+</Aside>
 
-<Aside title="Use the Source, Luke" icon="github">[`nix/den-brackets.nix`](https://github.com/vic/den/blob/main/nix/den-brackets.nix)</Aside>
+## What it Does
 
-<Aside type="caution">Angle brackets is an experimental, opt-in feature.</Aside>
+Den provides a `__findFile` implementation that resolves `<aspect/path>`
+expressions into deep aspect lookups. This is syntactic sugar for
+accessing nested aspects and provides.
 
-## What It Does
+## Enabling
 
-Den's `__findFile` resolves angle-bracket expressions to aspect paths:
-
-| Expression | Resolves to |
-|------------|-------------|
-| `<den.lib>` | `den.lib` |
-| `<den.default>` | `den.default` |
-| `<igloo>` | `den.aspects.igloo` |
-| `<foo/bar>` | `den.aspects.foo.provides.bar` |
-| `<foo/bar/baz>` | `den.aspects.foo.provides.bar.provides.baz` |
-| `<ns/tools>` | `den.ful.ns.tools` |
-
-## Enable Globally
-
-Create a module that sets it for all modules:
+Set `__findFile` via module args:
 
 ```nix
 { den, ... }: {
@@ -33,45 +25,46 @@ Create a module that sets it for all modules:
 }
 ```
 
-Then use it anywhere:
+## Resolution Rules
+
+The `<name>` expression resolves through these paths in order:
+
+1. **`<den.x.y>`** -- resolves to `config.den.x.y`
+2. **`<aspect>`** -- resolves to `config.den.aspects.aspect` (if `aspect` exists in `den.aspects`)
+3. **`<aspect/sub>`** -- resolves to `config.den.aspects.aspect.provides.sub`
+4. **`<namespace>`** -- resolves to `config.den.ful.namespace` (if it is a denful)
+
+The `/` separator is translated to `.provides.` in the lookup path.
+
+## Examples
 
 ```nix
-{ __findFile, ... }: {
-  den.default.includes = [ <den/define-user> ];
-  den.aspects.igloo.includes = [ <foo/bar/baz> ];
-}
+# Without angle brackets
+den.aspects.laptop.includes = [
+  den.aspects.tools.provides.editors
+  den.aspects.alice.provides.work-vpn
+  den.provides.primary-user
+];
+
+# With angle brackets
+den.aspects.laptop.includes = [
+  <tools/editors>
+  <alice/work-vpn>
+  <den.provides.primary-user>
+];
 ```
 
-## Enable via Let-Binding
+## When to Use
 
-For a single lexical scope:
+Angle brackets are optional syntactic sugar. They are useful when:
+- You have deeply nested provides and want shorter references.
+- You are working with namespaces and want concise cross-references.
 
-```nix
-{ den, ... }:
-let
-  inherit (den.lib) __findFile;
-in {
-  den.aspects.igloo.includes = [ <den/define-user> ];
-}
-```
+They are functionally identical to direct attribute access. The choice
+is a matter of style.
 
-## Namespace Access
-
-With a namespace `ns` enabled:
-
-```nix
-{ __findFile, ... }: {
-  ns.moo.silly = true; # write access
-  expr = <ns/moo>;  # read resolves to den.ful.ns.moo
-}
-```
-
-## Deep Nested Provides
-
-Slashes translate to `.provides.` in the aspect tree:
-
-```nix
-den.aspects.foo.provides.bar.provides.baz.nixos.programs.fish.enable = true;
-den.aspects.igloo.includes = [ <foo/bar/baz> ];
-# igloo gets fish enabled
-```
+<Aside type="caution">
+Angle brackets use Nix's `__findFile` mechanism, which is positional
+(depends on being in scope). They only work in modules where
+`__findFile` has been set as a module argument.
+</Aside>

@@ -1,49 +1,135 @@
 ---
 title: Custom Nix Classes
-description: Create new Nix configuration classes with den._.forward.
+description: Create new classes via den.provides.forward.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside title="Use the Source, Luke" icon="github">[`modules/aspects/provides/forward.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) · [forward CI tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-from-custom-class.nix)</Aside>
+<Aside title="Source" icon="github">
+[`modules/aspects/provides/forward.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) --
+[`modules/aspects/provides/os-user.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/os-user.nix) --
+[forward tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-from-custom-class.nix)
+</Aside>
 
-## What Are Custom Classes?
+## What is a Custom Class
 
-Den natively supports `nixos`, `darwin`, and `homeManager` classes. But you
-can create your own classes that forward their settings into any target
-submodule. This is exactly how Home-Manager integration works internally.
+Den's built-in classes (`nixos`, `darwin`, `homeManager`) map to well-known
+NixOS module systems. But you can define **custom classes** that forward their
+contents into a target submodule path on another class.
 
-## The forward Battery
+This is how Den implements:
+- The `user` class (forwards to `users.users.<name>` on the OS)
+- Home Manager integration (forwards `homeManager` to `home-manager.users.<name>`)
+- hjem integration (forwards `hjem` to `hjem.users.<name>`)
+- nix-maid integration (forwards `maid` to `users.users.<name>.maid`)
 
-`den._.forward` creates an aspect that takes configs from a source class
-and inserts them into a target class at a specified path.
+## The `forward` Battery
 
-### Example: Den `user` class works on both NixOS and nix-Darwin
-
-Den already provides a `user` class like this example,
-that forwards into the OS `user.user.<userName>` submodule.
+`den.provides.forward` creates a new class by forwarding its module contents
+into a target path on an existing class:
 
 ```nix
-userClass = { host }: { class, aspect-chain }:
-  den._.forward {
-    each = host.users;
-    fromClass = _user: "user";
-    intoClass = _user: class; # the class being resolved: nixos or darwin.
-    intoPath = user: [ "users" "users" user.userName ];
-    fromAspect = user: den.aspects.${user.aspect};
-    adaptArgs = os-args: { osConfig = os-args.config; };
+{ host }:
+den.provides.forward {
+  each = lib.attrValues host.users;
+  fromClass = user: "user";
+  intoClass = user: host.class;
+  intoPath  = user: [ "users" "users" user.userName ];
+  fromAspect = user: den.aspects.${user.aspect};
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `each` | List of items to forward (typically `[ user ]` or `[ true ]`) |
+| `fromClass` | The custom class name to read from |
+| `intoClass` | The target class to write into |
+| `intoPath` | Target attribute path in the target class |
+| `fromAspect` | The aspect to read the custom class from |
+
+## Example: The Built-in `user` Class
+
+The `user` class (`modules/aspects/provides/os-user.nix`) forwards OS-level
+user settings without requiring Home Manager:
+
+```nix
+# Instead of:
+den.aspects.alice.nixos = { pkgs, ... } {
+  users.users.alice = {
+    packages = [ pkgs.hello ];
+    extraGroups = [ "wheel" ];
   };
+};
 
-# this would enable it on all hosts
-# den.ctx.host.includes = [ userClass  ];
-
-# settings at `user` class forward into host `users.users.<userName>`
-den.aspects.tux.user = { osConfig, pkgs, ... }: {
+# You write:
+den.aspects.alice.user = { pkgs, ... }: {
   packages = [ pkgs.hello ];
+  extraGroups = [ "wheel" ];
 };
 ```
 
-### Example: A git class that forwards to home-manager.
+The `user` class is automatically forwarded to `users.users.<userName>` on
+whatever OS class the host uses (NixOS or Darwin).
+
+## Creating Your Own Class
+
+Suppose you want a `container` class that forwards into
+`virtualisation.oci-containers.containers.<name>`:
+
+```nix
+{ den, lib, ... }:
+let
+  fwd = { host, user }:
+    den.provides.forward {
+      each = lib.singleton user;
+      fromClass = _: "container";
+      intoClass = _: host.class;
+      intoPath  = _: [ "virtualisation" "oci-containers" "containers" user.userName ];
+      fromAspect = _: den.aspects.${user.aspect};
+    };
+in {
+  den.ctx.user.includes = [ fwd ];
+}
+```
+
+Now any user aspect can use the `container` class:
+
+```nix
+den.aspects.alice.container = {
+  image = "nginx:latest";
+  ports = [ "8080:80" ];
+};
+```
+
+## Advanced: Guards and Adapters
+
+`forward` supports optional parameters for complex scenarios:
+
+```nix
+den.provides.forward {
+  each = lib.singleton true;
+  fromClass = _: "wsl";
+  intoClass = _: host.class;
+  intoPath  = _: [ "wsl" ];
+  fromAspect = _: lib.head aspect-chain;
+  # Only forward if target has wsl options
+  guard = { options, ... }: options ? wsl;
+  # Modify module args for the forwarded module
+  adaptArgs = args: args // { osConfig = args.config; };
+  # Custom module type for the forwarded submodule
+  adapterModule = { config._module.freeformType = lib.types.anything; };
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `guard` | Only forward when this predicate returns true |
+| `adaptArgs` | Transform module arguments before forwarding |
+| `adapterModule` | Custom module for the forwarded submodule type |
+
+## User contributed examples
+
+#### Example: A git class that forwards to home-manager.
 
 ```nix
 gitClass =
@@ -65,7 +151,7 @@ den.aspects.tux = {
 
 This will set at host: `home-manager.users.tux.programs.git.userEmail`
 
-### Example: A `nix` class that propagates settings to NixOS and HomeManager
+#### Example: A `nix` class that propagates settings to NixOS and HomeManager
 
 > Contributed by @musjj
 
@@ -91,53 +177,3 @@ nix-allowed = { user, ... }: { nix.allowed-users = [ user.userName ]; };
 # included at users who can fix things with nix.
 den.aspects.tux.includes = [ nix-allowed ];
 ```
-
-## Use Cases
-
-- **User environments**: Forward a `user` class into `users.users.<name>`
-- **nix-maid / hjem**: Built-in integrations, see [batteries](/guides/batteries/)
-- **Containerization**: Forward a `container` class into systemd-nspawn configs
-- **VM configs**: Forward a `vm` class into microvm or QEMU settings
-- **Guarded classes**: Forward only when target options exist (eg, Impermanence)
-- **Custom tools**: Forward into any Nix-configurable system (NixVim, etc.)
-
-## Guarded Forward
-
-Use `guard` to conditionally forward only when target options exist:
-
-```nix
-# Custom `persys` forwards config into nixos.environment.persistance."/nix/persist/system"
-# only if environment.persistance option is present.
-persys = { class, aspect-chain }: den._.forward {
-  each = lib.singleton true;
-  fromClass = _: "persys";
-  intoClass = _: class;
-  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
-  fromAspect = _: lib.head aspect-chain;
-  guard = { options, ... }@osArgs: options ? environment.persistance;
-};
-
-den.hosts.my-laptop.includes = [ persys ];
-
-# becomes nixos.environment.persistance."/nix/persist/system".hideMounts = true;
-den.aspects.my-laptop.persys.hideMounts = true;
-```
-
-One cool thing about these custom classes is that aspects can simply define
-settings at them, without having to worry if the options they depend or
-some feature is enabled. The guard itself is reponsible for that check
-in only one place, instead of having `mkIf` in a lot of places.
-
-## Creating Your Own
-
-The `forward` function parameters:
-
-| Parameter | Description |
-|-----------|-------------|
-| `each` | List of items to iterate over |
-| `fromClass` | Source class name (string) |
-| `intoClass` | Target class name (string) |
-| `intoPath` | Attribute path in target (list of strings) |
-| `fromAspect` | Source aspect to read from |
-| `guard` | Optional: `{ options, ... }@args -> bool` — forward only when true |
-| `adaptArgs` | Optional: args->specialArgs for the intermediate submodule |

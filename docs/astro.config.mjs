@@ -31,7 +31,6 @@ export default defineConfig({
 						{ label: 'Motivation', slug: 'motivation', },
 						{ label: 'Community', slug: 'community' },
 						{ label: 'Contributing', slug: 'contributing' },
-						{ label: 'Sponsor', slug: 'sponsor' },
 					],
 				},
 				{
