@@ -153,6 +153,8 @@ This will set at host: `home-manager.users.tux.programs.git.userEmail`
 
 #### Example: A `nix` class that propagates settings to NixOS and HomeManager
 
+This can be used when you don't want NixOS and HomeManager to share the
+same pkgs but still configure both at the same time. 
 > Contributed by @musjj
 
 ```nix
@@ -176,6 +178,37 @@ nix-allowed = { user, ... }: { nix.allowed-users = [ user.userName ]; };
 
 # included at users who can fix things with nix.
 den.aspects.tux.includes = [ nix-allowed ];
+```
+
+#### Example: An `os` class forwarding to NixOS and nix-Darwin 
+
+This forward class can be useful for settings that are common to both
+`nixos` and `darwin` classes.
+
+```nix
+os-class = { host }: { class, aspect-chain }: den._.forward {
+  each = lib.singleton true;
+  fromClass = _: "os";
+  intoClass = _: host.class;
+  intoPath = _: [ ]; # Forward at Top-Level
+  fromAspect = lib.head aspect-chain;
+  adaptArgs = lib.id;
+};
+
+
+# enable on all hosts
+den.ctx.host.includes = [ os-class ];
+
+# usage
+den.aspects.my-laptop = {
+   nixos = {};  # nixos specific options
+   darwin = {}; # darwin specific options
+
+   # both on nixos and darwin
+   os = { pkgs, ... }: {
+      environment.packages = [ pkgs.hello ];
+   };
+};
 ```
 
 #### Example: An impermanence class
