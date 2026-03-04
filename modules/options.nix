@@ -5,7 +5,8 @@
   ...
 }:
 let
-  types = import ./_types.nix { inherit inputs lib config; };
+  inherit (config) den;
+  types = import ./../nix/types.nix { inherit inputs lib den; };
   baseMod = lib.mkOption {
     type = lib.types.deferredModule;
     default = { };
@@ -21,8 +22,8 @@ in
     home = baseMod;
   };
   config.den.base = {
-    host.imports = [ config.den.base.conf ];
-    user.imports = [ config.den.base.conf ];
-    home.imports = [ config.den.base.conf ];
+    host.imports = [ den.base.conf ];
+    user.imports = [ den.base.conf ];
+    home.imports = [ den.base.conf ];
   };
 }

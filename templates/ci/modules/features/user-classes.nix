@@ -22,7 +22,6 @@
 
         expr = lib.sort (a: b: a < b) den.hosts.x86_64-linux.igloo.users.tux.classes;
         expected = [
-          "homeManager" # this one comes from globally enabled at test support.
           "homeManager"
           "maid"
         ];

@@ -1,12 +1,10 @@
 {
   inputs,
   lib,
-  config,
+  den,
   ...
 }:
 let
-  inherit (config) den;
-
   hostsOption = lib.mkOption {
     description = "den hosts definition";
     default = { };
