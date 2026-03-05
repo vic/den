@@ -61,6 +61,8 @@ jobs:
     needs: [approved]
     name: noflake
     runs-on: ubuntu-latest
+    env:
+      NIX_PATH: "nixpkgs=https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
     steps:
       - uses: wimpysworld/nothing-but-nix@main
       - uses: cachix/install-nix-action@v31
@@ -74,7 +76,7 @@ jobs:
           }
           EOF
           git add templates/noflake/modules/ci-runtime.nix
-      - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
+      - run: cd templates/noflake && nix-shell . -A den.sh --run 'igloo build'
   minimal:
     needs: [approved]
     name: minimal
