@@ -20,13 +20,23 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-### [Documentation](https://den.oeiuwq.com)
+# [Documentation](https://den.oeiuwq.com)
+
+### [Core Principles](https://den.oeiuwq.com/explanation/core-principles/)
+
+### [Custom Nix Classes](https://den.oeiuwq.com/guides/custom-classes/)
+
+### [Homes Integration](https://den.oeiuwq.com/guides/home-manager/)
 
 ### [Batteries](https://den.oeiuwq.com/guides/batteries/)
 
+### [Reference](https://den.oeiuwq.com/reference/ctx/)
+
 ### [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
 
-### [Community](https://github.com/vic/den/discussions)
+### [Motivation](https://den.oeiuwq.com/motivation/)
+
+### [Community](https://den.oeiuwq.com/community/)
 
 </div>
 </td>
