@@ -18,23 +18,21 @@ users that include them via `den.ctx`.
 ### `den._.define-user`
 
 Creates OS-level user accounts (`users.users.<name>`) with `isNormalUser`,
-`home`, and group. Sets `home-manager.users.<name>` when home-manager
-integration is active.
+and `home` directory. Works on NixOS/Darwin/WSL/HomeManager.
 
 ### `den._.os-user`
 
-Assigns a user into the host by setting group membership and ensuring
-the user account exists at the OS level.
+A `user` class automatically enabled by Den to forward settings into the host's
+`users.users.<userName>`. Forwards work into NixOS/Darwin classes.
 
 ### `den._.primary-user`
 
-Marks a user as the primary user of a host. Sets `nix.settings.trusted-users`
-and can configure auto-login or default shell based on other batteries.
+Marks a user as the primary user (admin level) of a host. Works in NixOS/Darwin/WSL.
 
 ### `den._.user-shell`
 
-Sets the user's login shell. Reads `user.shell` and configures both
-`users.users.<name>.shell` and the home-manager `programs.<shell>.enable`.
+Sets the user's login shell. 
+`users.users.<name>.shell` enabling the shell at host, and the home-manager `programs.<shell>.enable`.
 
 ### `den._.tty-autologin`
 
@@ -43,20 +41,22 @@ Configures TTY auto-login for the primary user via
 
 ### `den._.wsl`
 
-WSL-specific configuration. Enables `wsl.enable`, sets the default user,
-and adjusts networking for WSL2 environments.
+WSL-specific activation. Enables `den.ctx.wsl-host` when the `host.wsl.enable = true`
+and includes NixOS-WSL module.
 
 ### `den._.forward`
 
-Forwards aspect configuration from one aspect to another. Used to chain
-aspects without duplicating declarations.
+Forwards aspect configuration from one aspect to another.
+Used for separation of conncerns. See Custom Classes section.
 
 ### `den._.import-tree`
 
-Uses `inputs.import-tree` to recursively import a directory tree as
-aspect modules. Enables file-system-driven aspect organization.
+Provides `inputs.import-tree` helpers to import trees of non-dendritic
+legacy modules, like a directory containing only nixos modules.
 
 ## Flake-parts batteries
+
+These only work when the module system is flake-parts'.
 
 ### `den._.inputs'`
 
@@ -70,49 +70,30 @@ Source: `provides/flake-parts/self.nix`
 
 ## Home-manager batteries
 
-### `den._.hm-integration`
-
-Integrates home-manager into NixOS/Darwin hosts. Imports the appropriate
-home-manager module (`nixos` or `darwin`), enables
-`home-manager.useGlobalPkgs` and `useUserPackages`.
-
-### `den._.hm-os`
+Defines `den.ctx.hm-host` which activates when at least one user has `homeManager` classes.
+The `hm-host` context can be used to set `home-manager.useGlobalPkgs` and `useUserPackages`.
 
 Merges home-manager configuration into the host OS module system. Bridges
-`home-manager.users.<name>` with the user's aspect.
+`home-manager.users.<name>` with the user's `homeManager` class.
+
+Imports the appropriate home-manager module (`nixos` or `darwin`).
+
 
 ## Hjem batteries
 
-### `den._.hjem-integration`
-
 Integrates [hjem](https://github.com/feel-co/hjem) as an alternative to
-home-manager. Imports hjem's NixOS module.
-
-### `den._.hjem-os`
+home-manager. Imports hjem's NixOS/Darwin module.
 
 Merges hjem user configuration into the host. Sets `hjem.users.<name>`
-from the user's aspect.
+from the user's `hjem` class.
 
 ## Maid batteries
-
-### `den._.maid-integration`
 
 Integrates [maid](https://github.com/maid-nix/maid) as an alternative
 home management system.
 
-### `den._.maid-os`
-
-Merges maid configuration into the host OS for each user.
-
-## Unfree batteries
+Merges maid configuration into the host OS `users.users.<name>.maid` for each user `maid` class.
 
 ### `den._.unfree`
 
-Allows unfree packages globally via
-`nixpkgs.config.allowUnfree = true`.
-
-### `den._.unfree-predicate`
-
-Allows unfree packages selectively using a predicate builder. Accepts
-a list of package names and builds
-`nixpkgs.config.allowUnfreePredicate`.
+Allows unfree packages by name via `nixpkgs.config.allowUnfreePredicate`.

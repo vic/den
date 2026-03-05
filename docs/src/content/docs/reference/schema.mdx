@@ -10,6 +10,69 @@ import { Aside } from '@astrojs/starlight/components';
 [`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix)
 </Aside>
 
+## Schema Base Modules
+
+Each of `host`, `user`, `home` configuration objects have freeform-types,
+meaning you can assign any attribute into them as meta-data.
+
+However, at times you might want to have shared meta-data between all hosts
+or all users.
+
+The base modules, `den.base.*` serve for this purpose. 
+They are **not aspects**, they are meta-data (the attributes of host) that aspects
+can later read for providing configuration.
+
+For example, instead of:
+
+```nix
+den.hosts.x86_64-linux.igloo = {
+  hardedned = true; # custom free-form metadata
+
+  # repetitive
+  users.alice.classes = [ "homeManager" ];
+  users.bob.classes = [ "homeManager" ];
+};
+```
+
+You can do:
+
+```nix
+# This is not an aspect, it is a meta-configuration of the host capabilities.
+den.base.host = { host, lib, ... }: {
+   options.hardened = lib.mkEnableOption "Is it secure";
+   config.hardened = lib.mkDefault true;
+};
+
+# The meta-configuration module for all users
+den.base.user = { user, lib, ... }: {
+   config.classes = lib.mkDefault [ "homeManager" ];
+};
+```
+
+All hosts you create will be `hardened = true` by default. And aspects will
+be able to read `host.hardened` value.
+
+## `den.base`
+
+Base modules merged into all hosts, users, or homes.
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `den.base.conf` | `deferredModule` | Applied to host, user, and home |
+| `den.base.host` | `deferredModule` | Applied to all hosts (imports `conf`) |
+| `den.base.user` | `deferredModule` | Applied to all users (imports `conf`) |
+| `den.base.home` | `deferredModule` | Applied to all homes (imports `conf`) |
+
+```nix
+den.base.conf = { lib, ... }: {
+  # shared across all host/user/home declarations
+};
+den.base.host = { ... }: {
+  # host-specific base config
+};
+```
+
+
 ## `den.hosts`
 
 Type: `attrsOf systemType`
@@ -98,22 +161,3 @@ den.homes.x86_64-linux.vic = {};
 | `*` | `den.base.home` options | | Options from base module |
 | `*` |  | | free-form attributes |
 
-## `den.base`
-
-Base modules merged into all hosts, users, or homes.
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `den.base.conf` | `deferredModule` | Applied to host, user, and home |
-| `den.base.host` | `deferredModule` | Applied to all hosts (imports `conf`) |
-| `den.base.user` | `deferredModule` | Applied to all users (imports `conf`) |
-| `den.base.home` | `deferredModule` | Applied to all homes (imports `conf`) |
-
-```nix
-den.base.conf = { lib, ... }: {
-  # shared across all host/user/home declarations
-};
-den.base.host = { ... }: {
-  # host-specific base config
-};
-```
