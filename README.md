@@ -9,7 +9,7 @@
   <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
 </p>
 
-# den - Context-aware Dendritic Nix configurations.
+# den - Aspect-oriented context-driven Dendritic Nix configurations.
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://dendritic.oeiuwq.com) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://dendritic.oeiuwq.com/sponsor)
 
@@ -28,19 +28,15 @@
 
 ### [Community](https://github.com/vic/den/discussions)
 
-**Den as a [Library](https://den.oeiuwq.com/explanation/library-vs-framework/)**:
-
-domain-agnostic, context transformation pipelines that activate [flake-aspects](https://github.com/vic/flake-aspects).
-
-**Den as [Framework](https://den.oeiuwq.com/explanation/context-pipeline/)**:
-
-uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.
-
-
 </div>
 </td>
 <td>
 
+At its core, Den is a [library](https://den.oeiuwq.com/explanation/library-vs-framework/) built on [flake-aspects](https://github.com/vic/flake-aspects) for activating configuration-aspects via context-transformation pipelines.
+
+On top of the library, Den provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
+
+Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with/without flakes, flake-parts or any other Nix module system.
 
 ### Templates:
 
@@ -73,11 +69,8 @@ nix flake init -t github:vic/den && nix run .#vm
 
 </td>
 
-
 </tr>
 </table>
-
-
 
 ## Code example (OS configuration domain)
 
