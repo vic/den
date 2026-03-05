@@ -1,5 +1,6 @@
-{ den, lib, ... }:
+{ config, lib, ... }:
 let
+  inherit (config) den;
   inherit (den.lib.aspects.types) aspectSubmodule;
   inherit (den.lib) ctxApply;
 
