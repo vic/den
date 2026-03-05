@@ -10,9 +10,10 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs = {
-      nixpkgs.follows = "nixpkgs";
-    };
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    darwin.url = "github:nix-darwin/nix-darwin";
+    darwin.inputs.nixpkgs.follows = "nixpkgs";
+
     nix-unit.url = "github:nix-community/nix-unit";
     nix-unit.inputs = {
       flake-parts.follows = "flake-parts";

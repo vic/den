@@ -129,6 +129,30 @@ den.provides.forward {
 
 ## User contributed examples
 
+#### Example: Config across `nixos` and `darwin` classes.
+
+The `os` forward class ([provided by Den](https://github.com/vic/den/blob/main/modules/aspects/provides/os-class.nix)) can be useful for settings that must be forwarded to both on NixOS and MacOS.
+
+> Requested by @Risa-G at [#222](https://github.com/vic/den/discussions/222)
+
+```nix
+# Note: this is already provided by Den at provides/os-class.nix
+os-class = { class, aspect-chain }: den._.forward {
+  each = [ "nixos" "darwin" ];
+  fromClass = _: "os";
+  intoClass = lib.id;
+  intoPath = _: [ ]; # top-level
+  fromAspect = _: lib.head aspect-chain;
+};
+
+# Note: already enabled by Den
+# den.ctx.host.includes = [ os-class ];
+
+den.aspects.my-laptop = {
+  os.networking.hostName = "Yavanna"; # on both NixOS and MacOS
+};
+```
+
 #### Example: A git class that forwards to home-manager.
 
 ```nix
@@ -178,37 +202,6 @@ nix-allowed = { user, ... }: { nix.allowed-users = [ user.userName ]; };
 
 # included at users who can fix things with nix.
 den.aspects.tux.includes = [ nix-allowed ];
-```
-
-#### Example: An `os` class forwarding to NixOS and nix-Darwin 
-
-This forward class can be useful for settings that are common to both
-`nixos` and `darwin` classes.
-
-```nix
-os-class = { host }: { class, aspect-chain }: den._.forward {
-  each = lib.singleton true;
-  fromClass = _: "os";
-  intoClass = _: host.class;
-  intoPath = _: [ ]; # Forward at Top-Level
-  fromAspect = lib.head aspect-chain;
-  adaptArgs = lib.id;
-};
-
-
-# enable on all hosts
-den.ctx.host.includes = [ os-class ];
-
-# usage
-den.aspects.my-laptop = {
-   nixos = {};  # nixos specific options
-   darwin = {}; # darwin specific options
-
-   # both on nixos and darwin
-   os = { pkgs, ... }: {
-      environment.packages = [ pkgs.hello ];
-   };
-};
 ```
 
 #### Example: An impermanence class
