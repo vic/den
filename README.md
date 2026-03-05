@@ -131,7 +131,7 @@ den.base.user = { user, lib, ... }: {
 
     # regular nixos/darwin modules or any other Nix class
     nixos  = { pkgs, ... }: { imports = [ inputs.disko.nixosModules.disko ]; };
-    darwin = { pkgs, ... }: { environment.packages = [ pkgs.hello ]; };
+    darwin = { pkgs, ... }: { imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ]; };
 
     # Den `os` Nix class forwards to both nixos and darwin
     os = { pkgs, ... }: {
