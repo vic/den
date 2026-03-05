@@ -133,6 +133,12 @@ den.base.user = { user, lib, ... }: {
     nixos  = { pkgs, ... }: { imports = [ inputs.disko.nixosModules.disko ]; };
     darwin = { pkgs, ... }: { environment.packages = [ pkgs.hello ]; };
 
+    # Den `os` Nix class forwards to both nixos and darwin
+    os = { pkgs, ... }: {
+      networking.hostName = "yavanna";
+      environment.packages = [ pkgs.direnv ];
+    };
+
     # host can contribute to its users' environment
     homeManager.programs.vim.enable = true;
   };
