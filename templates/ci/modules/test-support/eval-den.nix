@@ -27,6 +27,7 @@ let
   testModule = {
     imports = [ inputs.den.flakeModule ];
     options.flake.nixosConfigurations = lib.mkOption { };
+    options.flake.darwinConfigurations = lib.mkOption { };
     options.flake.homeConfigurations = lib.mkOption { };
     options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
@@ -39,6 +40,7 @@ let
     let
 
       iceberg = config.flake.nixosConfigurations.iceberg.config;
+      apple = config.flake.darwinConfigurations.apple.config;
       igloo = config.flake.nixosConfigurations.igloo.config;
       tuxHm = igloo.home-manager.users.tux;
       pinguHm = igloo.home-manager.users.pingu;
@@ -71,6 +73,7 @@ let
         inherit
           show
           funnyNames
+          apple
           igloo
           iceberg
           tuxHm
