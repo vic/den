@@ -117,6 +117,15 @@ let
 
   home-env = import ./home-env.nix { inherit lib den inputs; };
 
+  nixModule = import ./nixModule {
+    inherit
+      lib
+      inputs
+      config
+      den-lib
+      ;
+  };
+
   den-lib = {
     inherit
       parametric
@@ -131,6 +140,7 @@ let
       ctxApply
       nh
       home-env
+      nixModule
       ;
   };
 in

@@ -7,7 +7,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## Den as a Library
 
-Den's core (`nix/lib.nix`) is domain-agnostic. It provides:
+Den's core (`/default.nix`) is domain-agnostic. It provides:
 
 | Function | Purpose |
 |---|---|
@@ -28,30 +28,30 @@ These primitives compose into context transformation pipelines for any domain.
 
 ## Using Den for Non-OS Domains
 
+<Aside title="Source" icon="github">
+[default.nix](https://github.com/vic/den/tree/main/default.nix) - [CI test: den-as-lib.nix](https://github.com/vic/den/tree/main/templates/ci/modules/features/den-as-lib.nix)
+</Aside>
+
 Nothing about `den.lib` assumes NixOS, Darwin, or Home Manager. You can build
 context pipelines for any Nix module system:
 
 ```nix
-{ my-aspects, den, ... }: {
+# see den-as-lib.nix CI test for working example
 
-  # create a private isolated aspect namespace independent of den.aspects
-  imports = [ (den.namespace "my-aspects" false) ];
-
-  # Define aspects for a custom domain
-  my-aspects = {
-    web-server = den.lib.parametric {
-      terranix.resource.aws_instance.web = { ami = "..."; };
-      includes = [
-        # configures using the terranix Nix class
-        ({ env, ... }: { terranix.resource.aws_instance.web.tags.Env = env; })
-      ];
-    };
+# Define aspects for a custom domain
+den.aspects = {
+  web-server = den.lib.parametric {
+    terranix.resource.aws_instance.web = { ami = "..."; };
+    includes = [
+      # configures using the terranix Nix class
+      ({ env, ... }: { terranix.resource.aws_instance.web.tags.Env = env; })
+    ];
   };
+};
 
-  # Resolve for your custom class
-  aspect = my-aspects.web-server { env = "production"; };
-  module = aspect.resolve { class = "terranix"; };
-}
+# Resolve for your custom class
+aspect = den.aspects.web-server { env = "production"; };
+module = aspect.resolve { class = "terranix"; };
 ```
 
 ## Den as a Framework
