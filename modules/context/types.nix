@@ -1,8 +1,7 @@
 { den, lib, ... }:
 let
   inherit (den.lib.aspects.types) aspectSubmodule;
-
-  ctxApply = import ./../../nix/ctx-apply.nix { inherit lib den; };
+  inherit (den.lib) ctxApply;
 
   # a context-definiton is an aspect extended with into.* transformations
   # and a fixed functor to apply them.

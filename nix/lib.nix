@@ -5,6 +5,7 @@
   ...
 }:
 let
+  inherit (config) den;
 
   # "Just Give 'Em One of These" -  Moe Szyslak
   # A __functor that applies context to parametric includes (functions)
@@ -103,6 +104,17 @@ let
 
   __findFile = import ./den-brackets.nix { inherit lib config; };
 
+  nh = import ./nh.nix {
+    inherit
+      lib
+      config
+      den
+      inputs
+      ;
+  };
+
+  ctxApply = import ./ctx-apply.nix { inherit lib den; };
+
   den-lib = {
     inherit
       parametric
@@ -114,6 +126,8 @@ let
       canTake
       take
       isStatic
+      ctxApply
+      nh
       ;
   };
 in
