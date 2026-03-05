@@ -46,7 +46,7 @@ At its core, Den is a [library](https://den.oeiuwq.com/explanation/library-vs-fr
 
 On top of the library, Den provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
-Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with/without flakes, flake-parts or any other Nix module system.
+Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
 
 ### Templates:
 
@@ -81,6 +81,20 @@ nix flake init -t github:vic/den && nix run .#vm
 
 </tr>
 </table>
+
+### Testimonials
+
+> Den takes the Dendritic pattern to a whole new level, and I cannot imagine going back.  
+> — @adda - Very early Den adopter after using Dendritic flake-parts and Unify.
+
+> I’m super impressed with den so far, I’m excited to try out some new patterns that Unify couldn’t easily do.  
+> — @quasigod - Unify dendritic-framework author on adopting Den.
+
+> Massive work you did here!  
+> — @drupol - Author of “Flipping the Configuration Matrix” Dendritic blog post.
+
+> Thanks for the awesome library and the support for non-flakes… it’s positively brilliant!. I really hope this gets wider adoption.  
+> — @vczf - At den matrix channel.
 
 ## Code example (OS configuration domain)
 
