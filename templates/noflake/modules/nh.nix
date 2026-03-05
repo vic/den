@@ -1,6 +1,6 @@
 # Provides shell utilities under `den.sh` for building OS configurations using
 # github:nix-community/nh instead of nixos-rebuild, etc
-{ lib, den, ... }:
+{ lib, den, inputs, ... }:
 let
   defaultAction = "build";
 
@@ -66,6 +66,6 @@ in
 {
   options.den.sh = lib.mkOption {
     description = "Non-flake Den shell environment";
-    default = denShell (import <nixpkgs> { });
+    default = denShell (import inputs.nixpkgs { });
   };
 }

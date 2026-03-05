@@ -61,8 +61,6 @@ jobs:
     needs: [approved]
     name: noflake
     runs-on: ubuntu-latest
-    env:
-      NIX_PATH: "nixpkgs=https://nixos.org/channels/nixpkgs-unstable/nixexprs.tar.xz"
     steps:
       - uses: wimpysworld/nothing-but-nix@main
       - uses: cachix/install-nix-action@v31
