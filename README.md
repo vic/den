@@ -36,6 +36,12 @@ domain-agnostic, context transformation pipelines that activate [flake-aspects](
 
 uses `den.lib` to provide batteries + `host`/`user`/`home` schemas for NixOS/nix-darwin/home-manager.
 
+
+</div>
+</td>
+<td>
+
+
 ### Templates:
 
 [default](https://den.oeiuwq.com/tutorials/default/): +flake-file +flake-parts +home-manager
@@ -65,31 +71,52 @@ nix run github:vic/den
 nix flake init -t github:vic/den && nix run .#vm
 ```
 
-</div>
 </td>
-<td>
 
-### Code example (OS configuration domain)
+
+</tr>
+</table>
+
+
+
+## Code example (OS configuration domain)
 
 ```nix
-# hosts & homes have extensible schema types.
+# Define hosts, users & homes
 den.hosts.x86_64-linux.lap.users.vic = {};
 den.hosts.aarch64-darwin.mac.users.vic = {};
 den.homes.aarch64-darwin.vic = {};
+```
+
+```console
+$ nixos-rebuild switch --flake .#lap
+$ darwin-rebuild switch --flake .#mac
+$ home-manager   switch --flake .#vic
+```
+
+```nix
+# extensible base modules for common, typed schemas
+den.base.user = { user, lib, ... }: {
+  config.classes =
+    if user.userName == "vic" then [ "hjem" "maid" ]
+    else lib.mkDefault [ "homeManager" ];
+
+  options.mainGroup = lib.mkOption { default = user.userName; };
+};
 ```
 
 ```nix
 # modules/my-laptop.nix
 { den, inputs, ... }: {
   den.aspects.my-laptop = {
-    includes = [
-      den.aspects.work-vpn
-    ];
+    # re-usable configuration aspects
+    includes = [ den.aspects.work-vpn ];
+
     # regular nixos/darwin modules or any other Nix class
-    nixos  = { pkgs, ... }: {
-       imports = [ inputs.disko.nixosModules.disko ];
-    };
-    darwin = { ... };
+    nixos  = { pkgs, ... }: { imports = [ inputs.disko.nixosModules.disko ]; };
+    darwin = { pkgs, ... }: { environment.packages = [ pkgs.hello ]; };
+
+    # host can contribute to its users' environment
     homeManager.programs.vim.enable = true;
   };
 }
@@ -99,34 +126,49 @@ den.homes.aarch64-darwin.vic = {};
 # modules/vic.nix
 { den, ... }: {
   den.aspects.vic = {
-    homeManager = { pkgs, ... }: ...;
-    nixos.users.users.vic.description = "oeiuwq";
-    includes = [
-      den.aspects.tiling-wm
-      den.provides.primary-user
-      den.aspects.vic._.conditional
-    ];
+    # supports multiple home environments
+    homeManager = { pkgs, ... }: { };
+    hjem.files.".envrc".text = "use flake ~/hk/home";
+    maid.kconfig.settings.kwinrc.Desktops.Number = 3;
 
-    provides = {
-      conditional = { host, user }:
-        lib.optionalAttrs (host.hasX && user.hasY)  {
-           nixos.imports = [
-            inputs.someX.nixosModules.default
-           ];
-           nixos.someX.foo = user.someY;
-        };
-      };
+    # user can contribute configurations to all hosts it lives on
+    darwin.services.karabiner-elements.enable = true;
+
+    # user class forwards into {nixos/darwin}.users.users.<userName>
+    user = { pkgs, ... }: {
+      packages = [ pkgs.helix ];
+      description = "oeiuwq";
     };
+
+    includes = [
+      den.provides.primary-user        # re-usable batteries
+      (den.provides.user-shell "fish") # parametric aspects
+      den.aspects.tiling-wm            # your own aspects
+      den.aspects.gaming.provides.emulators
+    ];
   };
 }
 ```
 
-```console
-$ nixos-rebuild switch --flake .#lap
-$ darwin-rebuild switch --flake .#mac
-$ home-manager   switch --flake .#vic
-```
+```nix
+# custom user-defined Nix classes.
 
-</td>
-</tr>
-</table>
+# any aspect can use my `persys` class to forward configs into
+#   nixos.environment.persistance."/nix/persist/system"
+# **ONLY** when environment.persistance option is present at host.
+persys = { host }: den._.forward {
+  each = lib.singleton true;
+  fromClass = _: "persys";
+  intoClass = _: host.class;
+  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
+  fromAspect = _: den.aspects.${host.aspect};
+  guard = { options, ... }: options ? environment.persistance;
+};
+
+# enable on all hosts
+den.ctx.host.includes = [ persys ];
+
+# becomes nixos.environment.persistance."/nix/persist/system".hideMounts = true;
+# no mkIf, set configs and guard ensures to include only when Impermanence exists
+den.aspects.my-laptop.persys.hideMounts = true;
+```
