@@ -5,79 +5,56 @@
   ...
 }:
 let
+  inherit (den.lib.home-env)
+    intoClassUsers
+    forwardToHost
+    ;
+
   inherit (den.lib) parametric;
-
-  description = ''
-    integrates home-manager into nixos/darwin OS classes.
-
-    Does nothing for hosts that have no users with `homeManager` class.
-    Expects `inputs.home-manager` to exist. If `<host>.hm-module` exists
-    it is the home-manager.{nixos/darwin}Modules.home-manager.
-
-    For each user produces a `den.ctx.hm` context, and
-    forwards the `homeManager` class into os-level
-    `home-manager.home-manager.users.<user>`
-  '';
 
   hmClass = "homeManager";
 
-  intoHmUsers =
-    { host }:
-    map (user: { inherit host user; }) (
-      lib.filter (u: lib.elem hmClass u.classes) (lib.attrValues host.users)
-    );
+  hm-aspect-deprecated = ''
+    NOTICE: den.provides.home-manager aspect is not used anymore.
+    See https://den.oeiuwq.com/guides/home-manager/
 
-  forwardedToHost =
-    { host, user }:
-    den._.forward {
-      each = lib.singleton true;
-      fromClass = _: hmClass;
-      intoClass = _: host.class;
-      intoPath = _: [
+    Since den.ctx.hm-host requires least one user with homeManager class,
+    Home Manager is now enabled via options.
+
+    For all users unless they set a value:
+
+       den.base.user.classes = lib.mkDefault [ "homeManager" ];
+
+    On specific users:
+
+       den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
+
+    See <den/home-manager/hm-os.nix>
+
+    If you had includes at den._.home-manager, you can use:
+
+       den.ctx.hm-host.includes = [ ... ];
+
+    For attaching aspects to home-manager enabled hosts.
+  '';
+
+  ctx.home.provides.home = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
+  ctx.home.into.default = lib.singleton;
+
+  ctx.hm-host.into.hm-user = intoClassUsers hmClass;
+  ctx.hm-user.provides.hm-user = forwardToHost {
+    className = hmClass;
+    forwardPathFn =
+      { user, ... }:
+      [
         "home-manager"
         "users"
         user.userName
       ];
-      fromAspect = _: (den.ctx.hm-internal-user { inherit host user; });
-    };
+    aspectFn = den.ctx.hm-user-internal;
+  };
 
-in
-{
-  den.provides.home-manager =
-    _:
-    throw ''
-      NOTICE: den.provides.home-manager aspect is not used anymore.
-      See https://den.oeiuwq.com/guides/home-manager/
-
-      Since den.ctx.hm-host requires least one user with homeManager class,
-      Home Manager is now enabled via options.
-
-      For all users unless they set a value:
-
-         den.base.user.classes = lib.mkDefault [ "homeManager" ];
-
-      On specific users:
-
-         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
-
-      See <den/home-manager/hm-os.nix>
-
-      If you had includes at den._.home-manager, you can use:
-
-         den.ctx.hm-host.includes = [ ... ];
-
-      For attaching aspects to home-manager enabled hosts.
-    '';
-
-  den.ctx.home.description = "Standalone Home-Manager config provided by home aspect";
-  den.ctx.home._.home = { home }: parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
-  den.ctx.home.into.default = lib.singleton;
-
-  den.ctx.hm-host.into.hm-user = intoHmUsers;
-  den.ctx.hm-user.description = "(internal)";
-  den.ctx.hm-user._.hm-user = forwardedToHost;
-
-  den.ctx.hm-internal-user._.hm-internal-user =
+  ctx.hm-user-internal.provides.hm-user-internal =
     { host, user }:
     { class, aspect-chain }:
     {
@@ -88,4 +65,8 @@ in
         (parametric.atLeast den.aspects.${host.aspect} { inherit host user; })
       ];
     };
+in
+{
+  den.provides.home-manager = _: throw hm-aspect-deprecated;
+  den.ctx = ctx;
 }

@@ -5,38 +5,22 @@
   ...
 }:
 let
+  inherit (den.lib.home-env)
+    detectHost
+    hostOptions
+    ;
+
   hjemClass = "hjem";
   hjemOsClasses = [
     "nixos"
     "darwin"
   ];
 
-  hostConf =
-    { host, ... }:
-    {
-      options.hjem = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = den.lib.host-has-user-with-class host hjemClass;
-        };
-        module = lib.mkOption {
-          type = lib.types.deferredModule;
-          default = inputs.hjem."${host.class}Modules".default;
-        };
-      };
-    };
-
-  hjemDetect =
-    { host }:
-    let
-      isOsSupported = builtins.elem host.class hjemOsClasses;
-      hjemUsers = builtins.filter (u: lib.elem hjemClass u.classes) (lib.attrValues host.users);
-      hasHjemUsers = builtins.length hjemUsers > 0;
-      isHjemHost = host.hjem.enable && isOsSupported && hasHjemUsers;
-    in
-    lib.optional isHjemHost { inherit host; };
-
-  ctx.host.into.hjem-host = hjemDetect;
+  ctx.host.into.hjem-host = detectHost {
+    className = hjemClass;
+    supportedOses = hjemOsClasses;
+    optionPath = "hjem";
+  };
 
   ctx.hjem-host._.hjem-host =
     { host }:
@@ -44,6 +28,12 @@ let
       ${host.class}.imports = [ host.hjem.module ];
     };
 
+  hostConf = hostOptions {
+    className = hjemClass;
+    optionPath = "hjem";
+    inputsPath = "hjem";
+    getModule = { host, ... }: inputs.hjem."${host.class}Modules".default;
+  };
 in
 {
   den.ctx = ctx;

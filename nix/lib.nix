@@ -115,6 +115,8 @@ let
 
   ctxApply = import ./ctx-apply.nix { inherit lib den; };
 
+  home-env = import ./home-env.nix { inherit lib den inputs; };
+
   den-lib = {
     inherit
       parametric
@@ -128,6 +130,7 @@ let
       isStatic
       ctxApply
       nh
+      home-env
       ;
   };
 in
