@@ -174,24 +174,57 @@ den.base.user = { user, lib, ... }: {
 ```
 
 ```nix
-# custom user-defined Nix classes.
+# Custom Nix classes.
 
-# any aspect can use my `persys` class to forward configs into
-#   nixos.environment.persistance."/nix/persist/system"
-# **ONLY** when environment.persistance option is present at host.
+# Example: A class for role-based configuration between users and hosts
+
+roleClass =
+  { host, user }:
+  { class, aspect-chain }:
+  den._.forward {
+    each = lib.intersectLists (host.roles or []) (user.roles or []);
+    fromClass = lib.id;
+    intoClass = _: host.class;
+    intoPath = _: [ ];
+    fromAspect = _: lib.head aspect-chain;
+  };
+
+den.ctx.user.includes = [ roleClass ];
+
+den.hosts.x86_64-linux.igloo = {
+  roles = [ "devops" "gaming" ];
+  users = {
+    alice.roles = [ "gaming" ];
+    bob.roles = [ "devops" ];
+  };
+};
+
+den.aspects.alice = {
+  # enabled when host supports gaming role
+  gaming = { pkgs, ... }: { programs.steam.enable = true; };
+
+  # enabled when host supports devops role
+  devops = { pkgs, ... }: { virtualisation.podman.enable = true; };
+};
+```
+
+```nix
+# Forward guards allow feature-detection without mkIf/mkMerge cluttering.
+
+# Aspects use the `persys` class without any conditional. And guard guarantees
+# settings are applied **only** when impermanence module has been imported.
 persys = { host }: den._.forward {
   each = lib.singleton true;
   fromClass = _: "persys";
   intoClass = _: host.class;
   intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
   fromAspect = _: den.aspects.${host.aspect};
-  guard = { options, ... }: options ? environment.persistance;
+  guard = { options, config, ... }: options ? environment.persistance;
 };
 
 # enable on all hosts
 den.ctx.host.includes = [ persys ];
 
-# becomes nixos.environment.persistance."/nix/persist/system".hideMounts = true;
-# no mkIf, set configs and guard ensures to include only when Impermanence exists
+# aspects just attach config to custom class
 den.aspects.my-laptop.persys.hideMounts = true;
 ```

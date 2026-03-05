@@ -161,5 +161,50 @@
       }
     );
 
+    test-pair-of-hosts = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        iceberg,
+        ...
+      }:
+      let
+        forwarded =
+          { host, user }:
+          { class, aspect-chain }:
+          den._.forward {
+            each = lib.optional (lib.elem host.name [
+              "igloo"
+              "iceberg"
+            ]) user;
+            fromClass = _: "iced";
+            intoClass = _: host.class;
+            intoPath = _: [ ];
+            fromAspect = _: lib.head aspect-chain;
+          };
+      in
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+        den.hosts.x86_64-linux.iceberg.users.tux = { };
+
+        den.aspects.igloo.homeManager.home.stateVersion = "25.11";
+        den.ctx.default.includes = [ forwarded ];
+
+        den.aspects.tux = {
+          iced.networking.hostName = "iced";
+        };
+
+        expr = [
+          igloo.networking.hostName
+          iceberg.networking.hostName
+        ];
+        expected = [
+          "iced"
+          "iced"
+        ];
+      }
+    );
+
   };
 }

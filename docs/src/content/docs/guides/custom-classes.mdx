@@ -153,6 +153,41 @@ den.aspects.my-laptop = {
 };
 ```
 
+#### Example: Role based configuration between users and hosts
+
+A dynamic class for matching roles between users and hosts.
+
+```nix
+roleClass =
+  { host, user }:
+  { class, aspect-chain }:
+  den._.forward {
+    each = lib.intersectLists (host.roles or []) (user.roles or []);
+    fromClass = lib.id;
+    intoClass = _: host.class;
+    intoPath = _: [ ];
+    fromAspect = _: lib.head aspect-chain;
+  };
+
+den.ctx.user.includes = [ roleClass ];
+
+den.hosts.x86_64-linux.igloo = {
+  roles = [ "devops" "gaming" ];
+  users = {
+    alice.roles = [ "gaming" ];
+    bob.roles = [ "devops" ];
+  };
+};
+
+den.aspects.alice = {
+  # enabled when host supports gaming role
+  gaming = { pkgs, ... }: { programs.steam.enable = true; };
+
+  # enabled when host supports devops role
+  devops = { pkgs, ... }: { virtualisation.podman.enable = true; };
+};
+```
+
 #### Example: A git class that forwards to home-manager.
 
 ```nix
@@ -195,7 +230,6 @@ nixClass =
 
 # enable class for all users:
 den.ctx.user.includes = [ nixClass ];
-
 
 # custom aspect that uses the `nix` class.
 nix-allowed = { user, ... }: { nix.allowed-users = [ user.userName ]; };
