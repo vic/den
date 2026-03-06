@@ -27,6 +27,16 @@ nix flake check
 
 - Read [modules/aspects/alice.nix](modules/aspects/alice.nix) where the `alice` user is configured.
 
+- Build
+
+```console
+# default action is build
+nix run .#igloo
+
+# pass any other nh action
+nix run .#igloo -- switch
+```
+
 - Run the VM.
 
 ```console

@@ -9,6 +9,9 @@
 {
   options.den.sh = lib.mkOption {
     description = "Non-flake Den shell environment";
-    default = den.lib.nh.denShell (import inputs.nixpkgs { });
+    default = den.lib.nh.denShell {
+      fromFlake = false;
+      outPrefix = [ "flake" ];
+    } (import inputs.nixpkgs { });
   };
 }
