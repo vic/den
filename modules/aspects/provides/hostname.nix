@@ -1,6 +1,6 @@
 { den, ... }:
 {
-  den.provides.set-hostname = den.lib.take.exactly (
+  den.provides.hostname = den.lib.take.exactly (
     { host }:
     {
       description = ''
@@ -10,7 +10,7 @@
 
         ## Usage
 
-           den.defaults.includes = [ den._.set-hostname ];
+           den.defaults.includes = [ den._.hostname ];
       '';
 
       ${host.class}.networking.hostName = host.hostName;

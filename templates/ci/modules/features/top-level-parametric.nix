@@ -24,7 +24,7 @@
       { den, igloo, ... }:
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ den._.set-hostname ];
+        den.aspects.igloo.includes = [ den._.hostname ];
 
         expr = igloo.networking.hostName;
         expected = "igloo";

@@ -103,7 +103,7 @@
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.igloo = den.lib.parametric {
           includes = [
-            den._.set-hostname
+            den._.hostname
             never-matches
           ];
         };

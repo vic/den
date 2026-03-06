@@ -20,7 +20,7 @@
     <den/bidirectional-provider>
 
     # Automatically set hostname
-    <den/set-hostname>
+    <den/hostname>
 
     # Automatically create the user on host.
     <den/define-user>
