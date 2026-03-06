@@ -45,6 +45,19 @@ den.hosts.x86_64-linux.igloo.users.tux = { };
 den.default.includes = [ den._.bidirectional-provider ];
 ```
 
+This is not the same as the built-in bidirectionality:
+
+```nix
+# contributes to ALL users of this host
+den.aspects.my-host.homeManager = { ... }
+
+# contributes to ALL hosts of where my-user exist
+den.aspects.my-user.nixos = { ... }
+```
+
+The difference is that this allows you to wire bidirectionality between
+explictly-named hosts/users pairs.
+
 A user providing config TO the host:
 
 ```nix

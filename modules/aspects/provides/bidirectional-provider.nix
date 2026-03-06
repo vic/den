@@ -1,9 +1,20 @@
-# See usage at: defaults.nix, alice.nix, igloo.nix
+# See usage at: templates/example/modules/aspects/{defaults.nix,alice.nix,igloo.nix}
 { den, ... }:
 let
   description = ''
-    Allows hosts and users to contribute configuration **to each other**
-    through `provides`.
+    Allows specifically-chosen hosts and users to contribute configuration **to
+    each other** through `provides`.
+
+    This is not the same as the built-in bidirectionality:
+
+      # contributes to ALL users of this host
+      den.aspects.my-host.homeManager = { ... }
+
+      # contributes to ALL hosts of where my-user exist
+      den.aspects.my-user.nixos = { ... }
+
+    The difference is that this allows you to wire bidirectionality between
+    explictly-named hosts/users pairs (see the usage below).
 
     This battery implements an aspect "routing" pattern.
 
