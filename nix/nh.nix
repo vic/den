@@ -5,19 +5,33 @@ let
   defaultAction = "build";
 
   denShell =
-    pkgs:
+    args: pkgs:
     pkgs.mkShell {
-      buildInputs = [ pkgs.nh ] ++ (denApps pkgs);
+      buildInputs = [ pkgs.nh ] ++ (denApps args pkgs);
     };
+
+  denPackages =
+    args: pkgs:
+    lib.listToAttrs (
+      map (a: {
+        name = a.name;
+        value = a;
+      }) (denApps args pkgs)
+    );
 
   hosts = lib.concatMap lib.attrValues (lib.attrValues den.hosts);
   homes = lib.concatMap lib.attrValues (lib.attrValues den.homes);
 
-  hostApps = pkgs: map (os pkgs) hosts;
-  homeApps = pkgs: map (hm pkgs) homes;
-  denApps = pkgs: (hostApps pkgs) ++ (homeApps pkgs);
+  hostApps = args: pkgs: map (os args pkgs) hosts;
+  homeApps = args: pkgs: map (hm args pkgs) homes;
+  denApps = args: pkgs: (hostApps args pkgs) ++ (homeApps args pkgs);
 
   os =
+    {
+      outPrefix ? [ ],
+      fromFlake ? true,
+      fromPath ? ".",
+    }:
     pkgs: host:
     pkgs.writeShellApplication {
       name = host.name;
@@ -30,12 +44,17 @@ let
               nixos = "os";
             }
             .${host.class};
-          attr = lib.concatStringsSep "." ([ "flake" ] ++ host.intoAttr);
-          args = lib.concatStringsSep " " [
-            "--file"
-            "."
-            attr
-          ];
+          attr = lib.concatStringsSep "." (outPrefix ++ host.intoAttr);
+          from =
+            if fromFlake then
+              [ "${fromPath}#.${attr}" ]
+            else
+              [
+                "--file"
+                fromPath
+                attr
+              ];
+          args = lib.concatStringsSep " " from;
         in
         ''
           action="''${1:-${defaultAction}}"
@@ -45,18 +64,28 @@ let
     };
 
   hm =
+    {
+      outPrefix ? [ ],
+      fromFlake ? true,
+      fromPath ? ".",
+    }:
     pkgs: home:
     pkgs.writeShellApplication {
       name = home.name;
       runtimeInputs = [ pkgs.nh ];
       text =
         let
-          attr = lib.concatStringsSep "." ([ "flake" ] ++ home.intoAttr);
-          args = lib.concatStringsSep " " [
-            "--file"
-            "."
-            attr
-          ];
+          attr = lib.concatStringsSep "." (outPrefix ++ home.intoAttr);
+          from =
+            if fromFlake then
+              [ "${fromPath}#.${attr}" ]
+            else
+              [
+                "--file"
+                fromPath
+                attr
+              ];
+          args = lib.concatStringsSep " " from;
         in
         ''
           action="''${1:-${defaultAction}}"
@@ -67,6 +96,7 @@ let
 in
 {
   inherit
+    denPackages
     denShell
     homeApps
     hostApps
