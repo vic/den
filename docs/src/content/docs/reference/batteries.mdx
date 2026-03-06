@@ -20,6 +20,10 @@ users that include them via `den.ctx`.
 Creates OS-level user accounts (`users.users.<name>`) with `isNormalUser`,
 and `home` directory. Works on NixOS/Darwin/WSL/HomeManager.
 
+### `den._.set-hostname`
+
+Automatically sets the host's name to the one defined in `den.hosts`. Works on NixOS/Darwin/WSL.
+
 ### `den._.os-user`
 
 A `user` class automatically enabled by Den to forward settings into the host's

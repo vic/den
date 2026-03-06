@@ -20,14 +20,7 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
-        den.default.includes = [
-          (
-            { host, ... }:
-            {
-              ${host.class}.networking.hostName = host.hostName;
-            }
-          )
-        ];
+        den.default.includes = [ den._.set-hostname ];
 
         expr = igloo.networking.hostName;
         expected = "igloo";

@@ -22,16 +22,9 @@
 
     test-host-aspect-with-context = denTest (
       { den, igloo, ... }:
-      let
-        custom-host-config =
-          { host, ... }:
-          {
-            nixos.networking.hostName = host.name;
-          };
-      in
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ custom-host-config ];
+        den.aspects.igloo.includes = [ den._.set-hostname ];
 
         expr = igloo.networking.hostName;
         expected = "igloo";

@@ -19,6 +19,9 @@
     # ${user}.provides.${host} and ${host}.provides.${user}
     <eg/routes>
 
+    # Automatically set hostname
+    <den/set-hostname>
+
     # Automatically create the user on host.
     <den/define-user>
 

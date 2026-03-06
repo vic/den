@@ -28,6 +28,14 @@ den.default.includes = [ den.provides.define-user ];
 Sets `users.users.<name>` on NixOS/Darwin and `home.username`/`home.homeDirectory`
 for Home Manager. Works in both host-user and standalone home contexts.
 
+### `den.provides.set-hostname`
+
+Automatically set the system host name to the one defined in `den.hosts`:
+
+```nix
+den.default.includes = [ den.provides.set-hostname ];
+```
+
 ### `den.provides.primary-user`
 
 Marks a user as the primary user of the system:
