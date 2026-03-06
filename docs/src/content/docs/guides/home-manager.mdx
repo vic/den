@@ -26,7 +26,7 @@ All Home integrations are opt-in and must be enabled explicitly.
 den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" "hjem" ];
 
 # As default for all users, unless they specify other classes.
-den.base.user.classes = lib.mkDefault [ "homeManager" ];
+den.schema.user.classes = lib.mkDefault [ "homeManager" ];
 ```
 
 Home integration contexts, like `den.ctx.hm-host` only activate when
@@ -105,7 +105,7 @@ den.hosts.x86_64-linux.laptop = {
 };
 
 # On all hosts
-den.base.host.hjem.enable = true;
+den.schema.host.hjem.enable = true;
 ```
 
 ### Requirements

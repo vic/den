@@ -154,7 +154,7 @@ flowchart LR
 ```
 
 <Steps>
-1. **Schema** -- `den.hosts` and `den.homes` declare machines, users, and their properties with `den.base` modules and extensible freeform types.
+1. **Schema** -- `den.hosts` and `den.homes` declare machines, users, and their properties with `den.schema` modules and extensible freeform types.
 2. **Aspects** -- `den.aspects.*` bundles per-class configs (`nixos`, `darwin`, `homeManager`, or any custom class) with `.includes` and `.provides` forming a DAG.
 3. **Context pipeline** -- `den.ctx` transforms schema entries into context pairs (`{host}`, `{host, user}`, `{home}`), walking `into.*` transitions for derived contexts like `hm-host`, `hm-user`, `wsl-host` or any other custom context stage.
 4. **Resolution** -- Parametric dispatch via `__functor` argument introspection. Functions receive only contexts whose shape matches their parameters. 

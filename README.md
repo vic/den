@@ -113,7 +113,7 @@ $ home-manager   switch --flake .#vic
 
 ```nix
 # extensible base modules for common, typed schemas
-den.base.user = { user, lib, ... }: {
+den.schema.user = { user, lib, ... }: {
   config.classes =
     if user.userName == "vic" then [ "hjem" "maid" ]
     else lib.mkDefault [ "homeManager" ];

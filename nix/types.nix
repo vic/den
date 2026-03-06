@@ -24,7 +24,7 @@ let
       { name, config, ... }:
       {
         freeformType = lib.types.attrsOf lib.types.anything;
-        imports = [ den.base.host ];
+        imports = [ den.schema.host ];
         config._module.args.host = config;
         options = {
           name = strOpt "host configuration name" name;
@@ -108,7 +108,7 @@ let
     { name, config, ... }:
     {
       freeformType = lib.types.attrsOf lib.types.anything;
-      imports = [ den.base.user ];
+      imports = [ den.schema.user ];
       config._module.args.user = config;
       options = {
         name = strOpt "user configuration name" name;
@@ -149,7 +149,7 @@ let
       { name, config, ... }:
       {
         freeformType = lib.types.attrsOf lib.types.anything;
-        imports = [ den.base.home ];
+        imports = [ den.schema.home ];
         config._module.args.home = config;
         options = {
           name = strOpt "home configuration name" name;

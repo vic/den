@@ -32,7 +32,7 @@ let
     options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
     options.expected = lib.mkOption { };
-    config.den.base.user.classes = lib.mkDefault [ "homeManager" ];
+    config.den.schema.user.classes = lib.mkDefault [ "homeManager" ];
   };
 
   helpersModule =

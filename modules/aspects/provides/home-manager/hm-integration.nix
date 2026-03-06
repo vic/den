@@ -23,7 +23,7 @@ let
 
     For all users unless they set a value:
 
-       den.base.user.classes = lib.mkDefault [ "homeManager" ];
+       den.schema.user.classes = lib.mkDefault [ "homeManager" ];
 
     On specific users:
 
