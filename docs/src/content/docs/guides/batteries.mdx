@@ -36,6 +36,35 @@ Automatically set the system host name to the one defined in `den.hosts`:
 den.default.includes = [ den.provides.set-hostname ];
 ```
 
+### `den.provides.bidirectional-provider`
+
+Allows hosts and users to contribute configuration **to each other** through `provides`:
+
+```nix
+den.hosts.x86_64-linux.igloo.users.tux = { };
+den.default.includes = [ den._.bidirectional-provider ];
+```
+
+A user providing config TO the host:
+
+```nix
+den.aspects.tux = {
+  provides.igloo = { host, ... }: {
+    nixos.programs.nh.enable = host.name == "igloo";
+  };
+};
+```
+
+A host providing config TO the user:
+
+```nix
+den.aspects.igloo = {
+  provides.tux = { user, ... }: {
+    homeManager.programs.helix.enable = user.name == "alice";
+  };
+};
+```
+
 ### `den.provides.primary-user`
 
 Marks a user as the primary user of the system:

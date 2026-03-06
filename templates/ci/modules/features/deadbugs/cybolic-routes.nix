@@ -15,24 +15,7 @@
         den.default.homeManager.home.stateVersion = "25.11";
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        den.aspects.routes =
-          let
-            inherit (den.lib) parametric;
-            # eg, `<user>._.<host>` and `<host>._.<user>`
-            mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
-
-            routes =
-              { host, user, ... }@ctx:
-              parametric.fixedTo ctx {
-                includes = [
-                  (mutual user host)
-                  (mutual host user)
-                ];
-              };
-          in
-          routes;
-
-        den.default.includes = [ den.aspects.routes ];
+        den.default.includes = [ den._.bidirectional-provider ];
 
         den.aspects.igloo.provides.tux = den.lib.parametric {
           includes = [ den.aspects.testing ];

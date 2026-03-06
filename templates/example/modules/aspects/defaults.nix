@@ -17,7 +17,7 @@
   # These are functions that produce configs
   den.default.includes = [
     # ${user}.provides.${host} and ${host}.provides.${user}
-    <eg/routes>
+    <den/bidirectional-provider>
 
     # Automatically set hostname
     <den/set-hostname>
@@ -35,13 +35,7 @@
     #  # This will append 42 into foo option for the {host} and for EVERY {host,user}
     #  ({ host, ... }: { nixos.foo = [ 42 ]; }) # DO-NOT-DO-THIS.
     #
-    #  # Instead try to be explicit if a function is intended for ONLY { host }.
-    (den.lib.take.exactly (
-      { host }:
-      {
-        nixos.networking.hostName = host.hostName;
-      }
-    ))
-
+    #  # Instead try to be explicit if a function is intended for ONLY { host }
+    #  den.lib.take.exactly ({ host }: { nixos.foo = [ 42 ]; })
   ];
 }
