@@ -7,8 +7,9 @@ import { Aside } from '@astrojs/starlight/components';
 
  
 <Aside title="Source" icon="github">
-[`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix) · Reference: [Entity Schema](/reference/schema/)
+[`modules/_types.nix`](https://github.com/vic/den/blob/main/modules/_types.nix) 
 </Aside>
+ 
 
 
 ## Host Declaration
@@ -30,6 +31,10 @@ Each host entry produces a configuration in `flake.nixosConfigurations` or
 `flake.darwinConfigurations` depending on its `class` (auto-detected from system).
 
 ## Host Schema
+
+<Aside title="Important" icon="nix">
+Be sure to read about the entity [Schemas](/reference/schema/), each of `host`/`user`/`home` has a corresponding `den.base.*` module for meta-configuration. Which can later be used in aspects that read from `host`. These schemas are the meta-data equivalent of what Dendritic flake-parts users do with flake-level options.
+</Aside>
 
 Hosts have these options (all with sensible defaults):
 
