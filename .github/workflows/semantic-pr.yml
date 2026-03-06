@@ -1,0 +1,49 @@
+name: Semantic PR
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: Check pull request title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5.5.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Type abbreviation comments:
+          # feat -> feature
+          types: |
+            fix
+            doc
+            feat
+            test
+            perf
+            style
+            revert
+            cleanup
+            improve
+            refactor
+            breaking
+          scopes: |
+            ci
+            bug
+            lib
+            ctx
+            docs
+            core
+            class
+            homes
+            tests
+            template
+            battery
+            repo
+
