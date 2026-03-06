@@ -75,29 +75,13 @@ jobs:
           EOF
           git add templates/noflake/modules/ci-runtime.nix
       - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
-  minimal:
-    needs: [approved]
-    name: minimal
-    runs-on: ubuntu-latest
-    steps:
-      - uses: wimpysworld/nothing-but-nix@main
-      - uses: cachix/install-nix-action@v31
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - uses: actions/checkout@v4
-      - run: |
-          cat <<-EOF > templates/minimal/modules/ci-runtime.nix
-          {
-            _module.args.CI = true;
-          }
-          EOF
-          git add templates/minimal/modules/ci-runtime.nix
-      - run: nix flake check -L ./templates/minimal --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
-  bogus:
+  template:
     needs: [approved]
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-    name: Bogus ${{matrix.os}}
+        template: [bogus, minimal, microvm]
+        os: [ubuntu-latest]
+    name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
       - uses: wimpysworld/nothing-but-nix@main
@@ -105,19 +89,19 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v4
       - run: |
-          cat <<-EOF > templates/bogus/modules/ci-runtime.nix
+          cat <<-EOF > templates/${{matrix.template}}/modules/ci-runtime.nix
           {
             _module.args.CI = true;
           }
           EOF
-          git add templates/bogus/modules/ci-runtime.nix
-      - run: nix flake check -L ./templates/bogus --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
-  template:
+          git add templates/${{matrix.template}}/modules/ci-runtime.nix
+      - run: nix flake check -L ./templates/${{matrix.template}} --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+  flake-file-template:
     needs: [approved]
     strategy:
       # max-parallel: 1
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         template: [default, example]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}

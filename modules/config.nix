@@ -9,7 +9,14 @@ let
     builder: cfg:
     let
       items = map builtins.attrValues (builtins.attrValues cfg);
-      buildItem = item: lib.setAttrByPath item.intoAttr (builder item);
+      buildItem =
+        item:
+        if
+          item.intoAttr == [ ] # no output requested
+        then
+          { }
+        else
+          lib.setAttrByPath item.intoAttr (builder item);
       built = map buildItem (lib.flatten items);
     in
     built;
