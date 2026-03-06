@@ -30,7 +30,7 @@ for Home Manager. Works in both host-user and standalone home contexts.
 
 ### `den.provides.hostname`
 
-Automatically set the system host name to the one defined in `den.hosts`:
+Sets the system hostname as defined in `den.hosts.<name>.hostName`:
 
 ```nix
 den.default.includes = [ den.provides.hostname ];

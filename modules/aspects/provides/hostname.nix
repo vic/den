@@ -4,7 +4,7 @@
     { host }:
     {
       description = ''
-        Sets the system hostname as defined in `den.hosts`.
+        Sets the system hostname as defined in `den.hosts.<name>.hostName`:
 
         Works on NixOS/Darwin/WSL.
 
