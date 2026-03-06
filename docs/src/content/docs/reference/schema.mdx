@@ -18,7 +18,7 @@ meaning you can assign any attribute into them as meta-data.
 However, at times you might want to have shared meta-data between all hosts
 or all users.
 
-The base modules, `den.base.*` serve for this purpose. 
+The base modules, `den.schema.*` serve for this purpose. 
 They are **not aspects**, they are meta-data (the attributes of host) that aspects
 can later read for providing configuration.
 
@@ -38,13 +38,13 @@ You can do:
 
 ```nix
 # This is not an aspect, it is a meta-configuration of the host capabilities.
-den.base.host = { host, lib, ... }: {
+den.schema.host = { host, lib, ... }: {
    options.hardened = lib.mkEnableOption "Is it secure";
    config.hardened = lib.mkDefault true;
 };
 
 # The meta-configuration module for all users
-den.base.user = { user, lib, ... }: {
+den.schema.user = { user, lib, ... }: {
    config.classes = lib.mkDefault [ "homeManager" ];
 };
 ```
@@ -52,22 +52,22 @@ den.base.user = { user, lib, ... }: {
 All hosts you create will be `hardened = true` by default. And aspects will
 be able to read `host.hardened` value.
 
-## `den.base`
+## `den.schema`
 
 Base modules merged into all hosts, users, or homes.
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `den.base.conf` | `deferredModule` | Applied to host, user, and home |
-| `den.base.host` | `deferredModule` | Applied to all hosts (imports `conf`) |
-| `den.base.user` | `deferredModule` | Applied to all users (imports `conf`) |
-| `den.base.home` | `deferredModule` | Applied to all homes (imports `conf`) |
+| `den.schema.conf` | `deferredModule` | Applied to host, user, and home |
+| `den.schema.host` | `deferredModule` | Applied to all hosts (imports `conf`) |
+| `den.schema.user` | `deferredModule` | Applied to all users (imports `conf`) |
+| `den.schema.home` | `deferredModule` | Applied to all homes (imports `conf`) |
 
 ```nix
-den.base.conf = { lib, ... }: {
+den.schema.conf = { lib, ... }: {
   # shared across all host/user/home declarations
 };
-den.base.host = { ... }: {
+den.schema.host = { ... }: {
   # host-specific base config
 };
 ```
@@ -99,7 +99,7 @@ den.hosts.x86_64-linux.myhost = {
 | `users` | `attrsOf userType` | `{}` | User accounts on this host |
 | `instantiate` | `raw` | auto | OS builder function |
 | `intoAttr` | `listOf str` | auto | Flake output path |
-| `*` | `den.base.host` options | | Options from base module |
+| `*` | `den.schema.host` options | | Options from base module |
 | `*` |  | | free-form attributes |
 
 ### `instantiate` defaults
@@ -130,7 +130,7 @@ Type: `attrsOf userType`
 | `userName` | `str` | `name` | System account name |
 | `classes` | `listOf str` | `[ "homeManager" ]` | Home management classes |
 | `aspect` | `str` | `name` | Main aspect name |
-| `*` | `den.base.user` options | | Options from base module |
+| `*` | `den.schema.user` options | | Options from base module |
 | `*` |  | | free-form attributes |
 
 Freeform: additional attributes pass through to the user module.
@@ -158,6 +158,6 @@ den.homes.x86_64-linux.vic = {};
 | `pkgs` | `raw` | `inputs.nixpkgs.legacyPackages.$sys` | Nixpkgs instance |
 | `instantiate` | `raw` | `inputs.home-manager.lib.homeManagerConfiguration` | Builder |
 | `intoAttr` | `listOf str` | `[ "homeConfigurations" name ]` | Output path |
-| `*` | `den.base.home` options | | Options from base module |
+| `*` | `den.schema.home` options | | Options from base module |
 | `*` |  | | free-form attributes |
 

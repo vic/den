@@ -21,7 +21,7 @@ let
 
     On ALL hosts (works only on nixos class hosts):
 
-       den.base.host.wsl.enable = true;
+       den.schema.host.wsl.enable = true;
   '';
 
   ctx.host.into.wsl-host =
@@ -59,5 +59,5 @@ let
 in
 {
   den.ctx = ctx;
-  den.base.host.imports = [ hostConf ];
+  den.schema.host.imports = [ hostConf ];
 }

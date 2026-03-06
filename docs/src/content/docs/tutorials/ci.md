@@ -24,7 +24,7 @@ modules/
     namespaces.nix                       # namespace define/merge/export
     os-user-class.nix                    # user class forwarding
     parametric.nix                       # parametric functors
-    schema-base-modules.nix              # den.base modules
+    schema-base-modules.nix              # den.schema modules
     special-args-custom-instantiate.nix  # custom instantiation
     top-level-parametric.nix             # top-level context aspects
     user-host-bidirectional-config.nix   # bidirectional providers
@@ -104,7 +104,7 @@ modules/
 | [namespaces.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/namespaces.nix) | Local, remote, merged namespaces |
 | [forward-from-custom-class.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-from-custom-class.nix) | Custom class forwarding |
 | [homes.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/homes.nix) | Standalone Home-Manager configs |
-| [schema-base-modules.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/schema-base-modules.nix) | `den.base.{host,user,home,conf}` |
+| [schema-base-modules.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/schema-base-modules.nix) | `den.schema.{host,user,home,conf}` |
 
 ### Bug Regressions
 

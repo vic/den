@@ -56,8 +56,10 @@ in
         names = [
           "hosts"
           "homes"
-          "base"
+          "schema"
           "default"
+          "provides"
+          "ful"
         ];
         ev = lib.evalModules { modules = [ denModule ]; };
         expr = builtins.all (name: !ev.config.den ? ${name}) names;

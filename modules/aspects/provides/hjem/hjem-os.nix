@@ -37,5 +37,5 @@ let
 in
 {
   den.ctx = ctx;
-  den.base.host.imports = [ hostConf ];
+  den.schema.host.imports = [ hostConf ];
 }

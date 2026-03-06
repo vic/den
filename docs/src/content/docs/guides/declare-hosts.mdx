@@ -33,7 +33,7 @@ Each host entry produces a configuration in `flake.nixosConfigurations` or
 ## Host Schema
 
 <Aside title="Important" icon="nix">
-Be sure to read about the entity [Schemas](/reference/schema/), each of `host`/`user`/`home` has a corresponding `den.base.*` module for meta-configuration. Which can later be used in aspects that read from `host`. These schemas are the meta-data equivalent of what Dendritic flake-parts users do with flake-level options.
+Be sure to read about the entity [Schemas](/reference/schema/), each of `host`/`user`/`home` has a corresponding `den.schema.*` module for meta-configuration. Which can later be used in aspects that read from `host`. These schemas are the meta-data equivalent of what Dendritic flake-parts users do with flake-level options.
 </Aside>
 
 Hosts have these options (all with sensible defaults):
@@ -48,7 +48,7 @@ Hosts have these options (all with sensible defaults):
 | `instantiate` | class-dependent | `lib.nixosSystem`, `darwinSystem`, etc. |
 | `intoAttr` | class-dependent | Flake output path |
 | `users` | `{}` | User account definitions |
-| `*` | from `den.base.host` | Any option defined by base module |
+| `*` | from `den.schema.host` | Any option defined by base module |
 | `*` |  | Any other free-form attribute |
 
 ## User Declaration
@@ -70,7 +70,7 @@ Each user has:
 | `userName` | `name` | System account name |
 | `aspect` | `name` | Primary aspect name |
 | `classes` | `[ "homeManager" ]` | Nix classes this user participates in |
-| `*` | from `den.base.user` | Any option defined by base module |
+| `*` | from `den.schema.user` | Any option defined by base module |
 | `*` |  | Any other free-form attribute |
 
 ## Standalone Homes
@@ -97,27 +97,27 @@ Home schema:
 | `aspect` | `name` | Primary aspect name |
 | `pkgs` | `inputs.nixpkgs.legacyPackages.${system}` | nixpkgs instance |
 | `instantiate` | `inputs.home-manager.lib.homeManagerConfiguration` | Builder function |
-| `*` | from `den.base.host` | Any option defined by base module |
+| `*` | from `den.schema.host` | Any option defined by base module |
 | `*` |  | Any other free-form attribute |
 
 ## Base Modules
 
-`den.base.{host,user,home,conf}` provides shared configuration applied to all entities of each kind.
+`den.schema.{host,user,home,conf}` provides shared configuration applied to all entities of each kind.
 
 Some batteries also extend base modules [see `hjem-os.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/hjem/hjem-os.nix#L50) which defines `hjem.module` option.
 
 ```nix
 {
   # Can be used to config each host
-  den.base.host.home-manager.enable = true;
+  den.schema.host.home-manager.enable = true;
 
   # Can be used to add schema options with defaults
-  den.base.user = { user, lib, ... }: {
+  den.schema.user = { user, lib, ... }: {
     options.groupName = lib.mkOption { default = user.userName; };
   };
 
   # Applied to every host and user and home.
-  den.base.conf = {
+  den.schema.conf = {
     options.copyright = lib.mkOption { default = "Copy-Left"; };
   };
 }

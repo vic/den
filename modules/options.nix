@@ -15,15 +15,15 @@ in
 {
   options.den.hosts = types.hostsOption;
   options.den.homes = types.homesOption;
-  options.den.base = {
+  options.den.schema = {
     conf = baseMod;
     host = baseMod;
     user = baseMod;
     home = baseMod;
   };
-  config.den.base = {
-    host.imports = [ den.base.conf ];
-    user.imports = [ den.base.conf ];
-    home.imports = [ den.base.conf ];
+  config.den.schema = {
+    host.imports = [ den.schema.conf ];
+    user.imports = [ den.schema.conf ];
+    home.imports = [ den.schema.conf ];
   };
 }

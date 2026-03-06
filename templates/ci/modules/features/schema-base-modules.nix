@@ -6,7 +6,7 @@
     test-host-base = denTest (
       { den, lib, ... }:
       {
-        den.base.host =
+        den.schema.host =
           { host, ... }:
           {
             options.vpn-alias = lib.mkOption { default = host.name; };
@@ -22,7 +22,7 @@
     test-user-base = denTest (
       { den, lib, ... }:
       {
-        den.base.user =
+        den.schema.user =
           { user, ... }:
           {
             options.main-group = lib.mkOption { default = user.name; };
@@ -38,7 +38,7 @@
     test-home-base = denTest (
       { den, lib, ... }:
       {
-        den.base.home =
+        den.schema.home =
           { home, ... }:
           {
             options.main-group = lib.mkOption { default = home.name; };
@@ -54,7 +54,7 @@
     test-conf-base = denTest (
       { den, lib, ... }:
       {
-        den.base.conf =
+        den.schema.conf =
           { ... }:
           {
             options.foo = lib.mkOption { default = "foo"; };

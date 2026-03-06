@@ -73,7 +73,7 @@ export default defineConfig({
 				{
 					label: 'Reference',
 					items: [
-						{ label: 'den.base', slug: 'reference/schema' },
+						{ label: 'den.schema', slug: 'reference/schema' },
 						{ label: 'den.aspects', slug: 'reference/aspects' },
 						{ label: 'den.provides', slug: 'reference/batteries' },
 						{ label: 'den.ctx', slug: 'reference/ctx' },
