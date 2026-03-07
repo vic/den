@@ -98,17 +98,12 @@
           {
             nixos.networking.hostName = "NEVER";
           };
-        sets-hostname =
-          { host, ... }:
-          {
-            nixos.networking.hostName = host.name;
-          };
       in
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.igloo = den.lib.parametric {
           includes = [
-            sets-hostname
+            den._.hostname
             never-matches
           ];
         };

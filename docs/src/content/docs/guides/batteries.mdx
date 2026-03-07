@@ -28,6 +28,56 @@ den.default.includes = [ den.provides.define-user ];
 Sets `users.users.<name>` on NixOS/Darwin and `home.username`/`home.homeDirectory`
 for Home Manager. Works in both host-user and standalone home contexts.
 
+### `den.provides.hostname`
+
+Sets the system hostname as defined in `den.hosts.<name>.hostName`:
+
+```nix
+den.default.includes = [ den.provides.hostname ];
+```
+
+### `den.provides.mutual-provider`
+
+Allows hosts and users to contribute configuration **to each other** through `provides`:
+
+```nix
+den.hosts.x86_64-linux.igloo.users.tux = { };
+den.default.includes = [ den._.mutual-provider ];
+```
+
+This is not the same as the built-in bidirectionality:
+
+```nix
+# contributes to ALL users of this host
+den.aspects.my-host.homeManager = { ... }
+
+# contributes to ALL hosts of where my-user exist
+den.aspects.my-user.nixos = { ... }
+```
+
+The difference is that this allows you to wire bidirectionality between
+explictly-named hosts/users pairs.
+
+A user providing config TO the host:
+
+```nix
+den.aspects.tux = {
+  provides.igloo = { host, ... }: {
+    nixos.programs.nh.enable = host.name == "igloo";
+  };
+};
+```
+
+A host providing config TO the user:
+
+```nix
+den.aspects.igloo = {
+  provides.tux = { user, ... }: {
+    homeManager.programs.helix.enable = user.name == "alice";
+  };
+};
+```
+
 ### `den.provides.primary-user`
 
 Marks a user as the primary user of the system:

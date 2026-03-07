@@ -20,6 +20,10 @@ users that include them via `den.ctx`.
 Creates OS-level user accounts (`users.users.<name>`) with `isNormalUser`,
 and `home` directory. Works on NixOS/Darwin/WSL/HomeManager.
 
+### `den._.hostname`
+
+Automatically sets the host's name to the one defined in `den.hosts.<name>.hostName`. Works on NixOS/Darwin/WSL.
+
 ### `den._.os-user`
 
 A `user` class automatically enabled by Den to forward settings into the host's
@@ -33,6 +37,13 @@ Marks a user as the primary user (admin level) of a host. Works in NixOS/Darwin/
 
 Sets the user's login shell. 
 `users.users.<name>.shell` enabling the shell at host, and the home-manager `programs.<shell>.enable`.
+
+### `den._.mutual-provider`
+
+Allows the user and host to contribute configuration to each other via
+`provides`. This is not the same as the built-in bidirectionality. The
+difference is that this allows you to wire bidirectionality between
+explictly-named hosts/users pairs.
 
 ### `den._.tty-autologin`
 
