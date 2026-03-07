@@ -27,7 +27,8 @@ let
     which is ignored by parametric aspects, thus allowing non-existing
     aspects to be just ignored.
 
-    Be sure to read: https://vic.github.io/den/dependencies.html
+    Be sure to read the Host Context section on:
+    https://den.oeiuwq.com/explanation/context-pipeline
 
     ## Usage
 
