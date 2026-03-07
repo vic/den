@@ -1,6 +1,6 @@
 { denTest, ... }:
 {
-  flake.tests.bidirectional-provider = {
+  flake.tests.mutual-provider = {
 
     test-host-provide-user = denTest (
       { den, igloo, ... }:
@@ -10,7 +10,7 @@
         den.default.nixos.system.stateVersion = "25.11";
         den.default.homeManager.home.stateVersion = "25.11";
 
-        den.default.includes = [ den._.bidirectional-provider ];
+        den.default.includes = [ den._.mutual-provider ];
 
         den.aspects.igloo.provides.tux = den.lib.parametric {
           homeManager.home.shellAliases.g = "git";
@@ -30,7 +30,7 @@
         den.default.nixos.system.stateVersion = "25.11";
         den.default.homeManager.home.stateVersion = "25.11";
 
-        den.default.includes = [ den._.bidirectional-provider ];
+        den.default.includes = [ den._.mutual-provider ];
 
         den.aspects.tux.provides.igloo = den.lib.parametric {
           nixos.boot.crashDump.reservedMemory = "99999M";
@@ -50,7 +50,7 @@
         den.default.nixos.system.stateVersion = "25.11";
         den.default.homeManager.home.stateVersion = "25.11";
 
-        den.default.includes = [ den._.bidirectional-provider ];
+        den.default.includes = [ den._.mutual-provider ];
 
         den.aspects.igloo.provides.tux = den.lib.parametric {
           homeManager.home.keyboard.model = "denboard";

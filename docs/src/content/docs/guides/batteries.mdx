@@ -36,13 +36,13 @@ Sets the system hostname as defined in `den.hosts.<name>.hostName`:
 den.default.includes = [ den.provides.hostname ];
 ```
 
-### `den.provides.bidirectional-provider`
+### `den.provides.mutual-provider`
 
 Allows hosts and users to contribute configuration **to each other** through `provides`:
 
 ```nix
 den.hosts.x86_64-linux.igloo.users.tux = { };
-den.default.includes = [ den._.bidirectional-provider ];
+den.default.includes = [ den._.mutual-provider ];
 ```
 
 This is not the same as the built-in bidirectionality:

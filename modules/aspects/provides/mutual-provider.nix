@@ -33,7 +33,7 @@ let
     ## Usage
 
       den.hosts.x86_64-linux.igloo.users.tux = { };
-      den.default.includes = [ den._.bidirectional-provider ];
+      den.default.includes = [ den._.mutual-provider ];
 
     A user providing config TO the host:
 
@@ -55,7 +55,7 @@ let
   mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
 in
 {
-  den.provides.bidirectional-provider =
+  den.provides.mutual-provider =
     { host, user }@ctx:
     den.lib.parametric.fixedTo ctx {
       inherit description;

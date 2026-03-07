@@ -3,7 +3,7 @@ title: "Template: Example"
 description: Feature showcase with namespaces, angle brackets, cross-platform aspects, and providers.
 ---
 
-The example template demonstrates Den's advanced features: namespaces, angle brackets, cross-platform hosts, bidirectional providers, and custom aspect libraries.
+The example template demonstrates Den's advanced features: namespaces, angle brackets, cross-platform hosts, mutual providers, and custom aspect libraries.
 
 ## Initialize
 
@@ -97,7 +97,7 @@ Aspects can have nested **provides** — `eg.vm._.gui` and `eg.vm._.tui` are sub
 
 The `<name>` syntax is shorthand for aspect lookup. `<den/define-user>` resolves to `den.provides.define-user`. See [Angle Brackets](/guides/angle-brackets/).
 
-### Bidirectional Providers
+### Mutual Providers
 
 ```nix
 # modules/aspects/alice.nix — user provides config TO the host
@@ -153,7 +153,7 @@ graph TD
 | Standalone HM config | ✓ |
 | Namespaces (`eg`) | ✓ |
 | Angle brackets | ✓ |
-| Bidirectional providers | ✓ |
+| Mutual providers | ✓ |
 | VM testing | ✓ |
 | CI checks | ✓ |
 
