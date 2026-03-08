@@ -87,19 +87,19 @@ nix flake init -t github:vic/den && nix run .#vm
 ### Testimonials
 
 > Den takes the Dendritic pattern to a whole new level, and I cannot imagine going back.\
-> — @adda - Very early Den adopter after using Dendritic flake-parts and Unify.
+> — `@adda` - Very early Den adopter after using Dendritic flake-parts and Unify.
 
 > I’m super impressed with den so far, I’m excited to try out some new patterns that Unify couldn’t easily do.\
-> — @quasigod - Unify dendritic-framework author on adopting Den.
+> — `@quasigod` - Author of [Unify](https://codeberg.org/quasigod/unify) dendritic-framework, on adopting Den.
 
 > Massive work you did here!\
-> — @drupol - Author of “Flipping the Configuration Matrix” Dendritic blog post.
+> — `@drupol` - Author of [“Flipping the Configuration Matrix”](https://not-a-number.io/2025/refactoring-my-infrastructure-as-code-configurations/#flipping-the-configuration-matrix) Dendritic blog post.
 
 > Thanks for the awesome library and the support for non-flakes… it’s positively brilliant!. I really hope this gets wider adoption.\
-> — @vczf - At den matrix channel.
+> — `@vczf` - At [`#den-lib:matrix.org`](https://matrix.to/#/#den-lib:matrix.org) channel.
 
 > Den is a playground for some very advanced concepts. I’m convinced that some of its ideas will play a role in future Nix areas. In my opinion there are some raw diamonds in Den.\
-> — @Doc-Steve - Author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts)
+> — `@Doc-Steve` - Author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts)
 
 ## Code example (OS configuration domain)
 
