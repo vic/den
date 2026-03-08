@@ -56,6 +56,8 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [noflake](https://den.oeiuwq.com/tutorials/noflake): -flakes +npins +lib.evalModules +nix-maid
 
+[microvm](https://den.oeiuwq.com/tutorials/microvm): MicroVM runnable-pkg and guests. custom ctx-pipeline.
+
 [example](https://den.oeiuwq.com/tutorials/example): cross-platform
 
 [ci](https://den.oeiuwq.com/tutorials/ci): Each feature tested as code examples
@@ -98,8 +100,9 @@ nix flake init -t github:vic/den && nix run .#vm
 
 ## Code example (OS configuration domain)
 
+### Defining hosts, users and homes.
+
 ```nix
-# Define hosts, users & homes
 den.hosts.x86_64-linux.lap.users.vic = {};
 den.hosts.aarch64-darwin.mac.users.vic = {};
 den.homes.aarch64-darwin.vic = {};
@@ -110,6 +113,8 @@ $ nixos-rebuild switch --flake .#lap
 $ darwin-rebuild switch --flake .#mac
 $ home-manager   switch --flake .#vic
 ```
+
+### Extensible Schemas for hosts, users and homes.
 
 ```nix
 # extensible base modules for common, typed schemas
@@ -122,39 +127,43 @@ den.schema.user = { user, lib, ... }: {
 };
 ```
 
+### Dendritic Multi-Platform Hosts
+
 ```nix
 # modules/my-laptop.nix
 { den, inputs, ... }: {
   den.aspects.my-laptop = {
-    # re-usable configuration aspects
-    includes = [ den.aspects.work-vpn ];
+    # re-usable configuration aspects. Den batteries and yours.
+    includes = [ den.provides.hostname den.aspects.work-vpn ];
 
     # regular nixos/darwin modules or any other Nix class
     nixos  = { pkgs, ... }: { imports = [ inputs.disko.nixosModules.disko ]; };
     darwin = { pkgs, ... }: { imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ]; };
 
-    # Den `os` Nix class forwards to both nixos and darwin
+    # Custom Nix classes. `os` applies to both nixos and darwin. contributed by @Risa-G.
+    # See https://den.oeiuwq.com/guides/custom-classes/#user-contributed-examples
     os = { pkgs, ... }: {
-      networking.hostName = "yavanna";
-      environment.packages = [ pkgs.direnv ];
+      environment.systemPackages = [ pkgs.direnv ];
     };
 
-    # host can contribute to its users' environment
+    # host can contribute default home environments to all its users.
     homeManager.programs.vim.enable = true;
   };
 }
 ```
 
+### Multiple User Home Environments
+
 ```nix
 # modules/vic.nix
 { den, ... }: {
   den.aspects.vic = {
-    # supports multiple home environments
+    # supports multiple home environments, eg: for migrating from homeManager.
     homeManager = { pkgs, ... }: { };
     hjem.files.".envrc".text = "use flake ~/hk/home";
     maid.kconfig.settings.kwinrc.Desktops.Number = 3;
 
-    # user can contribute configurations to all hosts it lives on
+    # user can contribute OS-configurations to any host it lives on
     darwin.services.karabiner-elements.enable = true;
 
     # user class forwards into {nixos/darwin}.users.users.<userName>
@@ -173,9 +182,11 @@ den.schema.user = { user, lib, ... }: {
 }
 ```
 
-```nix
-# Custom Nix classes.
+### Custom Dendritic Nix Classes
 
+See [custom-classes docs](https://den.oeiuwq.com/guides/custom-classes) for explanation.
+
+```nix
 # Example: A class for role-based configuration between users and hosts
 
 roleClass =
@@ -200,17 +211,28 @@ den.hosts.x86_64-linux.igloo = {
 };
 
 den.aspects.alice = {
-  # enabled when host supports gaming role
+  # enabled when both support gaming role
   gaming = { pkgs, ... }: { programs.steam.enable = true; };
+};
 
-  # enabled when host supports devops role
+den.aspects.bob = {
+  # enabled when both support devops role
   devops = { pkgs, ... }: { virtualisation.podman.enable = true; };
+
+  # not enabled at igloo host (bob missing gaming role on that host)
+  gaming = {};
 };
 ```
 
-```nix
-# Forward guards allow feature-detection without mkIf/mkMerge cluttering.
+### Guarded Forwarding Classes
 
+Forward guards allow feature-detection without mkIf/mkMerge cluttering.
+
+Aspects can simply assign configurations into a class (here `persys`)
+from any file, without any `mkIf`/`mkMerge` cluttering. The logic for
+determining if the class takes effect is defined at a single place.
+
+```nix
 # Aspects use the `persys` class without any conditional. And guard guarantees
 # settings are applied **only** when impermanence module has been imported.
 persys = { host }: den._.forward {
@@ -227,4 +249,27 @@ den.ctx.host.includes = [ persys ];
 
 # aspects just attach config to custom class
 den.aspects.my-laptop.persys.hideMounts = true;
+```
+
+### User-defined Extensions to Den Framework.
+
+See example [`template/microvm`](https://den.oeiuwq.com/tutorials/microvm) for an example
+of custom `den.ctx` and `den.schema` extensions for supporting
+Declarative [MicroVM](https://microvm-nix.github.io/microvm.nix/declarative.html) guests with automatic host-shared `/nix/store`.
+
+```nix
+den.hosts.x86_64-linux.guest = {};
+den.hosts.x86_64-linux.host = {
+  microvm.guests = [ den.hosts.x86_64-linux.guest ];
+};
+
+den.aspects.guest = {
+  # propagated into host.nixos.microvm.vms.<name>;
+  microvm.autostart = true;
+
+  # guest supports all Den features.
+  includes = [ den.provides.hostname ];
+  # As MicroVM guest propagated into host.nixos.microvm.vms.<name>.config;
+  nixos = { pkgs, ... }: { environment.systemPackages = [ pkgs.hello ]; };
+};
 ```
