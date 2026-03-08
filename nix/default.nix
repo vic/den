@@ -17,6 +17,8 @@ in
     noflake.description = "Den without flake";
     example.path = ../templates/example;
     example.description = "Example";
+    microvm.path = ../templates/microvm;
+    microvm.description = "MicroVM example";
     ci.path = ../templates/ci;
     ci.description = "Feature Tests";
     bogus.path = ../templates/bogus;

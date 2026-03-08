@@ -26,7 +26,11 @@ let
     ]
     ++ lib.concatLists (
       lib.mapAttrsToList (
-        name: into: lib.concatMap (transformAll self den.ctx.${name}) (into ctx)
+        name: into:
+        if !builtins.hasAttr name den.ctx then
+          [ ]
+        else
+          lib.concatMap (transformAll self den.ctx.${name}) (into ctx)
       ) self.into
     );
 
