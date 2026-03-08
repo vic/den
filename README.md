@@ -232,6 +232,8 @@ Aspects can simply assign configurations into a class (here `persys`)
 from any file, without any `mkIf`/`mkMerge` cluttering. The logic for
 determining if the class takes effect is defined at a single place.
 
+> Example from @Doc-Steve (author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts))
+
 ```nix
 # Aspects use the `persys` class without any conditional. And guard guarantees
 # settings are applied **only** when impermanence module has been imported.
