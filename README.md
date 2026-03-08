@@ -98,6 +98,9 @@ nix flake init -t github:vic/den && nix run .#vm
 > Thanks for the awesome library and the support for non-flakes… it’s positively brilliant!. I really hope this gets wider adoption.\
 > — @vczf - At den matrix channel.
 
+> Den is a playground for some very advanced concepts. I’m convinced that some of its ideas will play a role in future Nix areas. In my opinion there are some raw diamonds in Den.\
+> — @Doc-Steve - Author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts)
+
 ## Code example (OS configuration domain)
 
 ### Defining hosts, users and homes.
