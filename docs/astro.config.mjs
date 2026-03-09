@@ -60,6 +60,8 @@ export default defineConfig({
 				{
 					label: 'Cookbook',
 					items: [
+						{ label: 'From Zero to Den', slug: 'guides/from-zero-to-den' },
+						{ label: 'From Flake to Den', slug: 'guides/from-flake-to-den' },
 						{ label: 'Declare Hosts & Users', slug: 'guides/declare-hosts' },
 						{ label: 'Configure Aspects', slug: 'guides/configure-aspects' },
 						{ label: 'Custom Nix Classes', slug: 'guides/custom-classes' },

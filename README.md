@@ -22,6 +22,10 @@
 
 # [Documentation](https://den.oeiuwq.com)
 
+### [From Zero To Den](https://den.oeiuwq.com/guides/from-zero-to-den/)
+
+### [From Flake To Den](https://den.oeiuwq.com/guides/from-flake-to-den/)
+
 ### [Core Principles](https://den.oeiuwq.com/explanation/core-principles/)
 
 ### [Custom Nix Classes](https://den.oeiuwq.com/guides/custom-classes/)

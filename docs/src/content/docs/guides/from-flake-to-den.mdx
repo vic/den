@@ -1,0 +1,123 @@
+---
+title: From Flake to Den
+description: Clean start with Den
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+<Aside type="tip" title="Shortcut: See templates/minimal">
+This is a step-by-step tutorial for learn-by-doing people.
+
+It is very **very recommended** that you have also read [**From Zero to Den**](/guides/from-zero-to-den) since it **introduces Den concepts** that will not be explained again here.
+
+Den has several templates with [different feature sets](/tutorials/overview).
+</Aside>
+
+<Aside>
+Den adapts to your Nix choices. This guide shows how to **integrate** Den without disrupting your **existing flake**, allowing an smooth, incremental adotpion path.
+
+If you want a **Den only** flake example, take a look at `templates/minimal` or if you are using flake-parts see `templates/default`.
+
+This is intended for people using a `flake.nix` file
+that exposes `nixosConfigurations`.
+
+This guide assumes you have familiarity with:
+- [Nix Flakes](https://nix.dev/concepts/flakes)
+- The `flakes nix-command` experimental features enabled.
+</Aside>
+
+Suppose you have a flake like this with a `nixosConfigurations.igloo`:
+
+```nix
+# flake.nix
+{
+  inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+  outputs = inputs: 
+  {
+    # all your config, most importantly a NixOS like `igloo`:
+    nixosConfigurations.igloo = lib.nixosSystem { 
+      modules = [ 
+         <all your curent NixOS modules> 
+      ];
+    };
+  };
+}
+```
+
+### Step 1. A basic `modules/den.nix`
+
+<Aside>
+See [*From Zero To Den*](/guides/from-zero-to-den) for all the defails about this.
+
+Also read the **No Monoliths** aside in that page about splitting this example configuration.
+</Aside>
+
+```nix
+# modules/den.nix
+{ inputs, den, lib, ... }: {
+  imports = [ inputs.den.flakeModule ];
+
+  den.ctx.user.classes = lib.mkDefault [ "homeManager" ];
+
+  den.hosts.x86_64-linux.igloo.users.tux = {};
+
+  den.aspects.igloo = {
+    includes = [ den.provides.hostname ];
+    nixos = { pkgs, ... }: { environment.systemPackages = [ pkgs.hello ]; };
+  };
+
+  den.aspects.tux = {
+    includes = [ den.provides.define-user den.provides.primary-user ];
+    homeManager = { pkgs, ... }: { packages = [ pkgs.vim ]; };
+  };
+}
+```
+
+### Step 2. Use `igloo` NixOS module in your **current flake**
+
+```diff lang="nix"
+# flake.nix
+{
+  inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
++  inputs.import-tree.url = "github:vic/import-tree";
++  inputs.flake-aspects.url = "github:vic/flake-aspects";
++  inputs.den.url = "github:vic/den";
+  
+  outputs = inputs: 
+  let
++   den = (inputs.nixpkgs.lib.evalModules {
++     modules = [ (inputs.import-tree ./modules) ];
++     specialArgs.inputs = inputs;
++   }).config.flake.den;
+
++   inherit (den.hosts.x86_64-linux) igloo;
+  in
+  {
+    # all your config, most importantly a NixOS like `igloo`:
+    nixosConfigurations.igloo = lib.nixosSystem { 
+      modules = [ 
+         <all your curent NixOS modules> 
++         igloo.mainModule
+      ];
+    };
+  };
+}
+```
+
+## Next Steps
+
+<Aside type="tip" title="You Are Done!">
+
+Your flake can continue to work as usual and ready for incrementally
+moving parts of your configuration into `modules/`
+
+</Aside>
+
+You can now head over to other guides or the reference:
+
+- [den.schema](/reference/schema)
+- [den.aspects](/reference/aspects)
+- [den.ctx](/reference/ctx)
+- [den.provides](/reference/batteries)
+
