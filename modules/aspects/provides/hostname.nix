@@ -11,13 +11,13 @@ let
   '';
 
   setHostname =
-    { host }:
+    { host, ... }:
     {
       ${host.class}.networking.hostName = host.hostName;
     };
 in
 {
-  den.provides.hostname = den.lib.parametric.exactly {
+  den.provides.hostname = den.lib.parametric.atLeast {
     inherit description;
     includes = [ setHostname ];
   };
