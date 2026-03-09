@@ -1,7 +1,6 @@
-# Copy this file to start new tests
 { denTest, ... }:
 {
-  flake.tests.empty = {
+  flake.tests.empty-aspects = {
     test-no-aspects = denTest (
       { den, ... }:
       {
