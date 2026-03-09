@@ -17,6 +17,7 @@ nix flake init -t github:vic/den#<template>
 | [**default**](/tutorials/default/) | Recommended starting point | ✓ | ✓ | ✓ |
 | [**example**](/tutorials/example/) | Feature showcase with namespaces | ✓ | ✓ | ✓ |
 | [**noflake**](/tutorials/noflake/) | Stable Nix, no flakes | ✗ | ✗ | ✗ |
+| [**microvm**](/tutorials/microvm/) | MicroVM host and guests | ✓ | ✗ | ✗ |
 | [**bogus**](/tutorials/bogus/) | Bug reproduction | ✓ | ✓ | ✓ |
 | [**ci**](/tutorials/ci/) | Den's own test suite | ✓ | ✓ | ✓ |
 
@@ -53,6 +54,7 @@ Den uses [import-tree](https://github.com/vic/import-tree) to recursively load a
 - **default** — Production-ready structure with Home-Manager, VM testing, dendritic flake-file
 - **example** — Namespaces, angle brackets, cross-platform (NixOS + Darwin), providers
 - **noflake** — Using Den with npins instead of flakes
+- **microvm** — Demostrates Den extensibility showcasing MicroVM virtualization.
 - **bogus** — Creating minimal reproductions for bug reports with nix-unit
 - **ci** — Comprehensive tests covering every Den feature (your best learning resource)
 
