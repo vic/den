@@ -76,7 +76,7 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 
 ### Step 2. Use `igloo` NixOS module in your **current flake**
 
-```diff lang="nix"
+```diff lang="nix" "igloo.mainModule"
 # flake.nix
 {
   inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
@@ -89,9 +89,9 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 +   den = (inputs.nixpkgs.lib.evalModules {
 +     modules = [ (inputs.import-tree ./modules) ];
 +     specialArgs.inputs = inputs;
-+   }).config.flake.den;
++   }).config;
 
-+   inherit (den.hosts.x86_64-linux) igloo;
++   inherit (den.den.hosts.x86_64-linux) igloo;
   in
   {
     # all your config, most importantly a NixOS like `igloo`:
@@ -104,6 +104,36 @@ Also read the **No Monoliths** aside in that page about splitting this example c
   };
 }
 ```
+
+## Complete Migration or Den-only hosts.
+
+Once you have moved all your host configurations into `modules/`,
+and no longer have a need for mixin modules into nixosConfigurations,
+you can have a flake like this:
+
+```nix "den.flake.nixosConfigurations"
+# flake.nix
+{
+  inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.import-tree.url = "github:vic/import-tree";
+  inputs.flake-aspects.url = "github:vic/flake-aspects";
+  inputs.den.url = "github:vic/den";
+  
+  outputs = inputs: 
+  let
+   den = (inputs.nixpkgs.lib.evalModules {
+     modules = [ (inputs.import-tree ./modules) ];
+     specialArgs.inputs = inputs;
+   }).config;
+  in
+  {
+    nixosConfigurations = den.flake.nixosConfigurations;
+
+    # all other flake outputs and stuff
+  };
+}
+```
+
 
 ## Next Steps
 
