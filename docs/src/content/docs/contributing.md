@@ -5,24 +5,13 @@ description: Report bugs and contribute pull-requests
 
 All contributions welcome. PRs are checked by CI.
 
-### Run Tests
+### Run tasks
 
-Run Den unit tests
-
-```console
-nix flake check github:vic/checkmate --override-input target .
-```
-
-Run Den integration tests from templates/ci.
+Use `just help` to get a list of all tasks.
 
 ```console
-nix flake check -L --override-input den . ./templates/ci
-```
-
-### Format Code
-
-```console
-nix run github:vic/checkmate#fmt --override-input target .
+just fmt
+just ci
 ```
 
 ### Bug Reports

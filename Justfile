@@ -33,3 +33,5 @@ all task:
   just {{task}} bogus
   just {{task}} microvm
 
+fmt:
+  nix run github:vic/checkmate#fmt --override-input target .
