@@ -237,7 +237,6 @@ determining if the class takes effect is defined at a single place.
 
 > Example inspired by @Doc-Steve
 
- 
 ```nix
 # Aspects use the `persys` class without any conditional. And guard guarantees
 # settings are applied **only** when impermanence module has been imported.
