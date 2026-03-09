@@ -187,7 +187,7 @@ den.schema.user = { user, lib, ... }: {
 
 ### Custom Dendritic Nix Classes
 
-See [custom-classes docs](https://den.oeiuwq.com/guides/custom-classes) for explanation.
+[Custom classes](https://den.oeiuwq.com/guides/custom-classes) is how Den implements `homeManager`, `hjem`, `wsl`, `microvm` support. You can use the very same mechanism to create your own classes.
 
 ```nix
 # Example: A class for role-based configuration between users and hosts
@@ -235,8 +235,9 @@ Aspects can simply assign configurations into a class (here `persys`)
 from any file, without any `mkIf`/`mkMerge` cluttering. The logic for
 determining if the class takes effect is defined at a single place.
 
-> Example from @Doc-Steve (author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts))
+> Example inspired by @Doc-Steve
 
+ 
 ```nix
 # Aspects use the `persys` class without any conditional. And guard guarantees
 # settings are applied **only** when impermanence module has been imported.
