@@ -105,7 +105,7 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 }
 ```
 
-## Complete Migration or Den-only hosts.
+## Once Migration Completed
 
 Once you have moved all your host configurations into `modules/`,
 and no longer have a need for mixin modules into nixosConfigurations,
@@ -134,6 +134,26 @@ you can have a flake like this:
 }
 ```
 
+## Den-only flake outputs
+
+Even more, if you have defined all flake outputs as Dendritic
+`flake` outputs inside `modules/` your final `flake.nix` becomes:
+
+```nix "den.flake.nixosConfigurations"
+# flake.nix
+{
+  inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.import-tree.url = "github:vic/import-tree";
+  inputs.flake-aspects.url = "github:vic/flake-aspects";
+  inputs.den.url = "github:vic/den";
+  
+  outputs = inputs: 
+   (inputs.nixpkgs.lib.evalModules {
+     modules = [ (inputs.import-tree ./modules) ];
+     specialArgs.inputs = inputs;
+   }).config.flake;
+}
+```
 
 ## Next Steps
 
