@@ -11,16 +11,26 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        den.aspects.base =
-          { host, ... }:
+        den.aspects.printing =
+          { user, ... }:
           {
-            nixos.networking.hostName = host.hostName;
+            nixos =
+              { pkgs, ... }:
+              {
+                users.users.${user.userName}.extraGroups = [
+                  "lp"
+                  "scanner"
+                ];
+              };
           };
 
-        den.aspects.igloo.includes = [ den.aspects.base ];
+        den.aspects.igloo.includes = [ den.aspects.printing ];
 
-        expr = igloo.networking.hostName;
-        expected = "igloo";
+        expr = igloo.users.users.tux.extraGroups;
+        expected = [
+          "lp"
+          "scanner"
+        ];
       }
     );
   };
