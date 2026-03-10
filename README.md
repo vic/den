@@ -79,8 +79,13 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 **❄️ Try it:**
 
 ```console
+# Run virtio MicroVM from templates/microvm
+nix run github:vic/den?dir=templates/microvm#runnable-microvm
+```
+
+```console
+# Run qemu VM from templates/example
 nix run github:vic/den
-nix flake init -t github:vic/den && nix run .#vm
 ```
 
 </td>
