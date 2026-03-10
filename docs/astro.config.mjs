@@ -12,7 +12,12 @@ export default defineConfig({
 			{
 				provider: fontProviders.google(),
 				name: "Victor Mono",
-				cssVariable: "--sl-font",
+				cssVariable: "--font-victor-mono",
+			},
+			{
+				provider: fontProviders.google(),
+				name: "JetBrains Mono",
+				cssVariable: "--font-jetbrains-mono",
 			},
 		],
 	},
@@ -86,6 +91,7 @@ export default defineConfig({
 				},
 			],
 			components: {
+				Head: './src/components/Head.astro',
 				Sidebar: './src/components/Sidebar.astro',
 				Footer: './src/components/Footer.astro',
 				SocialIcons: './src/components/SocialIcons.astro',

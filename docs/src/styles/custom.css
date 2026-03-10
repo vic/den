@@ -1,3 +1,22 @@
-:root {
-  --sl-font: 'Victor Mono';
+
+
+.copy,
+.site-title, 
+.tab-link, 
+header, 
+strong,
+em,
+article.card p.title,
+.starlight-aside__title,
+h1, h2, h3, h4, h5, h6, th {
+  font-family: var(--font-victor-mono);
+}
+
+.testimonials blockquote,
+a, code, code * {
+  font-family: var(--font-jetbrains-mono);
+}
+
+.sponsor-card * {
+  font-family: "DejaVu Sans";
 }
