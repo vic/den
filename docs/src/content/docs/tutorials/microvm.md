@@ -99,20 +99,20 @@ den.aspects.server = {
   nixos.microvm.host.startupTimeout = 300;
 };
 
-# Guest config (forwarded to server's microvm.vms.guest-microvm.config)
 den.aspects.guest-microvm = {
+  # Den resolved and forwarded to `<host>.microvm.vms.guest-microvm.config`
   nixos = { pkgs, ... }: {
     environment.systemPackages = [ pkgs.cowsay ];
   };
 
-  # Forwarded to server's microvm.vms.guest-microvm
+  # Forwarded to `<host>.microvm.vms.guest-microvm`
   microvm.autostart = true;
 };
 ```
 
 ### Custom Context Pipeline
 
-Three-stage pipeline for MicroVM host and guests:
+Two-stage pipeline for MicroVM host and guests:
 
 ```nix
 # Stage 1: host → microvm-host (only if guests is non-empty)
@@ -132,13 +132,13 @@ ctx.microvm-host.into.microvm-guest = { host }:
 ctx.microvm-host.provides.microvm-guest = { host, vm }: {
   includes = [
     # Auto-share nix store if enabled
-    sharedNixStore,
+    sharedNixStore
 
-    # Den resolved NixOS forwarded to <host>.nixos.microvm.vms.${vm.name}.config
-    (den.provides.forward { ... }),
+    # Den resolved NixOS module forwarded to <host>.nixos.microvm.vms.${vm.name}.config
+    (den.provides.forward { ... })
 
-    # Forward guest microvm class to <host>.nixos.microvm.vms.${vm.name}
-    (den.provides.forward { ... }),
+    # Forward guest `microvm` class directly to <host>.nixos.microvm.vms.${vm.name}
+    (den.provides.forward { ... })
   ];
 };
 ```
