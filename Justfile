@@ -10,14 +10,14 @@ update-all:
 docs:
   cd docs && pnpm run dev
 
-ci:
-  just nix-unit ci
+ci test="":
+  just nix-unit ci "{{test}}"
 
 bogus:
-  just nix-unit bogus
+  just nix-unit bogus ""
 
-nix-unit template:
-  nix-unit  --override-input den . --flake ./templates/{{template}}#.tests.systems.x86_64-linux.system-agnostic
+nix-unit template test:
+  nix-unit  --override-input den . --flake ./templates/{{template}}#.tests.systems.x86_64-linux.system-agnostic.{{test}}
   
 check template:
   nix flake check  --override-input den . ./templates/{{template}}
