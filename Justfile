@@ -2,9 +2,11 @@ help:
   just -l
 
 check-all:
+  nix-build ./templates/noflake --no-out-link -A flake.nixosConfigurations.igloo
   just all check
 
 update-all:
+  cd templates/noflake && npins update den flake-aspects
   just all update
 
 docs:
