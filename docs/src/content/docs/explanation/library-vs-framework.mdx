@@ -51,7 +51,7 @@ den.aspects = {
 
 # Resolve for your custom class
 aspect = den.aspects.web-server { env = "production"; };
-module = aspect.resolve { class = "terranix"; };
+module = den.lib.aspects.resolve "terranix" [] aspect;
 ```
 
 ## Den as a Framework

@@ -59,7 +59,7 @@ let
       funnyNames =
         aspect:
         let
-          mod = aspect.resolve { class = "funny"; };
+          mod = config.den.lib.aspects.resolve "funny" [ ] aspect;
           namesMod = {
             options.names = lib.mkOption {
               type = lib.types.listOf lib.types.str;

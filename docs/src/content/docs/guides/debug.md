@@ -62,7 +62,7 @@ den.aspects.laptop.includes = [
 Test how an aspect resolves for a specific class:
 
 ```console
-nix-repl> module = den.aspects.laptop.resolve { class = "nixos"; aspect-chain = []; }
+nix-repl> module = den.lib.aspects.resolve "nixos" [] den.aspects.laptop;
 nix-repl> config = (lib.evalModules { modules = [ module ]; }).config
 ```
 
@@ -70,7 +70,7 @@ For parametric aspects, apply context first:
 
 ```console
 nix-repl> aspect = den.aspects.laptop { host = den.hosts.x86_64-linux.laptop; }
-nix-repl> module = aspect.resolve { class = "nixos"; aspect-chain = []; }
+nix-repl> module = den.lib.aspects.resolve "nixos" [] aspect;
 ```
 
 ## Inspect a Host's Main Module

@@ -135,8 +135,8 @@ of NixOS.
 # Use Den API -- Context transformations happen here, nothing is configured yet.
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.igloo; };
 
-# Use flake-aspects API -- We enter the NixOS domain by resolving for the "nixos" class.
-nixosModule = aspect.resolve { class = "nixos"; };
+# Use flake-aspects API (re-exported by Den) -- We enter the NixOS domain by resolving for the "nixos" class.
+nixosModule = den.lib.aspects.resolve "nixos" [] aspect;
 
 # Use NixOS API -- Instantiate using nixosSystem with the resolved module.
 nixosConfigurations.igloo = lib.nixosSystem { modules = [ nixosModule ]; };

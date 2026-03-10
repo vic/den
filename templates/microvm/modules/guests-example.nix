@@ -23,7 +23,6 @@
   };
 
   den.aspects.guest-microvm = {
-    # resolved with: `(den.ctx.host = { host = guest-microvm }).resolve { class = "nixos" }`
     # resulting nixos-module is set at server: microvm.vms.<name>.config
     nixos =
       { pkgs, ... }:

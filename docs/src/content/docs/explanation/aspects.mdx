@@ -95,7 +95,7 @@ den.aspects.igloo.provides.gpu = { host, ... }:
 Aspects are resolved for a specific class using the `resolve` API from flake-aspects:
 
 ```nix
-module = den.aspects.igloo.resolve { class = "nixos"; };
+module = den.lib.aspects.resolve "nixos" [] den.aspects.igloo;
 ```
 
 Resolution collects all `nixos` attrs from owned configs, walks `includes`
