@@ -19,13 +19,14 @@ let
     let
       # nixpkgs.config must not be set when useGlobalPkgs is true.
       globalPkgs = args.osConfig.home-manager.useGlobalPkgs or false;
+      hasUnfree = lib.length config.unfree.packages > 0;
     in
     {
       options.unfree.packages = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
       };
-      config.nixpkgs = lib.mkIf (!globalPkgs) {
+      config.nixpkgs = lib.mkIf (hasUnfree && !globalPkgs) {
         config.allowUnfreePredicate = (pkg: builtins.elem (lib.getName pkg) config.unfree.packages);
       };
     };

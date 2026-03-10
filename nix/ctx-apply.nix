@@ -27,11 +27,16 @@ let
     ++ lib.concatLists (
       lib.mapAttrsToList (
         name: into:
-        if !builtins.hasAttr name den.ctx then
-          [ ]
+        if den.ctx ? ${name} then
+          lib.concatMap (transformAll self den.ctx.${name}) into
+        else if self.provides ? ${name} then
+          lib.concatMap (transformAll self {
+            inherit name;
+            into = _: { };
+          }) into
         else
-          lib.concatMap (transformAll self den.ctx.${name}) (into ctx)
-      ) self.into
+          [ ]
+      ) (self.into ctx)
     );
 
   noop = _: { };
