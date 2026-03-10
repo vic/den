@@ -13,13 +13,13 @@ It is very **very recommended** that you have also read [**From Zero to Den**](/
 Den has several templates with [different feature sets](/tutorials/overview).
 </Aside>
 
-<Aside>
+<Aside title="Adopting Den for NixOS and nix-Darwin flakes" icon="nix">
 Den adapts to your Nix choices. This guide shows how to **integrate** Den without disrupting your **existing flake**, allowing an smooth, incremental adotpion path.
 
 If you want a **Den only** flake example, take a look at `templates/minimal` or if you are using flake-parts see `templates/default`.
 
 This is intended for people using a `flake.nix` file
-that exposes `nixosConfigurations`.
+that exposes `nixosConfigurations`, `darwinConfigurations` or `homeConfigurations`.
 
 This guide assumes you have familiarity with:
 - [Nix Flakes](https://nix.dev/concepts/flakes)
@@ -32,6 +32,7 @@ Suppose you have a flake like this with a `nixosConfigurations.igloo`:
 # flake.nix
 {
   inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.darwin = "github:nix-darwin/nix-darwin";
 
   outputs = inputs: 
   {
@@ -39,6 +40,11 @@ Suppose you have a flake like this with a `nixosConfigurations.igloo`:
     nixosConfigurations.igloo = lib.nixosSystem { 
       modules = [ 
          <all your curent NixOS modules> 
+      ];
+    };
+    darwinConfigurations.iceberg = darwinSystem {
+      modules = [
+         <all your current nix-Darwin modules>
       ];
     };
   };
@@ -62,6 +68,8 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 
   den.hosts.x86_64-linux.igloo.users.tux = {};
 
+  den.hosts.aarch64-darwin.iceberg.users.tux = {};
+
   den.aspects.igloo = {
     includes = [ den.provides.hostname ];
     nixos = { pkgs, ... }: { environment.systemPackages = [ pkgs.hello ]; };
@@ -74,12 +82,15 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 }
 ```
 
+Den batteries like `den.provides.define-user` and `den.provides.primary-user` work cross-platform, on NixOS, Darwin and WSL.
+
 ### Step 2. Use `igloo` NixOS module in your **current flake**
 
-```diff lang="nix" "igloo.mainModule"
+```diff lang="nix" ".mainModule"
 # flake.nix
 {
   inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.darwin = "github:nix-darwin/nix-darwin";
 +  inputs.import-tree.url = "github:vic/import-tree";
 +  inputs.flake-aspects.url = "github:vic/flake-aspects";
 +  inputs.den.url = "github:vic/den";
@@ -92,13 +103,20 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 +   }).config;
 
 +   inherit (den.den.hosts.x86_64-linux) igloo;
++   inherit (den.den.hosts.aarch64-darwin) iceberg;
   in
   {
     # all your config, most importantly a NixOS like `igloo`:
-    nixosConfigurations.igloo = lib.nixosSystem { 
+    nixosConfigurations.igloo = nixosSystem { 
       modules = [ 
          <all your curent NixOS modules> 
 +         igloo.mainModule
+      ];
+    };
+    darwinConfigurations.iceberg = darwinSystem {
+      modules = [
+         <all your current nix-Darwin modules>
++         iceberg.mainModule
       ];
     };
   };
@@ -115,6 +133,7 @@ you can have a flake like this:
 # flake.nix
 {
   inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.darwin = "github:nix-darwin/nix-darwin";
   inputs.import-tree.url = "github:vic/import-tree";
   inputs.flake-aspects.url = "github:vic/flake-aspects";
   inputs.den.url = "github:vic/den";
@@ -127,7 +146,7 @@ you can have a flake like this:
    }).config;
   in
   {
-    nixosConfigurations = den.flake.nixosConfigurations;
+    inherit (den.flake) nixosConfigurations darwinConfigurations;
 
     # all other flake outputs and stuff
   };
@@ -139,10 +158,11 @@ you can have a flake like this:
 Even more, if you have defined all flake outputs as Dendritic
 `flake` outputs inside `modules/` your final `flake.nix` becomes:
 
-```nix "den.flake.nixosConfigurations"
+```nix "config.flake"
 # flake.nix
 {
   inputs.nixpkgs = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.darwin = "github:nix-darwin/nix-darwin";
   inputs.import-tree.url = "github:vic/import-tree";
   inputs.flake-aspects.url = "github:vic/flake-aspects";
   inputs.den.url = "github:vic/den";
