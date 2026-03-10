@@ -3,13 +3,15 @@ title: "Template: MicroVM"
 description: Feature showcase MicroVM integration with custom context pipelines and custom classes.
 ---
 
-The MicroVM template demonstrates Den's extensibility: custom `den.ctx` and `den.schema` extensions for integrating other Nix libraries. MicroVM shows two patterns for building VMs with Den.
+[templates/microvm](https://github.com/vic/den/tree/main/templates/microvm) demonstrates Den's extensibility: custom `den.ctx` and `den.schema` extensions for integrating other Nix libraries like [MicroVM.nix](https://github.com/microvm-nix/microvm.nix). 
+
+This template shows two patterns for building MicroVMs with Den.
 
 ## Two MicroVM Patterns
 
 ### 1. Runnable MicroVM as Package
 
-A standalone NixOS configuration that runs as a portable package using QEMU.
+A standalone NixOS configuration that runs as MicroVM directly as an application.
 
 - Den example: [runnable-example.nix](https://github.com/vic/den/tree/main/templates/microvm/modules/runnable-example.nix)
 - Den support: [microvm-runners.nix](https://github.com/vic/den/tree/main/templates/microvm/modules/microvm-runners.nix)
@@ -48,14 +50,14 @@ flake.nix
 modules/
   den.nix                      # Enable Den + hostname for all hosts
 
-  runnable-example.nix         # Standalone NixOS MicroVM with QEMU
+  runnable-example.nix         # Standalone NixOS MicroVM
   microvm-runners.nix          # Auto-expose runnable VMs as flake packages
 
   guests-example.nix           # Server host with declarative guest VMs
   microvm-integration.nix      # Schema extensions + context pipelines
 ```
 
-## Key Features Demonstrated
+## Key Features Shown
 
 ### Standalone Runnable MicroVM
 
