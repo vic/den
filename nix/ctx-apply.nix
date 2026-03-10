@@ -2,19 +2,19 @@
 let
   inherit (den.lib) parametric;
 
-  cleanCtx =
-    self:
-    builtins.removeAttrs self [
-      "name"
-      "description"
-      "into"
-      "provides"
-      "__functor"
-      "modules"
-      "resolve"
-      "_module"
-      "_"
-    ];
+  ctxKeys = [
+    "name"
+    "description"
+    "into"
+    "provides"
+    "__functor"
+    "modules"
+    "resolve"
+    "_module"
+    "_"
+  ];
+
+  cleanCtx = self: builtins.removeAttrs self ctxKeys;
 
   transformAll =
     source: self: ctx:
@@ -41,13 +41,7 @@ let
 
   noop = _: { };
 
-  crossProvider =
-    p:
-    let
-      src = p.source;
-      name = p.ctxDef.name;
-    in
-    if src == null then noop else src.provides.${name} or noop;
+  crossProvider = p: if p.source == null then noop else p.source.provides.${p.ctxDef.name} or noop;
 
   dedupIncludes =
     let

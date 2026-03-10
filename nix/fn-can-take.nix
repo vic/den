@@ -4,15 +4,11 @@ let
     params: func:
     let
       givenFn = builtins.isFunction func || (builtins.isAttrs func && func ? __functor);
-      givenArgs = builtins.isAttrs params;
       fargs = lib.functionArgs func;
-      provided = builtins.attrNames params;
-      args = lib.mapAttrsToList (name: optional: { inherit name optional; }) fargs;
-      required = map (x: x.name) (lib.filter (x: !x.optional) args);
-      intersection = lib.intersectLists required provided;
-      satisfied = givenFn && givenArgs && lib.length required == lib.length intersection;
-      noExtras = lib.length required == lib.length provided;
-      exactly = satisfied && noExtras;
+      required = lib.filterAttrs (_: optional: !optional) fargs;
+      reqNames = builtins.attrNames required;
+      satisfied = givenFn && builtins.isAttrs params && builtins.all (n: params ? ${n}) reqNames;
+      exactly = satisfied && builtins.length reqNames == builtins.length (builtins.attrNames params);
     in
     {
       inherit satisfied exactly;
