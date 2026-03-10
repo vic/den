@@ -125,16 +125,31 @@ Some batteries also extend base modules [see `hjem-os.nix`](https://github.com/v
 
 ## Aspect Association
 
-Each host and user has an `aspect` attribute name (defaults to the config `name`).
-Den looks up `den.aspects.${aspect}` to find the configuration for that entity:
+Each host and user has an `aspect` name (defaults to the config `name`).
+
+Den **automatically* creates a **parametric** aspect for each host, user and home using their specified classes.
 
 ```nix
 {
-  den.hosts.x86_64-linux.laptop.users.alice = { };
-  # Den uses den.aspects.laptop for the host
-  # Den uses den.aspects.alice for the user
+  den.hosts.x86_64-linux.laptop = {
+    class = "nixos"; # default derived from x86_64-linux
+    users.alice = { classes = [ "homeManager" "hjem" ]; };
+  };
+
+  # Den creates the following aspects:
+
+  den.aspects.laptop = parametric {
+    nixos = {};
+  };
+
+  den.aspects.alice = parametric {
+    homeManager = {};
+    hjem = {};
+  };
 }
 ```
+
+Later, when the context pipeline looks up `den.aspects.${aspect}` to find the configuration for each entity.
 
 ## Freeform Schema
 
