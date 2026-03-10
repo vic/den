@@ -8,6 +8,9 @@ strong,
 em,
 article.card p.title,
 .starlight-aside__title,
+.expressive-code .title,
+pre[data-language="console"] *,
+pre[data-language="plaintext"] *,
 h1, h2, h3, h4, h5, h6, th {
   font-family: var(--font-victor-mono);
 }
