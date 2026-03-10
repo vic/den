@@ -21,7 +21,8 @@ let
         x = 0;
         y = 1;
       };
-      fooModule = fooAspect.resolve { class = "foo"; };
+      resolve = ev.config.den.lib.aspects.resolve;
+      fooModule = resolve "foo" [ ] fooAspect;
 
       namesModule.options.names = lib.mkOption { type = lib.types.listOf lib.types.str; };
       ev2 = lib.evalModules {

@@ -220,9 +220,8 @@ let
     from: intent: name:
     let
       asp = intent { ${name} = from; };
-      mod = asp.resolve { inherit (from) class; };
     in
-    mod;
+    den.lib.aspects.resolve (from.class) [ ] asp;
 in
 {
   inherit hostsOption homesOption;
