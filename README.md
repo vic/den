@@ -74,7 +74,7 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): beautiful organization (+flake-parts)
 
-[GitHub Search](https://github.com/search?q=vic%2Fden+language%3ANix&type=code)
+[GitHub Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
 
 **❄️ Try it:**
 
