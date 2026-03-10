@@ -169,7 +169,7 @@ This is all that is happening at `modules/den.nix`.
 
 3. **Host definitions** go inside `den.hosts`.
 
-    This single define defines the hostName `igloo`, its platform `x86_64-linux`, and a single user `tux` in it. See [Declare Hosts & Users](/guide/declare-hosts) for more.
+    This single line defines a **host** with hostName `igloo`, platform `x86_64-linux` from which `class = "nixos"` is derived, and a single user `tux` in it. See [Declare Hosts & Users](/guide/declare-hosts) for more.
 
     Den **automatically** creates an aspect for each host that looks like this:
 
