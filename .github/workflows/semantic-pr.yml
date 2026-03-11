@@ -38,9 +38,10 @@ jobs:
             ctx
             docs
             core
+            repo
             class
             homes
             tests
             template
-            battery
-            repo
+            batteries
+            namespaces

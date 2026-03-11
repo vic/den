@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, den, ... }:
 {
   systems = [
     "x86_64-linux"
@@ -18,5 +18,27 @@
       {
         home.packages = [ pkgs.vim ];
       };
+  };
+
+  provider.tools._.dev._.host-stamp = den.lib.parametric {
+    includes = [
+      (
+        { host, ... }:
+        {
+          nixos.environment.sessionVariables.PROVIDER_HOST = host.name;
+        }
+      )
+    ];
+  };
+
+  provider.tools._.dev._.user-stamp = den.lib.parametric.exactly {
+    includes = [
+      (
+        { host, user, ... }:
+        {
+          nixos.users.users.${user.userName}.description = "user-of-${host.name}";
+        }
+      )
+    ];
   };
 }
