@@ -16,32 +16,64 @@ let
 
   cleanCtx = self: builtins.removeAttrs self ctxKeys;
 
+  # Flatten nested into result to [ { path = [str]; into = [ctx_value]; } ].
+  # Leaf nodes are lists; intermediate nodes recurse deeper.
+  flattenInto =
+    attrset: prefix:
+    lib.concatLists (
+      lib.mapAttrsToList (
+        name: v:
+        let
+          path = prefix ++ [ name ];
+        in
+        if builtins.isList v then
+          [
+            {
+              inherit path;
+              into = v;
+            }
+          ]
+        else
+          flattenInto v path
+      ) attrset
+    );
+
   transformAll =
-    source: self: ctx:
+    source: self: ctx: key:
     [
       {
-        inherit ctx source;
+        inherit ctx source key;
         ctxDef = self;
       }
     ]
     ++ lib.concatLists (
-      lib.mapAttrsToList (
-        name: into:
-        if den.ctx ? ${name} then
-          lib.concatMap (transformAll self den.ctx.${name}) into
-        else if self.provides ? ${name} then
-          lib.concatMap (transformAll self {
-            inherit name;
-            into = _: { };
-          }) into
+      map (
+        { path, into }:
+        let
+          target = lib.attrByPath path null den.ctx;
+          tkey = lib.concatStringsSep "." path;
+        in
+        if target != null then
+          lib.concatMap (v: transformAll self target v tkey) into
+        else if builtins.length path == 1 && self.provides ? ${lib.head path} then
+          let
+            name = lib.head path;
+          in
+          lib.concatMap (
+            v:
+            transformAll self {
+              inherit name;
+              into = _: { };
+            } v name
+          ) into
         else
           [ ]
-      ) (self.into ctx)
+      ) (flattenInto (self.into ctx) [ ])
     );
 
   noop = _: { };
 
-  crossProvider = p: if p.source == null then noop else p.source.provides.${p.ctxDef.name} or noop;
+  crossProvider = p: if p.source == null then noop else p.source.provides.${p.key} or noop;
 
   dedupIncludes =
     let
@@ -53,10 +85,10 @@ let
           let
             p = builtins.head remaining;
             rest = builtins.tail remaining;
-            name = p.ctxDef.name;
+            key = p.key;
             clean = cleanCtx p.ctxDef;
-            isFirst = !(acc.seen ? ${name});
-            selfFun = p.ctxDef.provides.${name} or noop;
+            isFirst = !(acc.seen ? ${key});
+            selfFun = p.ctxDef.provides.${p.ctxDef.name} or noop;
             crossFun = crossProvider p;
             items = [
               (if isFirst then parametric.fixedTo p.ctx clean else parametric.atLeast clean p.ctx)
@@ -66,7 +98,7 @@ let
           in
           go {
             seen = acc.seen // {
-              ${name} = true;
+              ${key} = true;
             };
             result = acc.result ++ items;
           } rest;
@@ -77,7 +109,7 @@ let
     };
 
   ctxApply = self: ctx: {
-    includes = dedupIncludes (transformAll null self ctx);
+    includes = dedupIncludes (transformAll null self ctx self.name);
   };
 
 in
