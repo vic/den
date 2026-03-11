@@ -72,9 +72,7 @@ let
       includes = [
         (den.ctx."${ctxName}-user" { inherit host user; })
         (den.ctx.user { inherit host user; })
-        (den.lib.owned den.aspects.${host.aspect})
-        (den.lib.statics den.aspects.${host.aspect} { inherit class aspect-chain; })
-        (den.lib.parametric.atLeast den.aspects.${host.aspect} { inherit host user; })
+	(den.lib.parametric.fixedTo { inherit host user; } den.aspects.${host.aspect})
       ];
     };
 
