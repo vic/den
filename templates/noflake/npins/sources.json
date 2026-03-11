@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "ba7ab0634b2ea4c8cb75a4ce7fd36f0454fca39a",
-      "url": "https://github.com/vic/den/archive/ba7ab0634b2ea4c8cb75a4ce7fd36f0454fca39a.tar.gz",
-      "hash": "sha256-uAm7krbbxAk9+XpDabEN7DyMUT/7wEnv8HaCB7AUbHQ="
+      "revision": "31bccfecba02c192627f3acb65bdeebcd6c19af7",
+      "url": "https://github.com/vic/den/archive/31bccfecba02c192627f3acb65bdeebcd6c19af7.tar.gz",
+      "hash": "sha256-njJMeKzoSb6XTUHXIX3JezJEysJFq/y46v6qAlzRQrQ="
     },
     "flake-aspects": {
       "type": "Git",
@@ -22,9 +22,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "81a51a8997abe392b9d0794424a4823adc9bd3af",
-      "url": "https://github.com/vic/flake-aspects/archive/81a51a8997abe392b9d0794424a4823adc9bd3af.tar.gz",
-      "hash": "sha256-e3YqMwdQ2EpVTuWRkK2rkrHywp8QCpkj7x2U53SNoIA="
+      "revision": "cc5a09d16af05210afe01c22f6b868929a4163b6",
+      "url": "https://github.com/vic/flake-aspects/archive/cc5a09d16af05210afe01c22f6b868929a4163b6.tar.gz",
+      "hash": "sha256-sSdYZiIeo98LmdnCR5GMN8B8bsHFgWA+1l9ZEpwXrFU="
     },
     "import-tree": {
       "type": "Git",

@@ -100,7 +100,14 @@ let
     };
   parametric.__functor = _: parametric.withOwn parametric.atLeast;
 
-  aspects = inputs.flake-aspects.lib lib;
+  aspects =
+    let
+      fa-lib = inputs.flake-aspects.lib lib;
+      defaultFunctor = (parametric { }).__functor;
+      typesConf = { inherit defaultFunctor; };
+      types = lib.mapAttrs (n: v: v typesConf) fa-lib.types;
+    in
+    fa-lib // { inherit types; };
 
   __findFile = import ./den-brackets.nix { inherit lib config; };
 
