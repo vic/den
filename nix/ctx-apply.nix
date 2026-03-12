@@ -1,4 +1,5 @@
 { lib, den, ... }:
+ctxNs:
 let
   inherit (den.lib) parametric;
 
@@ -17,7 +18,6 @@ let
   cleanCtx = self: builtins.removeAttrs self ctxKeys;
 
   # Flatten nested into result to [ { path = [str]; into = [ctx_value]; } ].
-  # Leaf nodes are lists; intermediate nodes recurse deeper.
   flattenInto =
     attrset: prefix:
     lib.concatLists (
@@ -39,10 +39,11 @@ let
     );
 
   transformAll =
-    source: self: ctx: key:
+    source: self: ctxValue: key:
     [
       {
-        inherit ctx source key;
+        ctx = ctxValue;
+        inherit source key;
         ctxDef = self;
       }
     ]
@@ -50,7 +51,7 @@ let
       map (
         { path, into }:
         let
-          target = lib.attrByPath path null den.ctx;
+          target = lib.attrByPath path null ctxNs;
           tkey = lib.concatStringsSep "." path;
         in
         if target != null then
@@ -68,7 +69,7 @@ let
           ) into
         else
           [ ]
-      ) (flattenInto (self.into ctx) [ ])
+      ) (flattenInto (self.into ctxValue) [ ])
     );
 
   noop = _: { };
@@ -108,8 +109,8 @@ let
       result = [ ];
     };
 
-  ctxApply = self: ctx: {
-    includes = dedupIncludes (transformAll null self ctx self.name);
+  ctxApply = self: ctxValue: {
+    includes = dedupIncludes (transformAll null self ctxValue self.name);
   };
 
 in

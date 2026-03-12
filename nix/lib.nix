@@ -120,6 +120,8 @@ let
       ;
   };
 
+  nsTypes = import ./namespace-types.nix { inherit lib den; };
+  ctxTypes = import ./ctx-types.nix { inherit lib den; };
   ctxApply = import ./ctx-apply.nix { inherit lib den; };
 
   home-env = import ./home-env.nix { inherit lib den inputs; };
@@ -145,6 +147,8 @@ let
       take
       isStatic
       ctxApply
+      ctxTypes
+      nsTypes
       nh
       home-env
       nixModule

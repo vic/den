@@ -1,15 +1,11 @@
-{ config, lib, ... }:
-let
-  inherit (config.den.lib.aspects.types) aspectsType;
-  denfulType = lib.types.attrsOf aspectsType;
-in
+{ den, lib, ... }:
 {
   options.den.ful = lib.mkOption {
-    default = { }; # namespaces (local or merged from inputs)
-    type = denfulType;
+    default = { };
+    type = lib.types.attrsOf den.lib.nsTypes.namespaceType;
   };
   options.flake.denful = lib.mkOption {
-    default = { }; # flake output (assigned via den.namespace)
+    default = { };
     type = lib.types.attrsOf lib.types.raw;
   };
 }
