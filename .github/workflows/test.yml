@@ -1,8 +1,10 @@
 on:
   push:
     branches: [main]
+    paths: [ "**/*.nix" ]
   pull_request:
     types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
+    paths: [ "**/*.nix" ]
   pull_request_review:
     types: [submitted]
 concurrency:
@@ -13,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: |
           git fetch --depth 1 origin refs/heads/main
           test "refs/heads/main" == "${{github.ref}}" || (git diff --name-only origin/main..${{ github.sha }} -- | grep '.nix')
@@ -25,7 +27,7 @@ jobs:
     name: Tests ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
-      - uses: wimpysworld/nothing-but-nix@main
+      - uses: wimpysworld/nothing-but-nix@v10
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#ci
@@ -62,10 +64,10 @@ jobs:
     name: noflake
     runs-on: ubuntu-latest
     steps:
-      - uses: wimpysworld/nothing-but-nix@main
+      - uses: wimpysworld/nothing-but-nix@v10
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: sed -i 's@# den.outPath@den.outPath@' templates/noflake/default.nix
       - run: |
           cat <<-EOF > templates/noflake/modules/ci-runtime.nix
@@ -84,10 +86,10 @@ jobs:
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
-      - uses: wimpysworld/nothing-but-nix@main
+      - uses: wimpysworld/nothing-but-nix@v10
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: |
           cat <<-EOF > templates/${{matrix.template}}/modules/ci-runtime.nix
           {
@@ -106,7 +108,7 @@ jobs:
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
     steps:
-      - uses: wimpysworld/nothing-but-nix@main
+      - uses: wimpysworld/nothing-but-nix@v10
         if: matrix.os == 'ubuntu-latest'
       - uses: cachix/install-nix-action@v31
       # - uses: DeterminateSystems/magic-nix-cache-action@v13
