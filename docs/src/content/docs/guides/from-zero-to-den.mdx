@@ -76,7 +76,7 @@ let
     (inputs.nixpkgs.lib.evalModules { # (3)
       modules = [ (inputs.import-tree ./modules) ]; # (4)
       specialArgs.inputs = inputs; # (5)
-    }).config; # (6)
+    }).config.flake; # (6)
 in
 with-inputs outputs # (7)
 ```
