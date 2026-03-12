@@ -71,14 +71,14 @@ Lets create `default.nix`. This file will serve as the entrypoint to all your co
 # default.nix
 let
   sources = import ./npins; # (1)
-  with-inputs = sources.with-inputs sources { }; # (2)
+  with-inputs = import sources.with-inputs sources { }; # (2)
   outputs = inputs:
     (inputs.nixpkgs.lib.evalModules { # (3)
       modules = [ (inputs.import-tree ./modules) ]; # (4)
       specialArgs.inputs = inputs; # (5)
     }).config.flake; # (6)
 in
-with-inputs outputs; # (7)
+with-inputs outputs # (7)
 ```
 
 A tiny file, but a lof of things happening on it:
@@ -119,20 +119,22 @@ Recommended read: [Dendritic Advantages](https://dendrix.oeiuwq.com/Dendritic.ht
 
   den.schema.user.classes = lib.mkDefault [ "homeManager" ]; # (2)
 
-  den.hosts.x86_64-linux.igloo.users.tux = {}; # (3) (4)
+  den.default.homeManager.home.stateVersion = "25.11"; # (3)
 
-  den.aspects.igloo = { # (5)
-    includes = [ den.provides.hostname ]; # (6)
+  den.hosts.x86_64-linux.igloo.users.tux = {}; # (4) (5)
+
+  den.aspects.igloo = { # (6)
+    includes = [ den.provides.hostname ]; # (7)
     nixos = { pkgs, ... }: {
-      imports = [ ./_nixos/configuration.nix ]; # (7)
+      imports = [ ./_nixos/configuration.nix ]; # (8)
       environment.systemPackages = [ pkgs.hello ];
     };
   };
 
-  den.aspects.tux = { # (8)
-    includes = [ den.provides.define-user den.provides.primary-user ]; # (9)
+  den.aspects.tux = { # (9)
+    includes = [ den.provides.define-user den.provides.primary-user ]; # (10)
     homeManager = { pkgs, ... }: {
-      packages = [ pkgs.vim ];
+      home.packages = [ pkgs.vim ];
     };
   };
 }
@@ -167,7 +169,9 @@ This is all that is happening at `modules/den.nix`.
     Nix classes are NOT an artificial concept created by Den. There are [many nix classes in the wild](https://github.com/search?q=language%3ANix+%28%22+class+%3D+%22+AND+%22evalModules%22%29&type=code), the most common are [`nixos`](https://github.com/search?q=repo%3ANixOS%2Fnixpkgs+%22class+%3D+%5C%22nixos%5C%22%22&type=code), [`darwin`](https://github.com/nix-darwin/nix-darwin/blob/da529ac9e46f25ed5616fd634079a5f3c579135f/eval-config.nix#L81), [`homeManager`](https://github.com/nix-community/home-manager/blob/5be5d8245cbc7bc0c09fbb5f38f23f223c543f85/nixos/common.nix#L27).
     </Aside>
 
-3. **Host definitions** go inside `den.hosts`.
+3. **den.default** applies settings to **all** hosts, users, and homes. This is the right place for `stateVersion` and other global policies.
+
+4. **Host definitions** go inside `den.hosts`.
 
     This single line defines a **host** with hostName `igloo`, platform `x86_64-linux` from which `class = "nixos"` is derived, and a single user `tux` in it. See [Declare Hosts & Users](/guide/declare-hosts) for more.
 
@@ -182,7 +186,7 @@ This is all that is happening at `modules/den.nix`.
     `parametric` means that this aspect is able to pass its context (the `{host}` definition for `igloo` into other aspects being included in it.
     See [Parametric Aspects](/explanation/parametric) for more this.
 
-4. **User definitions** inside host.
+5. **User definitions** inside host.
 
     Hosts can have zero or more users. This example shows only one: `tux`. 
 
@@ -214,11 +218,11 @@ This is all that is happening at `modules/den.nix`.
     };
     ```
 
-5. **Enhance** the `igloo` host aspect.
+6. **Enhance** the `igloo` host aspect.
 
     Remember that `den.aspects.igloo` was _already_ created for you by Den from the host definition?. Well, in this step **you are extending** the aspect with more configuration. Any file can do this, contribute to any host or user aspect as they please. This is called [**Incremental Features**](https://dendrix.oeiuwq.com/Dendritic.html#incremental-features) in the Dendritic Advantages article.
 
-6. Include re-usable features from other, generic aspects.
+7. Include re-usable features from other, generic aspects.
 
     One of the advantages of [`flake-aspects`](https://github.com/vic/flake-aspects)' upon which Den is built is automatic inclusion of other aspects. Unlike NixOS `.imports`, `.includes` are safe to use with conditionals because includes are not files to be imported.
 
@@ -233,16 +237,16 @@ This is all that is happening at `modules/den.nix`.
     };
     ```
 
-7. _optional if you copied `/etc/nixos` into `modules/_nixos`)_ Import Non-Dendritic **NixOS modules**.
+8. _optional if you copied `/etc/nixos` into `modules/_nixos`)_ Import Non-Dendritic **NixOS modules**.
 
     The `nixos` attribute value is just a regular NixOS module. Because of this, it can import your previous `./_nixos/configuration.nix` module or any other NixOS module from Nix libraries.
 
 
-8. Enhance the User aspect.
+9. Enhance the User aspect.
 
     As with the host aspect, Den also **automatically** created a user aspect. Here, you are extending it with more configuration.
 
-9. Include re-usable `{host, user}` batteries.
+10. Include re-usable `{host, user}` batteries.
 
    Batteries like [`den.provides.primary-user`](https://github.com/vic/den/blob/main/modules/aspects/provides/primary-user.nix) take the `{host, user}` context where `host` is the `igloo` definition and `user` is the `tux` definition.
 
@@ -255,7 +259,7 @@ This is all that is happening at `modules/den.nix`.
 ### Step 5. Building your NixOS configuration
 
 ```console
-nixos-rebuild --file . -A nixosConfigurations.igloo
+nixos-rebuild build --file . -A nixosConfigurations.igloo
 ```
 
 ## Next Steps
