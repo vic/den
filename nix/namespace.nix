@@ -14,6 +14,7 @@ let
     "modules"
     "resolve"
     "__functor"
+    "__functionArgs"
   ];
 
   stripAspect =
