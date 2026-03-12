@@ -55,11 +55,11 @@ This step will use `npins` to fetch and lock some dependencies that
 will integrate all together:
 
 ```console "import-tree" "flake-aspects" "den" "with-inputs"
-npins init                           # adds nixpkgs channel
-npins add github vic import-tree    # for auto-importing ./modules
-npins add github vic flake-aspects  # aspects used by Den
-npins add github vic den            # Den itself, of course
-npins add github vic with-inputs    # flake-like inputs without Nix flakes.
+npins init                                  # adds nixpkgs channel
+npins add github vic import-tree   -b main  # for auto-importing ./modules
+npins add github vic flake-aspects -b main  # aspects used by Den
+npins add github vic den           -b main  # Den itself, of course
+npins add github vic with-inputs   -b main  # flake-like inputs without Nix flakes.
 npins add github nix-community home-manager --branch master # OPTIONAL home integration
 ```
 
