@@ -1,4 +1,9 @@
-{ inputs, den, ... }:
+{
+  inputs,
+  den,
+  lib,
+  ...
+}:
 {
   systems = [
     "x86_64-linux"
@@ -40,5 +45,17 @@
         }
       )
     ];
+  };
+
+  # A ctx entry shared to consumers — provides a self-provider function.
+  provider.ctx.simple._.simple = _: { funny.names = [ "from-provider-ctx" ]; };
+
+  # A schema entry that can be shared to consumers.
+  provider.schema.entity = {
+    options.names = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+    };
+    config.names = lib.mkDefault [ "provider-entity-schema" ];
   };
 }

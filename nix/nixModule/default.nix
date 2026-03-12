@@ -7,7 +7,7 @@
 }@args:
 {
   _module.args.den = config.den;
-  imports = map (f: import f args) [
+  imports = map (f: import f (args // { den = config.den; })) [
     ./lib.nix
     ./ctx.nix
     ./aspects.nix
