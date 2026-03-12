@@ -71,14 +71,14 @@ Lets create `default.nix`. This file will serve as the entrypoint to all your co
 # default.nix
 let
   sources = import ./npins; # (1)
-  with-inputs = import sources.with-inputs; # (2)
+  with-inputs = import sources.with-inputs sources { }; # (2)
   outputs = inputs:
-   (inputs.nixpkgs.lib.evalModules { # (3)
-      modules = [ (inputs.import-tree ./modules)  ]; # (4)
+    (inputs.nixpkgs.lib.evalModules { # (3)
+      modules = [ (inputs.import-tree ./modules) ]; # (4)
       specialArgs.inputs = inputs; # (5)
-   }).config.flake; # (6)
+    }).config; # (6)
 in
-with-inputs sources {} outputs  # (7)
+with-inputs outputs # (7)
 ```
 
 A tiny file, but a lof of things happening on it:
