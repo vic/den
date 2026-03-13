@@ -55,11 +55,9 @@
     test-user-custom-username = denTest (
       { den, igloo, ... }:
       {
-        den.hosts.x86_64-linux.igloo.users.tux = {
-          userName = "penguin";
-        };
-        den.default.homeManager.home.stateVersion = "25.11";
+        den.hosts.x86_64-linux.igloo.users.tux.userName = "penguin";
         den.aspects.igloo.includes = [ den._.define-user ];
+        den.ctx.user.includes = [ den._.bidirectional ];
 
         expr = igloo.users.users.penguin.isNormalUser;
         expected = true;

@@ -13,6 +13,7 @@
       }:
       {
         den.default.homeManager.home.stateVersion = "25.11";
+        den.ctx.user.includes = [ den._.bidirectional ];
 
         den.hosts.x86_64-linux.igloo.users = {
           tux = { };

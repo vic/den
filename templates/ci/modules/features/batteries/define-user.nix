@@ -26,6 +26,7 @@
     {
       den.hosts.x86_64-linux.igloo.users.tux = { };
       den.aspects.igloo.includes = [ den._.define-user ];
+      den.ctx.user.includes = [ den._.bidirectional ];
       expr = igloo.users.users.tux.isNormalUser;
       expected = true;
     }
