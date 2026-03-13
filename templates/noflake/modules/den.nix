@@ -10,9 +10,10 @@
   };
 
   # tux user on igloo host, using nix-maid
-  den.hosts.x86_64-linux.igloo.users.tux.classes = [ "maid" ];
-  # tux on iceberg host with NixOS user environment
-  den.hosts.x86_64-linux.iceberg.users.tux.classes = [ "user" ];
+  den.hosts.x86_64-linux.igloo.users = {
+    tux.classes = [ "maid" ];
+    pingu.classes = [ "hjem" ];
+  };
 
   # first: `npins add -n darwin github nix-darwin nix-darwin`
   # den.hosts.aarch64-darwin.apple.users.tux.classes = [ "hjem" ];
@@ -28,11 +29,12 @@
       };
   };
 
+  # include den batteries or your own re-usable aspects
+  # this affects all users, could also be done per user
+  den.ctx.user.includes = [ den.provides.define-user ];
+
   # user aspect
   den.aspects.tux = {
-    # den batteries or your own re-usable aspects
-    includes = [ den.provides.define-user ];
-
     # user configures host <nixos/darwin>.users.users.tux.description
     # Read docs about the `user` class.
     user.description = "Cute Penguin";
@@ -49,5 +51,9 @@
       [user]
         name=Tux
     '';
+  };
+
+  den.aspects.pingu = {
+    hjem.files.".foo".text = "bar";
   };
 }
