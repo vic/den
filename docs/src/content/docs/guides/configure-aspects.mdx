@@ -6,22 +6,22 @@ description: Owned configs, includes, provides, and den.default.
 import { Aside } from '@astrojs/starlight/components';
 
 <Aside title="Source" icon="github">
-[`modules/aspects/`](https://github.com/vic/den/tree/main/modules/aspects) · Tests: [`features/user-host-bidirectional-config.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-bidirectional-config.nix)
+[`github:vic/flake-aspects`](https://github.com/vic/flake-aspects) ·
+[`aspects definition`](https://github.com/vic/den/tree/main/modules/aspects/definition.nix) ·
+[`example aspects`](https://github.com/vic/den/tree/main/modules/aspects/provides) ·
 </Aside>
 
 # Den created aspects.
 
-An aspect is an attrset with per-class modules.
-
 <Aside icon="nix" title="Nix Classes">
 
-An flake-aspect (used by Den) is just an attrset that contains modules of different Nix `class`.
+A Dendritic aspect is an attrset that contains modules of different Nix `class`.
 
 ```nix
-gaming = { nixos = ...; homeManager = ...; hjem = ...; }
+gaming = { nixos = ...; homeManager = ...; hjem = ...; darwin = ...; }
 ```
 
-Such an attrset is said to be [**Dendritic**](https://dendrix.oeiuwq.com/Dendritic.html) because it allows configuring a single cross-cutting concern (`gaming`) over different Nix classes.
+Such an attrset is said to be [**Dendritic**](https://dendrix.oeiuwq.com/Dendritic.html) because it allows configuring a single cross-cutting concern (`gaming`) over different configuration domains.
 
 Nix classes are NOT an artificial concept created by Den. There are [many nix classes in the wild](https://github.com/search?q=language%3ANix+%28%22+class+%3D+%22+AND+%22evalModules%22%29&type=code), the most common are [`nixos`](https://github.com/search?q=repo%3ANixOS%2Fnixpkgs+%22class+%3D+%5C%22nixos%5C%22%22&type=code), [`darwin`](https://github.com/nix-darwin/nix-darwin/blob/da529ac9e46f25ed5616fd634079a5f3c579135f/eval-config.nix#L81), [`homeManager`](https://github.com/nix-community/home-manager/blob/5be5d8245cbc7bc0c09fbb5f38f23f223c543f85/nixos/common.nix#L27).
 </Aside>
@@ -58,7 +58,7 @@ Den will create the following **parametric** aspects for you:
 
 ## Aspect Basics
 
-In addition to class modules, an aspect has an `includes` list referencing other aspects, and `provides` for sub-aspects in same category:
+In addition to per-class modules, an aspect has an `includes` list referencing other aspects, and `provides` for sub-aspects in same category:
 
 ```nix
 { den, ... }: {
@@ -72,26 +72,31 @@ In addition to class modules, an aspect has an `includes` list referencing other
 
     # Dependencies
     includes = [
-      den.aspects.dev-tools
       den.provides.primary-user
+      den.aspects.gaming.provides.emulation
     ];
-
-    # Named sub-aspects
-    provides.gpu = { host, ... }:
-      lib.optionalAttrs (host ? gpu && host.gpu == "nvidia") {
-        nixos.hardware.nvidia.enable = true;
-      };
   };
+
+  den.aspects.gaming = {
+    darwin = ...;
+    nixos = ...;
+    provides.emulation = {
+      darwin = ...;
+      nixos = ...;
+    };
+  }
 }
 ```
 
 ## Owned Configs
 
 Attributes named after a Nix class (`nixos`, `darwin`, `homeManager`, or any
-custom class) are **owned configs**. They can be:
+custom class) are referred by this documentation as **owned configs**. 
 
-- **Attrsets**: merged directly into the class configuration.
-- **Functions**: called with the class's module arguments (`{ config, pkgs, lib, ... }`).
+They are just a regular Nix module:
+
+- **Attrset Module**: plain and simple configuration.
+- **Function Module**: taking module arguments (`{ config, pkgs, lib, ... }: { }`).
 
 ```nix
 # Attrset form
@@ -105,23 +110,34 @@ den.aspects.laptop.nixos = { pkgs, ... }: {
 
 ## Includes
 
-`includes` is a list of aspects, attrsets, or parametric functions:
+`includes` is a list of aspects used to declare dependencies between aspects.
+
+Unlike other Nix libraries that use stringly-typed "tags" to define requirements,
+Den uses real aspect references, these can be type-checked by the Nix module system.
 
 ```nix
 den.aspects.workstation.includes = [
   # Reference another aspect (its full DAG is included)
   den.aspects.dev-tools
-
-  # Static attrset (always applied)
-  { nixos.programs.vim.enable = true; }
-
-  # Parametric function (applied when context shape matches)
-  ({ host, ... }: { nixos.networking.hostName = host.hostName; })
-
-  # Battery
-  (den.provides.user-shell "fish")
 ];
 ```
+
+It is important to note the three kinds of values that Den distinguishes
+as part of an includes list:
+
+1. Static (plain attribute set): `{ nixos.foo = ...; }`
+2. Static (flake-aspects' leaf): `{class, aspect-chain}: { ${class}.foo = ...; }`
+3. Parametric (any other function): `{ host, user }: { ${host.class}.foo = ...; }`
+
+`(1)` and `(2)` are termed *static aspects* and are the terminal leafs of flake-aspects DAG.
+`(1)` provides configuration unconditionally, and `(2)` gets access to the `class` that is
+being resolved and an `aspect-chain` that lead to the current aspect (most recent last).
+
+
+`(3)` is a more interesting kind of aspect that is used by Den to pass host/user defitions 
+into these functions, so they can inspect the host features and provide
+configuration accordingly.
+
 
 ## Provides
 
@@ -169,22 +185,3 @@ Owned configs from `den.default` are deduplicated across pipeline stages.
 Parametric functions in `den.default.includes` are evaluated at every context
 stage. Use `den.lib.take.exactly` if a function should only run in specific contexts.
 </Aside>
-
-## Bidirectional Flow
-
-Users configure their hosts. Hosts configure their users. Aspects flow
-in both directions:
-
-```nix
-# User aspect contributes to host's NixOS config
-den.aspects.alice = {
-  nixos.users.users.alice.extraGroups = [ "docker" ];
-  homeManager = { pkgs, ... }: { home.packages = [ pkgs.htop ]; };
-};
-
-# Host aspect contributes to all its users' home config
-den.aspects.laptop = {
-  homeManager.programs.ssh.enable = true;
-  nixos.services.openssh.enable = true;
-};
-```

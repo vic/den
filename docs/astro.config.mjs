@@ -69,6 +69,7 @@ export default defineConfig({
 						{ label: 'From Flake to Den', slug: 'guides/from-flake-to-den' },
 						{ label: 'Declare Hosts & Users', slug: 'guides/declare-hosts' },
 						{ label: 'Configure Aspects', slug: 'guides/configure-aspects' },
+						{ label: 'Host<->User Bidirectionality', slug: 'guides/bidirectional' },
 						{ label: 'Custom Nix Classes', slug: 'guides/custom-classes' },
 						{ label: 'Homes Integration', slug: 'guides/home-manager' },
 						{ label: 'Use Batteries', slug: 'guides/batteries' },
