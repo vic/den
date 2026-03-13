@@ -41,6 +41,8 @@
           users.tux.hasBar = true;
         };
 
+        den.ctx.user.includes = [ den._.bidirectional ];
+
         den.aspects.igloo.includes = [ conditionalAspect ];
 
         expr = igloo.something;

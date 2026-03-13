@@ -69,6 +69,7 @@
     test-explicit-exactly-not-overridden-by-default = denTest (
       { den, igloo, ... }:
       {
+        den.ctx.user.includes = [ den._.bidirectional ];
         den.aspects.strict-helper = den.lib.parametric.exactly {
           includes = [
             (
@@ -109,6 +110,7 @@
     test-second-level-helper-owned-config-preserved = denTest (
       { den, igloo, ... }:
       {
+        den.ctx.user.includes = [ den._.bidirectional ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.second-with-owned = {
@@ -139,6 +141,7 @@
     test-second-provides-helper-owned-config-preserved = denTest (
       { den, igloo, ... }:
       {
+        den.ctx.user.includes = [ den._.bidirectional ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.second.provides.with-owned = {

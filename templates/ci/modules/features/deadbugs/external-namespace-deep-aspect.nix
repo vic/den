@@ -73,6 +73,7 @@
 
     test-functor-exactly-fires-only-in-user-context = denTest (
       {
+        den,
         provider,
         igloo,
         ...
@@ -86,6 +87,7 @@
         ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.igloo.includes = [ provider.tools._.dev._.user-stamp ];
+        den.ctx.user.includes = [ den._.bidirectional ];
         expr = igloo.users.users.tux.description;
         expected = "user-of-igloo";
       }

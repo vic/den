@@ -20,6 +20,7 @@
     {
 
       den.hosts.x86_64-linux.igloo.users.tux = { };
+      den.ctx.user.includes = [ den._.bidirectional ];
 
       den.aspects.igloo.funny.names = [ "host-owned" ];
       den.aspects.igloo.includes = [
