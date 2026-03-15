@@ -1,0 +1,20 @@
+name: Release tagged
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.number }}
+  cancel-in-progress: true
+jobs:
+  main:
+    runs-on: ubuntu-slim
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+    steps:
+      run: |
+        TAG="$(git describe --tags --abbrev=0)"
+        git tag -f release "$TAG" -m "https://github.com/vic/den/releases/tag/$TAG"
+        git push origin tag "$TAG" -f
