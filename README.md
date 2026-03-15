@@ -54,21 +54,6 @@ On top of the library, Den provides a [framework](https://den.oeiuwq.com/explana
 
 Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
 
----
-
-### Versioning - Den `v0.x` is moving rapidly
-
-`main` branch follows development, this is where PRs are merged, it is stable in the sense
-that every PR checks CI. However, some PR might introduce changes that require you
-reading the release notes. For people tracking development, we have announcements
-tagged `heads-up` whenever this happens. 
-
-`latest` tag always follows the latest created tag. This is intended for people that wishes
-to wait for a release and reading all announcements at release notes. if you flake update, you
-will only move between release points.
-
-Den `main` always requires flake-aspects `main`. Same for `latest` versions.
-
 ### Templates:
 
 [default](https://den.oeiuwq.com/tutorials/default/): +flake-file +flake-parts +home-manager
@@ -126,6 +111,38 @@ nix run github:vic/den
 
 > Den is a playground for some very advanced concepts. I’m convinced that some of its ideas will play a role in future Nix areas. In my opinion there are some raw diamonds in Den.\
 > — `@Doc-Steve` - Author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts)
+
+## Den Versioning - `v0.x` is moving fast
+
+Den `main` always requires flake-aspects `main`. Same for `latest` versions.
+
+
+```nix
+# Bleeding edge Den
+{
+  inputs.den.url = "github:vic/den";
+  inputs.flake-aspects.url = "github:vic/flake-aspects";
+}
+```
+
+`main` branch follows development, this is where PRs are merged, it is stable in the sense
+that every PR checks CI. However, some PR might introduce changes that require you being
+aware of what is happening in Den. For people tracking development, we have announcements
+tagged `heads-up` whenever this happens. 
+
+
+```nix
+# Released Den - no longer gets updates until next release 
+{
+  inputs.den.url = "github:vic/den/latest";
+  inputs.flake-aspects.url = "github:vic/flake-aspects/latest";
+}
+```
+
+`latest` tag always follows the latest created tag. This is intended for people that wishes
+to wait for a release and reading all announcements at release notes. if you flake update, you
+will only move between release points.
+
 
 ## Code example (OS configuration domain)
 
