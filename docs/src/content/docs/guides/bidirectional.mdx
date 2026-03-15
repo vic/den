@@ -1,6 +1,6 @@
 ---
-title: Host<-> User Bidirectional Configurations
-description: How to configure bidirectional behavior in Den and how it differs from mutual-provider.
+title: Host<->User Mutual Configurations
+description: How to configure bidirectional behavior in Den.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -12,8 +12,24 @@ import { Aside } from '@astrojs/starlight/components';
 [`mutual-provider.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix)
 </Aside>
 
+## What Mutual Configurations Means
 
-## Normal, non-bidirectional OS configuration
+__Bidirectionality__ means that not only a User contributes
+configuration to a Host, but **also** that a Host contributes
+configurations to a User.
+
+This is useful when you wish for a Host to provide a common 
+_home environment_ for all its users, or for a User to require
+common _os environment_ everywhere it is defined.
+
+There are at least two (built-in) ways to achieve this in Den.
+The `den._.bidirectional` and `den._.mutual-provider`, the
+first one was extracted from den-core and the second started
+life as an **aspect routing** example, but made it to become
+proper battery itself and even safer to use.
+
+
+## Default, *unidirectional* OS configuration
 
 Den framework is built around **context pipeline** transformations. 
 In order to create a full OS configuration, everything starts with a host definition:
@@ -57,14 +73,6 @@ This is the normal NixOS pipeline an __Not Bidirectional__. All OS contributions
 the host itself and from each of its user.
 
 
-## What Bidirectionality means
-
-__Bidirectionality__ means that not only a User contributes
-configuration to a Host, but **also** that a Host contributes
-configurations to a User.
-
-This is useful when the Host wishes to provide a
-commmon home environment for its users.
 
 ## `den.provides.bidirectional`
 
@@ -132,22 +140,24 @@ Read the documentation at [`context/user.nix`](https://github.com/vic/den/blob/m
 
 An alternative to bidirectionality is [`den.provides.mutual-provider`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix).
 
-This battery is more explicit, since it requires an explicit `.provides.` relationship between users and hosts.
-
-```nix
-# Host provides to a particular user
-den.aspects.igloo.provides.tux = {
-  hjem = ...; 
-};
-
-# User provides to a particular host
-den.aspects.tux.provides.igloo = {
-  nixos = ...;
-};
-```
-
-To enable it for both users and hosts, include at default:
+This battery is safer, instead of using the host aspect directly, it requires you to define other named aspects under `.provides.` to create an explicit relationship between users and hosts.
 
 ```nix
 den.default.includes = [ den._.mutual-provider ];
+
+# user aspect provides to specific host or to all where it lives
+den.aspects.tux = {
+  provides.igloo.nixos.programs.emacs.enable = true;
+  provides.to-hosts = { host, ... }: {
+    nixos.programs.nh.enable = host.name == "igloo";
+  };
+};
+
+# host aspect provides to specific user or to all its users
+den.aspects.igloo = {
+  provides.alice.homeManager.programs.vim.enable = true;
+  provides.to-users = { user, ... }: {
+    homeManager.programs.helix.enable = user.name == "alice";
+  };
+};
 ```

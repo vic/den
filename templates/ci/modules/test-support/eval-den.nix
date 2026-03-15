@@ -32,7 +32,11 @@ let
     options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
     options.expected = lib.mkOption { };
-    config.den.schema.user.classes = lib.mkDefault [ "homeManager" ];
+    config = {
+      den.schema.user.classes = lib.mkDefault [ "homeManager" ];
+      den.default.nixos.system.stateVersion = lib.mkDefault "25.11";
+      den.default.homeManager.home.stateVersion = lib.mkDefault "25.11";
+    };
   };
 
   helpersModule =

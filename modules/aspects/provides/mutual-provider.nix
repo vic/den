@@ -1,67 +1,74 @@
 # See usage at: templates/example/modules/aspects/{defaults.nix,alice.nix,igloo.nix}
 { den, ... }:
 let
+  inherit (den.lib) take parametric;
+
   description = ''
-    Allows specifically-chosen hosts and users to contribute configuration **to
-    each other** through `provides`.
-
-    This is not the same as the built-in bidirectionality:
-
-      # contributes to ALL users of this host
-      den.aspects.my-host.homeManager = { ... }
-
-      # contributes to ALL hosts of where my-user exist
-      den.aspects.my-user.nixos = { ... }
-
-    The difference is that this allows you to wire bidirectionality between
-    explictly-named hosts/users pairs (see the usage below).
+    Allows hosts and users to contribute configuration **to each other** 
+    through `provides`.
 
     This battery implements an aspect "routing" pattern.
+
+    This is not the same as `den._.bidirectional` battery, but provides a
+    **safer** alternative to `den._.bidirectional`.
+    The reason is that this battery does not re-invoke the `host-aspect.includes`,
+    instead it relies on you defining provides.
 
     Unlike `den.default` which is `parametric.atLeast` we use
     `parametric.fixedTo` here, which help us propagate an already computed
     context to all includes.
 
     This battery, when installed in a `parametric.atLeast` will just forward
-    the same context.  The `mutual` helper returns an static configuration
+    the same context.  The `find-mutual` helper returns an static configuration
     which is ignored by parametric aspects, thus allowing non-existing
     aspects to be just ignored.
 
-    Be sure to read the Host Context section on:
-    https://den.oeiuwq.com/explanation/context-pipeline
+    Be sure to read diagrams for the Host context pipeline:
+    https://den.oeiuwq.com/guides/bidirectional
 
     ## Usage
 
       den.hosts.x86_64-linux.igloo.users.tux = { };
       den.default.includes = [ den._.mutual-provider ];
 
-    A user providing config TO the host:
-
+      # user aspect provides to specific host or to all where it lives
       den.aspects.tux = {
-        provides.igloo = { host, ... }: {
+        provides.igloo.nixos.programs.emacs.enable = true;
+        provides.to-hosts = { host, ... }: {
           nixos.programs.nh.enable = host.name == "igloo";
         };
       };
 
-    A host providing config TO the user:
-
+      # host aspect provides to specific user or to all its users
       den.aspects.igloo = {
-        provides.tux = { user, ... }: {
+        provides.alice.homeManager.programs.vim.enable = true;
+        provides.to-users = { user, ... }: {
           homeManager.programs.helix.enable = user.name == "alice";
         };
       };
   '';
 
-  mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
-in
-{
-  den.provides.mutual-provider =
+  find-mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
+  user-to-hosts = { host, user }: den.aspects.${user.aspect}._.to-hosts or { };
+  host-to-users = { host, user }: den.aspects.${host.aspect}._.to-users or { };
+
+  named-mutuals =
     { host, user }@ctx:
-    den.lib.parametric.fixedTo ctx {
-      inherit description;
+    parametric.fixedTo ctx {
       includes = [
-        (mutual user host)
-        (mutual host user)
+        (find-mutual host user)
+        (find-mutual user host)
       ];
     };
+
+in
+{
+  den.provides.mutual-provider = parametric.exactly {
+    inherit description;
+    includes = [
+      named-mutuals
+      host-to-users
+      user-to-hosts
+    ];
+  };
 }

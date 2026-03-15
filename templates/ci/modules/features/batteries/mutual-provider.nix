@@ -7,9 +7,6 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        den.default.nixos.system.stateVersion = "25.11";
-        den.default.homeManager.home.stateVersion = "25.11";
-
         den.default.includes = [ den._.mutual-provider ];
 
         den.aspects.igloo.provides.tux = den.lib.parametric {
@@ -26,9 +23,6 @@
       { den, igloo, ... }:
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
-
-        den.default.nixos.system.stateVersion = "25.11";
-        den.default.homeManager.home.stateVersion = "25.11";
 
         den.default.includes = [ den._.mutual-provider ];
 
@@ -47,9 +41,6 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        den.default.nixos.system.stateVersion = "25.11";
-        den.default.homeManager.home.stateVersion = "25.11";
-
         den.default.includes = [ den._.mutual-provider ];
 
         den.aspects.igloo.provides.tux = den.lib.parametric {
@@ -57,6 +48,33 @@
         };
 
         den.aspects.tux.provides.igloo = den.lib.parametric {
+          nixos.boot.kernel.randstructSeed = "denseed";
+        };
+
+        expr = [
+          igloo.boot.kernel.randstructSeed
+          igloo.home-manager.users.tux.home.keyboard.model
+        ];
+
+        expected = [
+          "denseed"
+          "denboard"
+        ];
+      }
+    );
+
+    test-for-all = denTest (
+      { den, igloo, ... }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.default.includes = [ den._.mutual-provider ];
+
+        den.aspects.igloo.provides.to-users = {
+          homeManager.home.keyboard.model = "denboard";
+        };
+
+        den.aspects.tux.provides.to-hosts = {
           nixos.boot.kernel.randstructSeed = "denseed";
         };
 
