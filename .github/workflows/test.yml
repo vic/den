@@ -1,26 +1,25 @@
 on:
+  workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, future]
     paths: ["**/*.nix"]
   pull_request:
     types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
-    paths: ["**/*.nix"]
+    paths: ["**/*.nix", "**/*.lock"]
   pull_request_review:
     types: [submitted]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  non-draft:
+  future:
     runs-on: ubuntu-latest
-    if: ${{github.ref == 'refs/heads/main' || github.event.pull_request.draft == false}}
+    name: "Check PR base is future branch"
     steps:
-      - uses: actions/checkout@v6
       - run: |
-          git fetch --depth 1 origin refs/heads/main
-          test "refs/heads/main" == "${{github.ref}}" || (git diff --name-only origin/main..${{ github.sha }} -- | grep '.nix')
+          [[ "refs/heads/main" == "${{github.ref}}" || "refs/heads/future" == "${{github.ref}}" || "future" == "${{github.base_ref}}" ]]
   tests:
-    needs: [non-draft]
+    needs: [future]
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -46,14 +45,14 @@ jobs:
       - run: nix flake metadata
       - run: nix flake check -L
   flake-check:
-    needs: [non-draft]
+    needs: [future]
     name: nix flake check
     runs-on: ubuntu-latest
     steps:
       - uses: cachix/install-nix-action@v31
       - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
   approved:
-    needs: [non-draft]
+    needs: [future]
     name: approved
     runs-on: ubuntu-latest
     if: ${{github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'approved')}}
