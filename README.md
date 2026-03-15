@@ -135,6 +135,9 @@ aware of what is happening in Den. For people tracking development, we have anno
 tagged `heads-up` whenever this happens. 
 
 
+> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
+
+
 ```nix
 # Released Den - no longer gets updates until next release 
 {
