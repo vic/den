@@ -74,9 +74,11 @@
           homeManager.home.keyboard.model = "denboard";
         };
 
-        den.aspects.tux.provides.to-hosts = {
-          nixos.boot.kernel.randstructSeed = "denseed";
-        };
+        den.aspects.tux.provides.to-hosts =
+          { host, ... }:
+          {
+            nixos.boot.kernel.randstructSeed = "denseed@${host.name}";
+          };
 
         expr = [
           igloo.boot.kernel.randstructSeed
@@ -84,7 +86,7 @@
         ];
 
         expected = [
-          "denseed"
+          "denseed@igloo"
           "denboard"
         ];
       }
