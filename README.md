@@ -118,13 +118,7 @@ nix run github:vic/den
 
 ## Den Versioning - `v0.x` is moving fast
 
-> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
-
 Den `main` always requires flake-aspects `main`. Same for `latest` versions.
-
-For other than main and latest versions, each release-notes documents the particular
-flake-aspects version needed by Den. This is because flake-aspects can be used independently of Den,
-and it does not follows Den version numbers because it is not as fast-paced as Den.
 
 
 ```nix
@@ -153,6 +147,12 @@ tagged `heads-up` whenever this happens.
 `latest` tag always follows the latest created tag. This is intended for people that wishes
 to wait for a release and reading all announcements at release notes. if you flake update, you
 will only move between release points.
+
+> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
+
+For other than main and latest versions, each release-notes documents the particular
+flake-aspects version needed by Den. This is because flake-aspects can be used independently of Den,
+and it does not follows Den version numbers because it is not as fast-paced as Den.
 
 
 ## Code example (OS configuration domain)
