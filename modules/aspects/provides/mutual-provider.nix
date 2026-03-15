@@ -14,22 +14,13 @@ let
     The reason is that this battery does not re-invoke the `host-aspect.includes`,
     instead it relies on you defining provides.
 
-    Unlike `den.default` which is `parametric.atLeast` we use
-    `parametric.fixedTo` here, which help us propagate an already computed
-    context to all includes.
-
-    This battery, when installed in a `parametric.atLeast` will just forward
-    the same context.  The `find-mutual` helper returns an static configuration
-    which is ignored by parametric aspects, thus allowing non-existing
-    aspects to be just ignored.
-
     Be sure to read diagrams for the Host context pipeline:
     https://den.oeiuwq.com/guides/bidirectional
 
     ## Usage
 
       den.hosts.x86_64-linux.igloo.users.tux = { };
-      den.default.includes = [ den._.mutual-provider ];
+      den.ctx.user.includes = [ den._.mutual-provider ];
 
       # user aspect provides to specific host or to all where it lives
       den.aspects.tux = {
