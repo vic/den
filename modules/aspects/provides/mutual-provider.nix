@@ -49,26 +49,21 @@ let
   '';
 
   find-mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
-  user-to-hosts = { host, user }: den.aspects.${user.aspect}._.to-hosts or { };
-  host-to-users = { host, user }: den.aspects.${host.aspect}._.to-users or { };
-
-  named-mutuals =
-    { host, user }@ctx:
-    parametric.fixedTo ctx {
-      includes = [
-        (find-mutual host user)
-        (find-mutual user host)
-      ];
-    };
+  user-to-hosts = user: den.aspects.${user.aspect}._.to-hosts or { };
+  host-to-users = host: den.aspects.${host.aspect}._.to-users or { };
 
 in
 {
-  den.provides.mutual-provider = parametric.exactly {
-    inherit description;
-    includes = [
-      named-mutuals
-      host-to-users
-      user-to-hosts
-    ];
-  };
+  den.provides.mutual-provider = take.exactly (
+    { host, user }@ctx:
+    parametric.fixedTo ctx {
+      inherit description;
+      includes = [
+        (find-mutual host user)
+        (find-mutual user host)
+        (host-to-users host)
+        (user-to-hosts user)
+      ];
+    }
+  );
 }
