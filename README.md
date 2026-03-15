@@ -118,7 +118,13 @@ nix run github:vic/den
 
 ## Den Versioning - `v0.x` is moving fast
 
+> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
+
 Den `main` always requires flake-aspects `main`. Same for `latest` versions.
+
+For other than main and latest versions, each release-notes documents the particular
+flake-aspects version needed by Den. This is because flake-aspects can be used independently of Den,
+and it does not follows Den version numbers because it is not as fast-paced as Den.
 
 
 ```nix
@@ -134,8 +140,6 @@ that every PR checks CI. However, some PR might introduce changes that require y
 aware of what is happening in Den. For people tracking development, we have announcements
 tagged `heads-up` whenever this happens. 
 
-
-> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
 
 
 ```nix
