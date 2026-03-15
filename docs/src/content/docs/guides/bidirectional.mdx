@@ -124,10 +124,11 @@ sequenceDiagram
 
 ```
 
-Crucial points here are when `den.aspects.igloo.includes` are called with `{ host }` and later with `{ host, user }` per-user.
+<Aside title="Potential duplicates by igloo.includes Functions" type="caution">
+Notice that `den.aspects.igloo.includes` functions are called **with** `{ host }` and **later with** `{ host, user }` **per-user**.
 
-Because the list of aspects at `igloo.includes` get invoked more than once, with different contexts,
-functions at `igloo.includes` must take care of the following:
+Because the list of functions at `igloo.includes` get invoked more than once, with different contexts,
+they must take care of the following:
 
 ```nix
 # use den.lib.take.exactly to avoid being called with `{host, user}`
@@ -138,6 +139,7 @@ take.atLeast ({ host, user }: ...)
 ```
 
 Read the documentation at [`context/user.nix`](https://github.com/vic/den/blob/main/modules/context/user.nix) for all the details.
+</Aside>
 
 ## `den.provides.mutual-provider`
 
