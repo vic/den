@@ -23,15 +23,22 @@
       { den, lib, ... }:
       {
         den.schema.user =
-          { user, ... }:
+          { user, host, ... }:
           {
             options.main-group = lib.mkOption { default = user.name; };
+            options.description = lib.mkOption { default = "${user.name}@${host.name}"; };
           };
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        expr = den.hosts.x86_64-linux.igloo.users.tux.main-group;
-        expected = "tux";
+        expr = [
+          den.hosts.x86_64-linux.igloo.users.tux.main-group
+          den.hosts.x86_64-linux.igloo.users.tux.description
+        ];
+        expected = [
+          "tux"
+          "tux@igloo"
+        ];
       }
     );
 

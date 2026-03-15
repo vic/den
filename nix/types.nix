@@ -38,7 +38,7 @@ let
           users = lib.mkOption {
             description = "user accounts";
             default = { };
-            type = lib.types.attrsOf userType;
+            type = lib.types.attrsOf (userType config);
           };
           instantiate = lib.mkOption {
             description = ''
@@ -104,24 +104,27 @@ let
       }
     );
 
-  userType = lib.types.submodule (
-    { name, config, ... }:
-    {
-      freeformType = lib.types.attrsOf lib.types.anything;
-      imports = [ den.schema.user ];
-      config._module.args.user = config;
-      options = {
-        name = strOpt "user configuration name" name;
-        userName = strOpt "user account name" config.name;
-        classes = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          description = "home management nix classes";
-          default = [ "user" ];
+  userType =
+    host:
+    lib.types.submodule (
+      { name, config, ... }:
+      {
+        freeformType = lib.types.attrsOf lib.types.anything;
+        imports = [ den.schema.user ];
+        config._module.args.host = host;
+        config._module.args.user = config;
+        options = {
+          name = strOpt "user configuration name" name;
+          userName = strOpt "user account name" config.name;
+          classes = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            description = "home management nix classes";
+            default = [ "user" ];
+          };
+          aspect = strOpt "main aspect name" config.name;
         };
-        aspect = strOpt "main aspect name" config.name;
-      };
-    }
-  );
+      }
+    );
 
   strOpt =
     description: default:
