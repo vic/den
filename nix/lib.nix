@@ -27,6 +27,7 @@ let
   owned = (lib.flip builtins.removeAttrs) [
     "includes"
     "__functor"
+    "__functionArgs"
   ];
 
   # only static includes from an aspect.

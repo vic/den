@@ -27,6 +27,7 @@ jobs:
             perf
             style
             revert
+            future
             cleanup
             improve
             refactor
@@ -42,6 +43,7 @@ jobs:
             class
             homes
             tests
+            release
             template
             batteries
             namespaces
