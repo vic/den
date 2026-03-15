@@ -72,11 +72,15 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 ### Examples:
 
+> Want yours featured? send me a DM via matrix or zulip (links at GH Discussions)
+
 [`vic/vix`](https://github.com/vic/vix): author spends more time in Den itself (-flakes)
 
-[`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): beautiful organization (+flake-parts)
+[`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
 
-[GitHub Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
+[`Adda`](https://codeberg.org/Adda/nixos-config): A comprehensive system configuration for multiple hosts (+flake-parts +flake-file +home-manager +files)
+
+[GitHub Search](https://github.com/search?q=den.aspects+language%3ANix&type=code): Growing community adoption, `976+` results and counting.
 
 **❄️ Try it:**
 
