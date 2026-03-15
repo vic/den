@@ -42,8 +42,6 @@
 
 ### [Community](https://den.oeiuwq.com/community/)
 
-
-
 </div>
 </td>
 <td>
@@ -120,7 +118,6 @@ nix run github:vic/den
 
 Den `main` always requires flake-aspects `main`. Same for `latest` versions.
 
-
 ```nix
 # Bleeding edge Den
 {
@@ -132,12 +129,10 @@ Den `main` always requires flake-aspects `main`. Same for `latest` versions.
 `main` branch follows development, this is where PRs are merged, it is stable in the sense
 that every PR checks CI. However, some PR might introduce changes that require you being
 aware of what is happening in Den. For people tracking development, we have announcements
-tagged `heads-up` whenever this happens. 
-
-
+tagged `heads-up` whenever this happens.
 
 ```nix
-# Released Den - no longer gets updates until next release 
+# Released Den - no longer gets updates until next release
 {
   inputs.den.url = "github:vic/den/latest";
   inputs.flake-aspects.url = "github:vic/flake-aspects/latest";
@@ -153,7 +148,6 @@ will only move between release points.
 For other than main and latest versions, each release-notes documents the particular
 flake-aspects version needed by Den. This is because flake-aspects can be used independently of Den,
 and it does not follows Den version numbers because it is not as fast-paced as Den.
-
 
 ## Code example (OS configuration domain)
 
