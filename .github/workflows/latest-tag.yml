@@ -1,0 +1,16 @@
+name: Update latest tag
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.number }}
+  cancel-in-progress: true
+jobs:
+  main:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: EndBug/latest-tag@latest
