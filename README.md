@@ -78,7 +78,7 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`Adda`](https://codeberg.org/Adda/nixos-config): A comprehensive system configuration for multiple hosts (+flake-parts +flake-file +home-manager +files)
 
-[GitHub Search](https://github.com/search?q=den.aspects+language%3ANix&type=code): Growing community adoption, `976+` results and counting.
+Growing community adoption: [`den.aspects` Search](https://github.com/search?q=den.aspects+language%3ANix&type=code) [AI instructions Search](https://github.com/search?q=%28den.aspects+OR+vic%2Fden%29++language%3AMarkdown+%28agent+OR+claude+OR+gemini+OR+readme%29&type=code)
 
 **❄️ Try it:**
 
