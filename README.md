@@ -42,6 +42,8 @@
 
 ### [Community](https://den.oeiuwq.com/community/)
 
+
+
 </div>
 </td>
 <td>
@@ -51,6 +53,21 @@ At its core, Den is a [library](https://den.oeiuwq.com/explanation/library-vs-fr
 On top of the library, Den provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
 Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
+
+---
+
+### Versioning - Den `v0.x` is moving rapidly
+
+`main` branch follows development, this is where PRs are merged, it is stable in the sense
+that every PR checks CI. However, some PR might introduce changes that require you
+reading the release notes. For people tracking development, we have announcements
+tagged `heads-up` whenever this happens. 
+
+`latest` tag always follows the latest created tag. This is intended for people that wishes
+to wait for a release and reading all announcements at release notes. if you flake update, you
+will only move between release points.
+
+Den `main` always requires flake-aspects `main`. Same for `latest` versions.
 
 ### Templates:
 
