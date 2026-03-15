@@ -34,6 +34,8 @@
 
 ### [Batteries](https://den.oeiuwq.com/guides/batteries/)
 
+### [Versioning](https://den.oeiuwq.com/releases/)
+
 ### [Reference](https://den.oeiuwq.com/reference/ctx/)
 
 ### [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
@@ -76,7 +78,7 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
 
-[`Adda`](https://codeberg.org/Adda/nixos-config): A comprehensive system configuration for multiple hosts (+flake-parts +flake-file +home-manager +files)
+[`adda/nixos-config`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
 
 Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code) - [AI Instructions Search](https://github.com/search?q=%28den.aspects+OR+vic%2Fden%29++language%3AMarkdown+%28agent+OR+claude+OR+gemini+OR+readme%29&type=code)
 
@@ -113,41 +115,6 @@ nix run github:vic/den
 
 > Den is a playground for some very advanced concepts. I’m convinced that some of its ideas will play a role in future Nix areas. In my opinion there are some raw diamonds in Den.\
 > — `@Doc-Steve` - Author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts)
-
-## Den Versioning - `v0.x` is moving fast
-
-Den `main` always requires flake-aspects `main`. Same for `latest` versions.
-
-```nix
-# Bleeding edge Den
-{
-  inputs.den.url = "github:vic/den";
-  inputs.flake-aspects.url = "github:vic/flake-aspects";
-}
-```
-
-`main` branch follows development, this is where PRs are merged, it is stable in the sense
-that every PR checks CI. However, some PR might introduce changes that require you being
-aware of what is happening in Den. For people tracking development, we have announcements
-tagged `heads-up` whenever this happens.
-
-```nix
-# Released Den - no longer gets updates until next release
-{
-  inputs.den.url = "github:vic/den/latest";
-  inputs.flake-aspects.url = "github:vic/flake-aspects/latest";
-}
-```
-
-`latest` tag always follows the latest created tag. This is intended for people that wishes
-to wait for a release and reading all announcements at release notes. if you flake update, you
-will only move between release points.
-
-> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
-
-For other than main and latest versions, each release-notes documents the particular
-flake-aspects version needed by Den. This is because flake-aspects can be used independently of Den,
-and it does not follows Den version numbers because it is not as fast-paced as Den.
 
 ## Code example (OS configuration domain)
 

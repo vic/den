@@ -1,0 +1,82 @@
+---
+title: Den Releases and Versioning
+description: How Den is versioned and release notes
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside icon="rocket" title="Den v0 series">
+
+Den is currently at `v0.x` series. That does not mean it is unstable,
+we have >180 tests in our CI and each new feature is always tested.
+
+What `v0.x` means is that Den development is currently fast-paced,
+evolving and being shaped by its current users.
+
+If you would like something to be
+possible with Den, _now_ is the time when all users help shape Den.
+Until it reaches a more definitive form.
+</Aside>
+
+## Den Dependencies.
+
+`den.lib` is built with [`flake-aspects`](https://github.com/vic/flake-aspects)
+and Den framework uses a [`import-tree`](https://github.com/vic/import-tree) to
+load its `modules/` directory. Of these two, only `flake-aspects` version is
+important because it provides the underlying aspects features Den uses.
+
+Some people use `flake-aspects` independently of Den,
+and it does not follow Den versioning numbers
+because it is not as fast-paced as Den.
+
+
+## Bleeding-Edge Den
+
+**The `main` branch of Den will always depend on flake-aspects `main` branch**.
+
+This branch follows development, this is where PRs are merged, it is stable in the sense that every PR checks CI. 
+
+```nix
+# flake.nix
+# Main Den - updates on each PR merge
+{
+  inputs.den.url = "github:vic/den";
+  inputs.flake-aspects.url = "github:vic/flake-aspects";
+}
+```
+
+<Aside type="caution" icon="rss" title="Heads-up Announcements">
+However, some PR might introduce changes that require you being aware of what is happening in Den. For people tracking `main` development, we have [announcements
+tagged `heads-up`](https://github.com/vic/den/discussions?discussions_q=label%3Aheads-up) whenever something important happens. These announcements are also forwarded to Zulip and Matrix channels.
+</Aside>
+
+
+## Latest Den
+
+Den has a `latest` tag that always follows the latest created release tag.
+
+> Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
+
+**The `latest` version of Den will always depend on flake-aspects `latest`**.
+
+This is intended for people that wishes to move only between release points.
+People still need to read `Release Notes` since they might contain important
+information on how Den is evolving.
+
+
+```nix
+# flake.nix
+# Latest Den - no longer gets updates until next release
+{
+  inputs.den.url = "github:vic/den/latest";
+  inputs.flake-aspects.url = "github:vic/flake-aspects/latest";
+}
+```
+
+## Released Den
+
+For other than `main` and `latest` versions, each `Release Notes` document
+detailsthe particular flake-aspects version needed by Den. 
+
+**Read [Den Releases](https://github.com/vic/den/releases)**
+

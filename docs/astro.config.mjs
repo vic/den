@@ -34,6 +34,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Overview', slug: 'overview' },
 						{ label: 'Motivation', slug: 'motivation', },
+						{ label: 'Versioning', slug: 'releases' },
 						{ label: 'Community', slug: 'community' },
 						{ label: 'Contributing', slug: 'contributing' },
 					],
