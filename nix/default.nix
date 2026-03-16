@@ -1,12 +1,10 @@
 let
+  den-lib = import ./lib;
+
+  nixModule = inputs: { config, lib, ... }: (den-lib { inherit inputs config lib; }).nixModule;
+
   flakeModules.default = ./flakeModule.nix;
   flakeModules.dendritic = ./dendritic.nix;
-in
-{
-  # flake-parts conventions
-  flakeModule = flakeModules.default;
-  inherit flakeModules;
-  modules.flake = flakeModules;
 
   templates = {
     default.path = ../templates/default;
@@ -24,7 +22,17 @@ in
     bogus.path = ../templates/bogus;
     bogus.description = "For bug reproduction";
   };
+in
+{
+  __functor = _: den-lib;
+  lib = den-lib;
+
+  inherit nixModule templates;
+  namespace = import ./lib/namespace.nix;
   packages = import ./flake-packages.nix;
-  namespace = import ./namespace.nix;
-  lib = import ./lib.nix;
+
+  # flake-parts conventions
+  flakeModule = flakeModules.default;
+  inherit flakeModules;
+  modules.flake = flakeModules;
 }

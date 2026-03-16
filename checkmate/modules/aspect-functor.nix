@@ -2,11 +2,10 @@
   lib,
   inputs,
   config,
+  den,
   ...
 }:
 let
-  den.lib = inputs.target.lib { inherit lib inputs config; };
-
   inherit (den.lib) parametric canTake;
 
   aspect-example = parametric.atLeast {
