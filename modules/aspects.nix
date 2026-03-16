@@ -7,5 +7,7 @@
   options.flake.denful = lib.mkOption {
     default = { };
     type = lib.types.attrsOf lib.types.raw;
+    internal = true;
+    visible = false;
   };
 }
