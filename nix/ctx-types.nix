@@ -27,6 +27,8 @@ let
     options.into = lib.mkOption {
       description = "Context transformations to other context types";
       type = intoType;
+      internal = true;
+      visible = false;
       default = _: { };
       apply = normalizeInto;
     };

@@ -56,6 +56,8 @@ let
             '';
             example = lib.literalExpression "inputs.nixpkgs.lib.nixosSystem";
             type = lib.types.raw;
+	    internal = true;
+	    visible = false;
             default =
               {
                 nixos = inputs.nixpkgs.lib.nixosSystem;
@@ -168,6 +170,8 @@ let
             example = lib.literalExpression ''inputs.nixpkgs.legacyPackages.''${home.system}'';
             type = lib.types.raw;
             default = inputs.nixpkgs.legacyPackages.${config.system};
+	    internal = true;
+	    visible = false;
           };
           instantiate = lib.mkOption {
             description = ''
@@ -183,6 +187,8 @@ let
             '';
             example = lib.literalExpression "inputs.home-manager.lib.homeManagerConfiguration";
             type = lib.types.raw;
+	    internal = true;
+	    visible = false;
             default =
               {
                 homeManager = inputs.home-manager.lib.homeManagerConfiguration;

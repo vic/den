@@ -10,6 +10,8 @@ in
 {
   options.den.ctx = lib.mkOption {
     default = { };
+    internal = true;
+    visible = false;
     type = lib.types.lazyAttrsOf ctxTreeType;
   };
 }
