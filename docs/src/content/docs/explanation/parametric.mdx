@@ -20,7 +20,7 @@ A function's **required parameters** determine which contexts it matches:
 ({ host, ... }: { nixos.x = host.hostName; })
 
 # Matches: {host, user} only
-(den.lib.take.exactly ({ host, user }: { nixos.x = user.userName; }))
+(den.lib.perUser ({ host, user }: { nixos.x = user.userName; }))
 
 # Matches: {home} **or** {home, foo}
 ({ home }: { homeManager.x = home.userName; })

@@ -9,6 +9,6 @@
   options.den.lib = lib.mkOption {
     internal = true;
     visible = false;
-    type = lib.types.attrsOf lib.types.raw;
+    type = lib.types.submodule { freeformType = lib.types.lazyAttrsOf lib.types.unspecified; };
   };
 }

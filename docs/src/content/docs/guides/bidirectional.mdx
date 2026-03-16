@@ -131,11 +131,11 @@ Because the list of functions at `igloo.includes` get invoked more than once, wi
 they must take care of the following:
 
 ```nix
-# use den.lib.take.exactly to avoid being called with `{host, user}`
-take.exactly ({ host }: ...)
+# avoid being called with `{host, user}`
+den.lib.perHost ({ host }: ...)
 
-# use den.lib.take.atLeast to avoid being called with `{host}`
-take.atLeast ({ host, user }: ...)
+# avoid being called with `{host}`
+den.lib.perUser ({ host, user }: ...)
 ```
 
 Read the documentation at [`context/user.nix`](https://github.com/vic/den/blob/main/modules/context/user.nix) for all the details.
