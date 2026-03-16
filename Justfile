@@ -4,6 +4,7 @@ help:
 check-all:
   nix-build ./templates/noflake --no-out-link -A flake.nixosConfigurations.igloo
   just all check
+  just unit
 
 update-all:
   cd templates/noflake && npins update den flake-aspects
@@ -37,3 +38,6 @@ all task:
 
 fmt:
   nix run github:vic/checkmate#fmt --override-input target .
+
+unit:
+  nix flake check --override-input target . github:vic/checkmate

@@ -2,10 +2,10 @@
   lib,
   inputs,
   config,
+  den,
   ...
 }:
 let
-  den.lib = inputs.target.lib { inherit inputs lib config; };
   takes = den.lib.canTake;
 
   flake.tests."test exactly fails" = {

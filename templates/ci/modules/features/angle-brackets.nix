@@ -7,7 +7,7 @@
       { den, __findFile, ... }:
       {
         _module.args.__findFile = den.lib.__findFile;
-        expr = <den.lib> ? owned;
+        expr = <den.lib.statics> ? owned;
         expected = true;
       }
     );
