@@ -5,7 +5,5 @@
   ...
 }:
 {
-  imports = [
-    (inputs.den.lib { inherit inputs lib config; }).nixModule
-  ];
+  imports = [ (inputs.den.lib { inherit inputs lib config; }).nixModule ];
 }

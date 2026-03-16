@@ -33,9 +33,11 @@
     # you could be duplicating config values. For example:
     #
     #  # This will append 42 into foo option for the {host} and for EVERY {host,user}
-    #  ({ host, ... }: { nixos.foo = [ 42 ]; }) # DO-NOT-DO-THIS.
+    #     ({ host, ... }: { nixos.foo = [ 42 ]; }) # DO-NOT-DO-THIS.
     #
     #  # Instead try to be explicit if a function is intended for ONLY { host }
-    #  den.lib.take.exactly ({ host }: { nixos.foo = [ 42 ]; })
+    #     den.lib.perHost ({ host }: { nixos.foo = [ 42 ]; })
+    #  # Or for { host, user } ONLY:
+    #     den.lib.perUser ({ host, user }: { nixos.foo = [ 42 ]; })
   ];
 }

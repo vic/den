@@ -53,11 +53,11 @@ let
 
        Do this to prevent the function being invoked with `{host,user}`
 
-          take.exactly ({host}: ...)
+          den.lib.perHost ({host}: ...)
 
        Or this to avoid it being invoked with `{host}`
 
-          take.atLeast ({host,user}: ...)
+          den.lib.perUser ({host,user}: ...)
 
     Static aspects, -functions  like `{class,aspect-chain}: ...`- at host-aspect.includes
     have **no way** to distinguish when the calling context is `{host}` or `{host,user}` if
@@ -66,7 +66,7 @@ let
     Because of this, if you have such functions, they might produce duplicate values on list or
     conflicting values on package types. A work around is to wrap them in a context-aware function:
 
-       take.exactly ({host}: { includes = [ ({class, aspect-chain}: ...) ]; })
+          den.lib.perHost ({host}: {class, aspect-chain}: ...)
 
   '';
 

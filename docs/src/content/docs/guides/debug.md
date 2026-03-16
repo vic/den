@@ -85,10 +85,10 @@ nix-repl> cfg.networking.hostName
 
 **Duplicate values in lists**: Den deduplicates owned and static configs
 from `den.default`, but parametric functions in `den.default.includes`
-run at every context stage. Use `den.lib.take.exactly` to restrict:
+run at every context stage. Use `den.lib.perHost` to restrict:
 
 ```nix
-den.lib.take.exactly ({ host }: { nixos.x = 1; })
+den.lib.perHost ({ host }: { nixos.x = 1; })
 ```
 
 **Missing attribute**: The context does not have the expected parameter.
