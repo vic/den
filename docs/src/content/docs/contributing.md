@@ -33,15 +33,43 @@ Failing tests are an awesome way to improve Den. Thanks :)
 
 ### Contributing Documentation
 
-If you have found some dead link or spelling/grammatical errors, please help by sending a PR.
+The documentation website is under `./docs/`. Please help correct mistakes by sending a PR!
 
-The documentation website is under `./docs/`, You can run it locally with: `pnpm run dev`.
+First, clone your fork of the repository.
+
+```
+$ git clone 'https://github.com/<your-username>/den'
+$ cd den
+```
+
+Next, enter a nix shell.
+```
+## Classic tooling
+$ nix-shell -p just nodejs pnpm
+## or flakes tooling!
+$ nix shell 'nixpkgs#just nixpkgs#nodejs nixpkgs#pnpm'
+```
+
+Then, change to the docs directory and install the necessary dependencies to `docs/node_modules`.
+
+```
+$ cd docs
+$ pnpm install
+```
+
+Finally, start the docs webserver.
+
+```
+$ just docs
+```
+
+Now, you can edit the `.mdx` files in `docs/src/content/docs` and see your changes reflected immediately.
 
 
 ### Helping other people
 
-One of the best forms of contribution does not even involves PR. Hang out in our community
-channels and help others getting aboard. Helping others is the best way to contribute.
+One of the best forms of contribution does not even require submitting code. Hang out in our community
+channels and help others with onboarding to den!
 
-Thanks, You are awesome! 
+Thanks, You are awesome!
 
