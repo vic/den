@@ -45,9 +45,10 @@ $ cd den
 Next, enter a nix shell.
 ```
 ## Classic tooling
-$ nix-shell -p just nodejs pnpm
+$ nix-shell
+
 ## or flakes tooling!
-$ nix shell 'nixpkgs#just nixpkgs#nodejs nixpkgs#pnpm'
+$ nix develop
 ```
 
 Then, change to the docs directory and install the necessary dependencies to `docs/node_modules`.

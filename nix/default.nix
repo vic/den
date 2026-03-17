@@ -26,10 +26,10 @@ in
 {
   __functor = _: den-lib;
   lib = den-lib;
+  namespace = import ./lib/namespace.nix;
 
   inherit nixModule templates;
-  namespace = import ./lib/namespace.nix;
-  packages = import ./flake-packages.nix;
+  inherit (import ./flake-packages.nix) packages devShells;
 
   # flake-parts conventions
   flakeModule = flakeModules.default;

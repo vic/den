@@ -5,9 +5,21 @@ let
     url = "https://github.com/edolstra/flake-compat/archive/${rev}.tar.gz";
     sha256 = narHash;
   };
+
   flake = import compat { src = ../templates/example; };
-  pkgs = flake.outputs.packages;
+  lib = import (flake.outputs.inputs.nixpkgs + "/lib");
+  eachSystem = lib.genAttrs lib.systems.flakeExposed;
+
+  packages = eachSystem (system: {
+    default = flake.outputs.packages.${system}.vm;
+  });
+
+  devShells = eachSystem (system: {
+    default = import ../shell.nix {
+      pkgs = import flake.outputs.inputs.nixpkgs { inherit system; };
+    };
+  });
 in
 {
-  x86_64-linux.default = pkgs.x86_64-linux.vm;
+  inherit packages devShells;
 }
