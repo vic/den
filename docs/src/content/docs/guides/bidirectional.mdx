@@ -157,6 +157,32 @@ den.aspects.igloo.includes = [
 Read the documentation at [`context/user.nix`](https://github.com/vic/den/blob/main/modules/context/user.nix) for all the details.
 </Aside>
 
+<Aside title="Avoid dups with host-only module pattern" icon="rocket">
+Here's a pattern you can use to avoid duplication while `bidirectional` is enabled:
+
+```nix
+den.aspects.igloo.includes = [ 
+  # wrap an aspect with perHost
+  (den.lib.perHost igloo-only) 
+
+  # any other aspect can contribute to users
+  shells
+  music-production
+];
+
+# Use this aspect for host-only stuff, anything that would
+# lead to duplicates is safe in this list
+den.aspects.igloo-only = {
+  includes = with den.aspects; [ facter disko ];
+  nixos = { pkgs, ... }: {
+    environment.systemPackages = [ pkgs.hello ];
+  };
+}
+```
+
+> Tip inspired by `@drupol`.
+</Aside>
+
 ## `den.provides.mutual-provider`
 
 An alternative to bidirectionality is [`den.provides.mutual-provider`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix).
