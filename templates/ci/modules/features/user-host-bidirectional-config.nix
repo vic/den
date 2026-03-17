@@ -50,8 +50,8 @@
           pinguHm.programs.direnv.enable
         ];
         expected = [
-          false
-          false
+          true
+          true
         ];
       }
     );
@@ -73,12 +73,8 @@
 
         den.aspects.igloo.includes = [
           {
-            homeManager.programs.direnv.enable = throw "unreachable, static includes wont be used by bidirectionality";
-          }
-          # This is the way, walk in it:
-          (den.lib.perUser {
             homeManager.programs.direnv.enable = true;
-          })
+          }
         ];
 
         expr = [

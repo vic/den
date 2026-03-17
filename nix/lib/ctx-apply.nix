@@ -9,6 +9,7 @@ let
     "into"
     "provides"
     "__functor"
+    "__functionArgs"
     "modules"
     "resolve"
     "_module"

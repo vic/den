@@ -124,7 +124,9 @@ sequenceDiagram
 
 ```
 
-<Aside title="Potential duplicates by igloo.includes Functions" type="caution">
+<Aside title="Potential Duplicates by Host Aspect" type="caution">
+**Under Bidirectionality**, the igloo aspect is activated more than once!
+
 Notice that `den.aspects.igloo.includes` functions are called **with** `{ host }` and **later with** `{ host, user }` **per-user**.
 
 Because the list of functions at `igloo.includes` get invoked more than once, with different contexts,
@@ -136,6 +138,20 @@ den.lib.perHost ({ host }: ...)
 
 # avoid being called with `{host}`
 den.lib.perUser ({ host, user }: ...)
+```
+
+Static aspects (plain-attrsets) or host-owned classes at a Host-aspect
+have **no way** to distinguish when the calling context is 
+`{host}` or `{host,user}`, **only functions** are context-aware.
+
+```
+# Lists, packages, options at host-level would cause duplicates
+# den.aspects.igloo.nixos.options.foo = lib.mkOption {};
+
+# Instead, use perHost to define unique values:
+den.aspects.igloo.includes = [
+  (perHost { nixos.options.foo = lib.mkOption {}; })
+];
 ```
 
 Read the documentation at [`context/user.nix`](https://github.com/vic/den/blob/main/modules/context/user.nix) for all the details.
