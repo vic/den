@@ -85,6 +85,7 @@
         };
 
         den.aspects.igloo.includes = [
+
           (den.lib.perHost { nixos.funny = [ "atHost perHost static" ]; })
           (den.lib.perHost (
             { host }:

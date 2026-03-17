@@ -69,6 +69,7 @@
           pingu = { };
         };
         den.default.homeManager.home.stateVersion = "25.11";
+        den.ctx.user.includes = [ den._.bidirectional ];
         den.aspects.igloo.includes = [ git-for-linux-only ];
 
         expr = [

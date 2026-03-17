@@ -76,6 +76,7 @@ let
 
   from-user = { host, user }: fixedTo { inherit host user; } den.aspects.${user.aspect};
   from-host = { host, user }: atLeast den.aspects.${host.aspect} { inherit host user; };
+
 in
 {
   den.ctx = ctx;

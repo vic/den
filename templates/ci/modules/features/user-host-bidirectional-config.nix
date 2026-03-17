@@ -2,7 +2,7 @@
 {
   flake.tests.user-host-bidirectional-config = {
 
-    test-host-owned-configures-all-users = denTest (
+    test-host-owned-unidirectional = denTest (
       {
         den,
         tuxHm,
@@ -10,13 +10,12 @@
         ...
       }:
       {
-        den.default.homeManager.home.stateVersion = "25.11";
-
         den.hosts.x86_64-linux.igloo.users = {
           tux = { };
           pingu = { };
         };
 
+        # no bidirectionality enabled, this is ignored
         den.aspects.igloo.homeManager.programs.direnv.enable = true;
 
         expr = [
@@ -24,13 +23,13 @@
           pinguHm.programs.direnv.enable
         ];
         expected = [
-          true
-          true
+          false
+          false
         ];
       }
     );
 
-    test-host-static-configures-all-users = denTest (
+    test-host-owned-bidirectional = denTest (
       {
         den,
         tuxHm,
@@ -38,17 +37,48 @@
         ...
       }:
       {
-        den.default.homeManager.home.stateVersion = "25.11";
-
         den.hosts.x86_64-linux.igloo.users = {
           tux = { };
           pingu = { };
         };
 
+        den.ctx.user.includes = [ den._.bidirectional ];
+        den.aspects.igloo.homeManager.programs.direnv.enable = true;
+
+        expr = [
+          tuxHm.programs.direnv.enable
+          pinguHm.programs.direnv.enable
+        ];
+        expected = [
+          false
+          false
+        ];
+      }
+    );
+
+    test-host-bidirectional-static-includes-configures-all-users = denTest (
+      {
+        den,
+        tuxHm,
+        pinguHm,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo.users = {
+          tux = { };
+          pingu = { };
+        };
+
+        den.ctx.user.includes = [ den._.bidirectional ];
+
         den.aspects.igloo.includes = [
           {
-            homeManager.programs.direnv.enable = true;
+            homeManager.programs.direnv.enable = throw "unreachable, static includes wont be used by bidirectionality";
           }
+          # This is the way, walk in it:
+          (den.lib.perUser {
+            homeManager.programs.direnv.enable = true;
+          })
         ];
 
         expr = [
@@ -62,7 +92,7 @@
       }
     );
 
-    test-host-parametric-configures-all-users = denTest (
+    test-host-parametric-unidirectional = denTest (
       {
         den,
         tuxHm,
@@ -70,12 +100,47 @@
         ...
       }:
       {
-        den.default.homeManager.home.stateVersion = "25.11";
 
         den.hosts.x86_64-linux.igloo.users = {
           tux = { };
           pingu = { };
         };
+
+        den.aspects.igloo.includes = [
+          (
+            { host, user }:
+            {
+              homeManager.programs.direnv.enable = true;
+            }
+          )
+        ];
+
+        expr = [
+          tuxHm.programs.direnv.enable
+          pinguHm.programs.direnv.enable
+        ];
+        expected = [
+          false
+          false
+        ];
+      }
+    );
+
+    test-host-parametric-bidirectional = denTest (
+      {
+        den,
+        tuxHm,
+        pinguHm,
+        ...
+      }:
+      {
+
+        den.hosts.x86_64-linux.igloo.users = {
+          tux = { };
+          pingu = { };
+        };
+
+        den.ctx.user.includes = [ den._.bidirectional ];
 
         den.aspects.igloo.includes = [
           (
@@ -105,7 +170,6 @@
         ...
       }:
       {
-        den.default.homeManager.home.stateVersion = "25.11";
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.hosts.x86_64-linux.iceberg.users.tux = { };
@@ -123,7 +187,7 @@
       }
     );
 
-    test-user-static-configures-all-hosts = denTest (
+    test-user-static-unidirectional-configures-all-hosts = denTest (
       {
         den,
         igloo,
@@ -131,7 +195,6 @@
         ...
       }:
       {
-        den.default.homeManager.home.stateVersion = "25.11";
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.hosts.x86_64-linux.iceberg.users.tux = { };
@@ -161,7 +224,6 @@
         ...
       }:
       {
-        den.default.homeManager.home.stateVersion = "25.11";
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.hosts.x86_64-linux.iceberg.users.tux = { };
