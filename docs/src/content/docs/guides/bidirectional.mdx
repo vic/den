@@ -18,15 +18,29 @@ __Bidirectionality__ means that not only a User contributes
 configuration to a Host, but **also** that a Host contributes
 configurations to a User.
 
-This is useful when you wish for a Host to provide a common 
-_home environment_ for all its users, or for a User to require
-common _os environment_ everywhere it is defined.
+<Aside title="When is bidirectionality needed?" icon="comment-alt">
+Only when you wish for a Host-aspect to provide common _home settings_ 
+(`homeManager`, etc) for **all** its users.
+
+And even then there are much simpler and better ways:
+
+```nix
+# an aspect with all common stuff for everybody
+den.aspects.user-base = { nixos = ...; homeManager = ...; hjem = ...; };
+
+# include it in all users
+den.ctx.user.includes = [ den.aspects.user-base ];
+```
+
+> _Now you can skip the rest of this page_.
+</Aside>
+
 
 There are at least two (built-in) ways to achieve this in Den.
-The `den._.bidirectional` and `den._.mutual-provider`, the
+The `den._.bidirectional` and `den._.mutual-provider` batteries. The
 first one was extracted from den-core and the second started
 life as an **aspect routing** example, but made it to become
-proper battery itself and even safer to use.
+proper battery itself and even safer than the first.
 
 
 ## Default, *unidirectional* OS configuration
