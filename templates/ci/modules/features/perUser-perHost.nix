@@ -79,12 +79,14 @@
 
         den.ctx.user.includes = [ den._.bidirectional ];
 
-        den.aspects.igloo.nixos.options.funny = lib.mkOption {
+        # NOTE: Since options must be unique, include via perHost
+        den.aspects.funMod.nixos.options.funny = lib.mkOption {
           default = [ ];
           type = lib.types.listOf lib.types.str;
         };
 
         den.aspects.igloo.includes = [
+          (den.lib.perHost den.aspects.funMod)
 
           (den.lib.perHost { nixos.funny = [ "atHost perHost static" ]; })
           (den.lib.perHost (

@@ -28,13 +28,13 @@ let
 
   denModule = {
     imports = [ inputs.den.flakeModule ];
-    den.default.homeManager.home.stateVersion = "26.05";
-    den.default.nixos = {
-      system.stateVersion = "26.05";
+    den.ctx.host.nixos = {
+      system.stateVersion = lib.mkDefault "26.05";
       boot.loader.grub.enable = lib.mkForce false;
       fileSystems."/".device = lib.mkForce "/dev/fake";
     };
-    den.schema.user.classes = lib.mkDefault [ "homeManager " ];
+    den.ctx.user.homeManager.home.stateVersion = lib.mkDefault "26.05";
+    den.schema.user.classes = lib.mkDefault [ "homeManager" ];
   };
 
   testModule = {

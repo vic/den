@@ -176,8 +176,10 @@
         "host-lax {host,user}"
         "host-lax {host}"
 
-        "host-owned"
-        "host-static"
+        "host-owned" # host
+        "host-owned" # user bidirectional
+        "host-static" # host
+        "host-static" # user bidirectional
 
         "user-exact"
         "user-lax {host,user}"

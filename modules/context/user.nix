@@ -33,41 +33,40 @@ let
     Enable for all users:
        den.ctx.user.includes = [ den._.bidirectional ];
 
-    IMPORTANT: Enabling bidirectionality means that the following piepline is enabled:
+    IMPORTANT: Enabling bidirectionality means that the following pipeline is enabled:
 
        host-aspect{host} => user-aspect{host,user} => host-aspect{host,user}
 
-    This means that any function at host-aspect.includes can be called:
+    Notice that the host-aspect is being activated more than once!
+
+    This means that host configurations are obtained
       - once when the host is obtaining its own configuration with context {host}
       - once PER user that has bidirectionality enabled with context {host,user}
 
-    Because of this, parametric aspects at host-aspect must be careful
+    Due to Nix `lib.functionArgs` not distinguishing between `{host}` and `{host, ...}`,
+    Den provides these utilities built upon `den.lib.take.exactly`:
 
-       Instead of  -in Nix both of these have the same functionArgs-
-
-         ({host}: ...) 
-
-       or 
-
-         ({host, ...}: ...)
-
-       Do this to prevent the function being invoked with `{host,user}`
-
+          # Do this to prevent being invoked with `{host,user}`
           den.lib.perHost ({host}: ...)
 
-       Or this to avoid it being invoked with `{host}`
-
+          # Do this to prevent being invoked with `{host}`
           den.lib.perUser ({host,user}: ...)
 
-    Static aspects, -functions  like `{class,aspect-chain}: ...`- at host-aspect.includes
-    have **no way** to distinguish when the calling context is `{host}` or `{host,user}` if
-    bidirectionality is enabled.
+    Static aspects (plain-attrsets) or host-owned classes at a Host-aspect
+    have **no way** to distinguish when the calling context is 
+    `{host}` or `{host,user}`, only functions are context-aware.
 
-    Because of this, if you have such functions, they might produce duplicate values on list or
-    conflicting values on package types. A work around is to wrap them in a context-aware function:
+    Because of this, a host-aspect might produce duplicate values on list,
+    package types, or unique values like options:
 
-          den.lib.perHost ({host}: {class, aspect-chain}: ...)
+          # lists, packages and options need to be unique.
+          # this line would produce duplicate errors IF bidirectional enabled
+          den.aspects.igloo.nixos.options.foo = lib.mkOption {};
 
+          # Instead, wrap in perHost things that must be unique
+          den.aspects.igloo.includes = [
+             (den.lib.perHost { nixos.options.foo = lib.mkOption {}; })
+          ]
   '';
 
   ctx.user.into.default = lib.singleton;
@@ -75,7 +74,8 @@ let
   ctx.user.provides.bidirectional = take.exactly from-host;
 
   from-user = { host, user }: fixedTo { inherit host user; } den.aspects.${user.aspect};
-  from-host = { host, user }: atLeast den.aspects.${host.aspect} { inherit host user; };
+
+  from-host = { host, user }: fixedTo { inherit host user; } den.aspects.${host.aspect};
 
 in
 {
