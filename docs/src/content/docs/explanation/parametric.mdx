@@ -22,8 +22,8 @@ A function's **required parameters** determine which contexts it matches:
 # Matches: {host, user} only
 (den.lib.perUser ({ host, user }: { nixos.x = user.userName; }))
 
-# Matches: {home} **or** {home, foo}
-({ home }: { homeManager.x = home.userName; })
+# Matches: {home} only
+(den.lib.perHome ({ home }: { homeManager.x = home.userName; }))
 ```
 
 ## The `canTake` Function

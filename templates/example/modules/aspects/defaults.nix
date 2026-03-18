@@ -39,5 +39,7 @@
     #     den.lib.perHost ({ host }: { nixos.foo = [ 42 ]; })
     #  # Or for { host, user } ONLY:
     #     den.lib.perUser ({ host, user }: { nixos.foo = [ 42 ]; })
+    #  # Or for standalone homes ({ home }) ONLY:
+    #     den.lib.perHome ({ home }: { homeManager.foo = [ 42 ]; })
   ];
 }

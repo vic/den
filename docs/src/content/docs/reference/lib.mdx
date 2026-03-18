@@ -87,6 +87,23 @@ Calls `fn ctx` if `canTake.exactly ctx fn`, otherwise returns `{}`.
 `_unused: used: used` -- ignores first argument, returns second. Used for
 discarding `aspect-chain` in `import-tree`.
 
+## Context Shortcuts
+
+These helpers are shortcuts built with `den.lib.take.exactly` and
+`den.lib.parametric.fixedTo`:
+
+### `den.lib.perHost aspect`
+
+Run `aspect` only in `{ host }` contexts.
+
+### `den.lib.perUser aspect`
+
+Run `aspect` only in `{ host, user }` contexts.
+
+### `den.lib.perHome aspect`
+
+Run `aspect` only in `{ home }` contexts.
+
 ## `den.lib.statics`
 
 Extracts only static includes from an aspect (non-function includes):
