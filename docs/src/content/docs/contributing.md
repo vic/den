@@ -37,31 +37,31 @@ The documentation website is under `./docs/`. Please help correct mistakes by se
 
 First, clone your fork of the repository.
 
-```
-$ git clone 'https://github.com/<your-username>/den'
-$ cd den
+```console
+git clone 'https://github.com/<your-username>/den'
+cd den
 ```
 
 Next, enter a nix shell.
-```
+```console
 ## Classic tooling
-$ nix-shell
+nix-shell
 
 ## or flakes tooling!
-$ nix develop
+nix develop
 ```
 
 Then, change to the docs directory and install the necessary dependencies to `docs/node_modules`.
 
-```
-$ cd docs
-$ pnpm install
+```console
+cd docs
+pnpm install
 ```
 
 Finally, start the docs webserver.
 
-```
-$ just docs
+```console
+just docs
 ```
 
 Now, you can edit the `.mdx` files in `docs/src/content/docs` and see your changes reflected immediately.
