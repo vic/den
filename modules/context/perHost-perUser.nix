@@ -9,7 +9,8 @@ let
   fixed = ctx: aspect: parametric.fixedTo ctx { includes = [ aspect ]; };
   perHost = aspect: take.exactly ({ host }@ctx: fixed ctx aspect);
   perUser = aspect: take.exactly ({ host, user }@ctx: fixed ctx aspect);
+  perHome = aspect: take.exactly ({ home }@ctx: fixed ctx aspect);
 in
 {
-  den.lib = { inherit perUser perHost; };
+  den.lib = { inherit perHome perUser perHost; };
 }

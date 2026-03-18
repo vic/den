@@ -135,5 +135,53 @@
       }
     );
 
+    test-perHome-on-standalone-home = denTest (
+      {
+        den,
+        config,
+        lib,
+        ...
+      }:
+      {
+        den.homes.x86_64-linux.tux = { };
+        den.default.includes = [ den._.define-user ];
+
+        den.aspects.tux.homeManager.options.funny = lib.mkOption {
+          default = [ ];
+          type = lib.types.listOf lib.types.str;
+        };
+
+        den.aspects.tux.includes = [
+          (den.lib.perHost { homeManager.funny = [ "atHome IGNORED perHost static" ]; })
+          (den.lib.perHost (
+            { host }:
+            {
+              homeManager.funny = [ "atHome IGNORED perHost ${host.name} fun" ];
+            }
+          ))
+          (den.lib.perUser { homeManager.funny = [ "atHome IGNORED perUser static" ]; })
+          (den.lib.perUser (
+            { user, host }:
+            {
+              homeManager.funny = [ "atHome IGNORED perUser ${user.name}@${host.name} fun" ];
+            }
+          ))
+          (den.lib.perHome { homeManager.funny = [ "atHome perHome static" ]; })
+          (den.lib.perHome (
+            { home }:
+            {
+              homeManager.funny = [ "atHome perHome ${home.name} fun" ];
+            }
+          ))
+        ];
+
+        expr = lib.sort (a: b: a < b) config.flake.homeConfigurations.tux.config.funny;
+        expected = [
+          "atHome perHome static"
+          "atHome perHome tux fun"
+        ];
+      }
+    );
+
   };
 }
