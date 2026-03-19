@@ -50,13 +50,18 @@ let
         "adaptArgs"
         "adapterModule"
       ];
+
       item = lib.head fwd.each;
       fromClass = fwd.fromClass item;
       intoClass = fwd.intoClass item;
       intoPath = fwd.intoPath item;
+
+      sourceModule = den.lib.aspects.resolve fromClass [ ] (fwd.fromAspect item);
+
       freeformMod = {
         config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
       };
+
       adapterKey = lib.concatStringsSep "/" (
         [
           fromClass
@@ -101,10 +106,41 @@ let
         };
       };
 
+      topLevelAdapter.${intoClass} = {
+        __functionArgs = guardArgs;
+        __functor =
+          _: args:
+          let
+            extraArgs =
+              if adaptArgs == null then { } else builtins.removeAttrs (adaptArgs args) (builtins.attrNames args);
+            specialArgs =
+              builtins.removeAttrs args [
+                "config"
+                "options"
+                "lib"
+              ]
+              // extraArgs;
+            evaluated = lib.evalModules {
+              inherit specialArgs;
+              modules = (if adapterModule == null then [ freeformMod ] else [ adapterModule ]) ++ [
+                sourceModule
+              ];
+            };
+          in
+          guardFn args evaluated.config;
+      };
+
       needsAdapter = guard != null || adaptArgs != null || adapterModule != null;
+      needsTopLevelAdapter = needsAdapter && intoPath == [ ];
       forwarded = den.lib.aspects.forward clean;
+
     in
-    if needsAdapter then adapter else forwarded;
+    if needsTopLevelAdapter then
+      topLevelAdapter
+    else if needsAdapter then
+      adapter
+    else
+      forwarded;
 
 in
 {
