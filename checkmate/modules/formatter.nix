@@ -3,6 +3,7 @@
     ".github/*TEMPLATE*/*"
     "docs/*"
     "Justfile"
+    "AGENT*.md"
   ];
   perSystem.treefmt.programs.deadnix.enable = false;
   perSystem.treefmt.programs.nixf-diagnose.enable = false;
