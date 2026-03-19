@@ -47,7 +47,7 @@ let
           attr = lib.concatStringsSep "." (outPrefix ++ host.intoAttr);
           from =
             if fromFlake then
-              [ "${fromPath}#.${attr}" ]
+              [ "${fromPath}#${attr}" ]
             else
               [
                 "--file"
@@ -78,7 +78,7 @@ let
           attr = lib.concatStringsSep "." (outPrefix ++ home.intoAttr);
           from =
             if fromFlake then
-              [ "${fromPath}#.${attr}" ]
+              [ "${fromPath}#${attr}" ]
             else
               [
                 "--file"

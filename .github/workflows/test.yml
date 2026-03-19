@@ -76,7 +76,8 @@ jobs:
           }
           EOF
           git add templates/noflake/modules/ci-runtime.nix
-      - run: cd templates/noflake && nix-build -A flake.nixosConfigurations.igloo.config.system.build.toplevel
+      - run: (cd templates/noflake && nix-build ./default.nix -A flake.nixosConfigurations.igloo.config.system.build.toplevel)
+      - run: (cd templates/noflake && nix-shell ./default.nix -A den.sh --run 'igloo build --offline')
   template:
     needs: [approved]
     strategy:
@@ -98,6 +99,10 @@ jobs:
           EOF
           git add templates/${{matrix.template}}/modules/ci-runtime.nix
       - run: nix flake check -L ./templates/${{matrix.template}} --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+      - run: (cd templates/minimal && nix build .#.nixosConfigurations.igloo.config.system.build.toplevel)
+        if: matrix.template == 'minimal'
+      - run: (cd templates/minimal && nix run .#igloo -- build --offline)
+        if: matrix.template == 'minimal'
   flake-file-template:
     needs: [approved]
     strategy:
