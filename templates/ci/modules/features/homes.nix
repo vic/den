@@ -60,7 +60,7 @@
 
         # When an standalone home has user@host and there exist such host
         den.homes.x86_64-linux."tux@igloo" = { };
-        den.hosts.x86_64-linux.iglooo.users.tux = { };
+        den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.nixos.networking.hostName = "blizzard";
         den.aspects.tux.includes = [ den._.define-user ];

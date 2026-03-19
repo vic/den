@@ -1,5 +1,6 @@
 {
   inputs,
+  config,
   lib,
   den,
   ...
@@ -163,7 +164,9 @@ let
             { pkgs, modules }:
             inputs.home-manager.lib.homeManagerConfiguration {
               inherit pkgs modules;
-              extraSpecialArgs.osConfig = lib.attrByPath ([ "flake" ] ++ hostByName.intoAttr) top.config;
+              extraSpecialArgs.osConfig = lib.attrByPath (
+                [ "flake" ] ++ hostByName.intoAttr ++ [ "config" ]
+              ) null top.config;
             }
           else
             inputs.home-manager.lib.homeManagerConfiguration;

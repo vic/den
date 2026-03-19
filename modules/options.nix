@@ -6,7 +6,14 @@
 }:
 let
   inherit (config) den;
-  types = import ./../nix/lib/types.nix { inherit inputs lib den; };
+  types = import ./../nix/lib/types.nix {
+    inherit
+      inputs
+      lib
+      den
+      config
+      ;
+  };
   baseMod = lib.mkOption {
     type = lib.types.deferredModule;
     default = { };
