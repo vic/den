@@ -67,7 +67,7 @@
         den.aspects.tux.homeManager =
           { osConfig, ... }:
           {
-            home.keyboard.model = "blizzard";
+            home.keyboard.model = osConfig.networking.hostName;
           };
 
         expr = {

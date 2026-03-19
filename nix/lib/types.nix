@@ -175,7 +175,7 @@ let
         options = {
           name = strOpt "home configuration name" name;
           userName = strOpt "user account name" userName;
-          hostName = strOpt "user account name" hostName;
+          hostName = strOpt "host name" hostName;
           system = strOpt "platform system" system;
           class = strOpt "home management nix class" "homeManager";
           aspect = strOpt "main aspect name" userName;
