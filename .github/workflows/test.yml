@@ -77,7 +77,7 @@ jobs:
           EOF
           git add templates/noflake/modules/ci-runtime.nix
       - run: (cd templates/noflake && nix-build ./default.nix -A flake.nixosConfigurations.igloo.config.system.build.toplevel)
-      - run: (cd templates/noflake && nix-shell ./default.nix -A den.sh --run 'igloo build --help')
+      - run: (cd templates/noflake && nix-shell ./default.nix -A den.sh --run 'igloo build --offline')
   template:
     needs: [approved]
     strategy:
