@@ -15,17 +15,17 @@ update-all:
 docs:
   cd docs && pnpm run dev
 
-ci test="":
-  just nix-unit ci "{{test}}"
+ci test="" *args:
+  just nix-unit ci "{{test}}" {{args}}
 
-bogus:
-  just nix-unit bogus ""
+bogus *args:
+  just nix-unit bogus "" {{args}}
 
-nix-unit template test:
-  nix-unit  --override-input den . --flake ./templates/{{template}}#.tests.systems.{{system}}.system-agnostic.{{test}}
+nix-unit template test *args:
+  nix-unit  --override-input den . --flake ./templates/{{template}}#.tests.systems.{{system}}.system-agnostic.{{test}} {{args}}
   
-check template:
-  nix flake check  --override-input den . ./templates/{{template}}
+check template *args:
+  nix flake check  --override-input den . ./templates/{{template}} {{args}}
 
 update template:
   nix flake update --flake ./templates/{{template}} den flake-aspects
