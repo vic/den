@@ -30,7 +30,6 @@ let
 
   from-user = { host, user }: fixedTo { inherit host user; } den.aspects.${user.aspect};
 
-
 in
 {
   den.ctx = ctx;

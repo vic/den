@@ -85,7 +85,6 @@
         den.ctx.user.includes = [ den._.mutual-provider ];
         den.aspects.igloo._.to-users.includes = [ den.aspects.strict-helper ];
 
-
         # strict-helper requires exactly { host, user } — since ctx.host only provides
         # { host }, strict-helper is skipped at host level (by exactly semantics).
         # At user level, { host, user } matches → description is set.
