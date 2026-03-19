@@ -64,22 +64,22 @@
 
         den.aspects.igloo.nixos.networking.hostName = "blizzard";
         den.aspects.tux.includes = [ den._.define-user ];
-        den.aspects.tux.homeManager = { osConfig, ... }: {
-          home.keyboard.model = "blizzard";
-        };
+        den.aspects.tux.homeManager =
+          { osConfig, ... }:
+          {
+            home.keyboard.model = "blizzard";
+          };
 
         expr = {
           homeSchema = {
             inherit (den.homes.x86_64-linux."tux@igloo")
-            userName
-            hostName
-            aspect
-            ;
+              userName
+              hostName
+              aspect
+              ;
           };
-          configuredUserName =
-            config.flake.homeConfigurations."tux@igloo".config.home.username;
-          hasOsConfig = 
-            config.flake.homeConfigurations."tux@igloo".config.home.keyboard.model;
+          configuredUserName = config.flake.homeConfigurations."tux@igloo".config.home.username;
+          hasOsConfig = config.flake.homeConfigurations."tux@igloo".config.home.keyboard.model;
         };
         expected = {
           homeSchema.aspect = "tux"; # re-uses same aspect as hosted HM.
