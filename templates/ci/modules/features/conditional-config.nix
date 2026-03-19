@@ -41,9 +41,9 @@
           users.tux.hasBar = true;
         };
 
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
-        den.aspects.igloo.includes = [ conditionalAspect ];
+        den.aspects.igloo._.to-users.includes = [ conditionalAspect ];
 
         expr = igloo.something;
         expected = "was-true";
@@ -68,9 +68,10 @@
           tux = { };
           pingu = { };
         };
+
         den.default.homeManager.home.stateVersion = "25.11";
-        den.ctx.user.includes = [ den._.bidirectional ];
-        den.aspects.igloo.includes = [ git-for-linux-only ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.aspects.igloo._.to-users.includes = [ git-for-linux-only ];
 
         expr = [
           tuxHm.programs.git.enable

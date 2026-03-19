@@ -2,7 +2,7 @@
 {
   flake.tests.deadbugs-issue-292 = {
 
-    test-should-not-read-from-host-without-bidirectionality = denTest (
+    test-should-not-read-from-host-without-mutuality = denTest (
       {
         den,
         lib,

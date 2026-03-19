@@ -70,7 +70,7 @@ export default defineConfig({
 						{ label: 'From Flake to Den', slug: 'guides/from-flake-to-den' },
 						{ label: 'Declare Hosts & Users', slug: 'guides/declare-hosts' },
 						{ label: 'Configure Aspects', slug: 'guides/configure-aspects' },
-						{ label: 'Host<->User Mutual Config', slug: 'guides/bidirectional' },
+						{ label: 'Host<->User Mutual Config', slug: 'guides/mutual' },
 						{ label: 'Custom Nix Classes', slug: 'guides/custom-classes' },
 						{ label: 'Homes Integration', slug: 'guides/home-manager' },
 						{ label: 'Use Batteries', slug: 'guides/batteries' },

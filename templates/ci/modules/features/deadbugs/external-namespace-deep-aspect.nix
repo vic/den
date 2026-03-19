@@ -1,7 +1,7 @@
 { denTest, inputs, ... }:
 {
 
-  flake.tests.deadbugs.namespace-deep-aspect = {
+  flake.tests.deadbugs-namespace-deep-aspect = {
 
     test-tools-has-underscore = denTest (
       { provider, ... }:
@@ -86,8 +86,8 @@
           ])
         ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ provider.tools._.dev._.user-stamp ];
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.aspects.igloo._.to-users.includes = [ provider.tools._.dev._.user-stamp ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
         expr = igloo.users.users.tux.description;
         expected = "user-of-igloo";
       }

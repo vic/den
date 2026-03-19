@@ -20,10 +20,24 @@
     {
 
       den.hosts.x86_64-linux.igloo.users.tux = { };
-      den.ctx.user.includes = [ den._.bidirectional ];
+      den.ctx.user.includes = [ den._.mutual-provider ];
 
       den.aspects.igloo.funny.names = [ "host-owned" ];
       den.aspects.igloo.includes = [
+        (take.exactly (
+          { host }:
+          {
+            funny.names = [ "host-exact" ];
+          }
+        ))
+        (take.exactly (
+          { host, user }:
+          {
+            funny.names = throw "unreachable";
+          }
+        ))
+      ];
+      den.aspects.igloo._.to-users.includes = [
         { funny.names = [ "host-static" ]; }
 
         (
@@ -32,16 +46,10 @@
             funny.names = [ "host-lax ${keys ctx}" ];
           }
         )
-        (take.exactly (
-          { host }:
-          {
-            funny.names = [ "host-exact" ];
-          }
-        ))
         (take.atLeast (
           { host, never }:
           {
-            funny.names = [ "host-never" ];
+            funny.names = throw "unreachable";
           }
         ))
 
@@ -64,7 +72,7 @@
             never,
           }:
           {
-            funny.names = [ "host+user-never" ];
+            funny.names = throw "unreachable";
           }
         ))
       ];
@@ -92,7 +100,7 @@
             never,
           }:
           {
-            funny.names = [ "user-never" ];
+            funny.names = throw "unreachable";
           }
         ))
       ];
@@ -139,9 +147,6 @@
             funny.names = [ "default-host+user-lax ${keys ctx}" ];
           }
         )
-
-        # the following error means an aspect is not parametric but static. (document this)
-        # > error: function 'anonymous lambda' called without required argument 'user'
       ];
 
       expr = funnyNames (
@@ -174,12 +179,9 @@
 
         "host-exact"
         "host-lax {host,user}"
-        "host-lax {host}"
 
-        "host-owned" # host
-        "host-owned" # user bidirectional
-        "host-static" # host
-        "host-static" # user bidirectional
+        "host-owned"
+        "host-static"
 
         "user-exact"
         "user-lax {host,user}"

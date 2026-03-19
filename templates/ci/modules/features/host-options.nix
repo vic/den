@@ -56,8 +56,8 @@
       { den, igloo, ... }:
       {
         den.hosts.x86_64-linux.igloo.users.tux.userName = "penguin";
-        den.aspects.igloo.includes = [ den._.define-user ];
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.aspects.igloo._.to-users.includes = [ den._.define-user ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
         expr = igloo.users.users.penguin.isNormalUser;
         expected = true;
