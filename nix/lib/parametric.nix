@@ -3,10 +3,22 @@ let
   inherit (den.lib) take functor;
   inherit (den.lib.statics) owned statics isCtxStatic;
 
+  fixedRecurse =
+    ctx: provided:
+    provided
+    // {
+      includes = map (include: if include ? includes then parametric.fixedTo ctx include else include) (
+        provided.includes or [ ]
+      );
+    };
+
   parametric.atLeast = functor (lib.flip take.atLeast);
+
   parametric.exactly = functor (lib.flip take.exactly);
+
   parametric.expands =
     attrs: parametric.withOwn (aspect: ctx: parametric.atLeast aspect (ctx // attrs));
+
   parametric.fixedTo =
     attrs: aspect:
     aspect
@@ -18,10 +30,11 @@ let
           includes = [
             (owned self)
             (statics self { inherit class aspect-chain; })
-            (parametric.atLeast self attrs)
+            (fixedRecurse attrs (parametric.atLeast self attrs))
           ];
         };
     };
+
   parametric.withOwn =
     functor: aspect:
     aspect
@@ -37,6 +50,7 @@ let
             [ (functor self ctx) ];
       };
     };
+
   parametric.__functor = _: parametric.withOwn parametric.atLeast;
 in
 parametric
