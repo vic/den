@@ -250,7 +250,38 @@ Aspects can simply assign configurations into a class (here `persys`)
 from any file, without any `mkIf`/`mkMerge` cluttering. The logic for
 determining if the class takes effect is defined at a single place.
 
-> Example inspired by @Doc-Steve
+#### Example: Platform Aware `homeManager` classes
+
+This uses `pkgs.stdenv.isXYZ` to define `hmXYZ` classes,
+because some hm configurations might be only available
+on specific platforms.
+
+```nix
+hmPlatforms =
+  { class, aspect-chain }:
+  den._.forward {
+    each = [ "Linux" "Darwin" ];
+    fromClass = platform: "hm${platform}";
+    intoClass = _: "homeManager";
+    intoPath = _: [ ];
+    fromAspect = _: lib.head aspect-chain;
+    guard = { pkgs, ... }: platform: lib.mkIf pkgs.stdenv."is${platform}";
+    adaptArgs = { config, ... }: { osConfig = config; };
+  };
+
+den.hosts.x86_64-linux.igloo.users.tux = { };
+den.hosts.aarch64-darwin.apple.users.tux = { };
+
+den.aspects.tux = {
+  includes = [ hmPlatforms ];
+  hmDarwin = { pkgs, ... }: { home.packages = [ pkgs.iterm2 ]; };
+  hmLinux = { pkgs, ... }: { home.packages = [ pkgs.wl-clipboard-rs ]; };
+};
+```
+
+#### Example: Class for Impermanence Capability
+
+> Inspired by @Doc-Steve
 
 ```nix
 # Aspects use the `persys` class without any conditional. And guard guarantees
@@ -271,7 +302,7 @@ den.ctx.host.includes = [ persys ];
 den.aspects.my-laptop.persys.hideMounts = true;
 ```
 
-### User-defined Extensions to Den Framework.
+### User-defined Extensions to Den context pipeline.
 
 See example [`template/microvm`](https://den.oeiuwq.com/tutorials/microvm) for an example
 of custom `den.ctx` and `den.schema` extensions for supporting
