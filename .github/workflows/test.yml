@@ -98,7 +98,7 @@ jobs:
           EOF
           git add templates/${{matrix.template}}/modules/ci-runtime.nix
       - run: nix flake check -L ./templates/${{matrix.template}} --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
-      - run: nix run .#igloo -- build -q # test nh app
+      - run: nix run ./templates/minimal#igloo -- build -q # test nh app
         if: matrix.template == 'minimal'
   flake-file-template:
     needs: [approved]
