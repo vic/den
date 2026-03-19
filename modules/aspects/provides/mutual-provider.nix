@@ -9,13 +9,8 @@ let
 
     This battery implements an aspect "routing" pattern.
 
-    This is not the same as `den._.bidirectional` battery, but provides a
-    **safer** alternative to `den._.bidirectional`.
-    The reason is that this battery does not re-invoke the `host-aspect.includes`,
-    instead it relies on you defining provides.
-
     Be sure to read diagrams for the Host context pipeline:
-    https://den.oeiuwq.com/guides/bidirectional
+    https://den.oeiuwq.com/guides/mutual
 
     ## Usage
 

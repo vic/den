@@ -28,21 +28,21 @@
               nixos.funny = [ "atHost perHost ${host.name} fun" ];
             }
           ))
-          (den.lib.perUser { nixos.funny = [ "atHost IGNORED perUser static" ]; })
+          (den.lib.perUser { nixos.funny = [ (throw "atHost IGNORED perUser static") ]; })
           (den.lib.perUser (
             { user, host }:
             {
-              nixos.funny = [ "atHost IGNORED perUser ${user.name}@${host.name} fun" ];
+              nixos.funny = [ (throw "atHost IGNORED perUser ${user.name}@${host.name} fun") ];
             }
           ))
         ];
 
         den.aspects.tux.includes = [
-          (den.lib.perHost { nixos.funny = [ "atUser IGNORED perHost static" ]; })
+          (den.lib.perHost { nixos.funny = [ (throw "atUser IGNORED perHost static") ]; })
           (den.lib.perHost (
             { host }:
             {
-              nixos.funny = [ "atUser IGNORED perHost ${host.name} fun" ];
+              nixos.funny = [ (throw "atUser IGNORED perHost ${host.name} fun") ];
             }
           ))
           (den.lib.perUser { nixos.funny = [ "atUser perUser static" ]; })
@@ -64,7 +64,7 @@
       }
     );
 
-    test-included-in-bidirectional-pipeline = denTest (
+    test-included-in-mutual-pipeline = denTest (
       {
         den,
         igloo,
@@ -77,22 +77,19 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
-        # NOTE: Since options must be unique, include via perHost
-        den.aspects.funMod.nixos.options.funny = lib.mkOption {
+        den.aspects.igloo.nixos.options.funny = lib.mkOption {
           default = [ ];
           type = lib.types.listOf lib.types.str;
         };
 
-        den.aspects.igloo.includes = [
-          (den.lib.perHost den.aspects.funMod)
-
-          (den.lib.perHost { nixos.funny = [ "atHost perHost static" ]; })
+        den.aspects.igloo._.to-users.includes = [
+          (den.lib.perHost { nixos.funny = [ (throw "atHost perHost static") ]; })
           (den.lib.perHost (
             { host }:
             {
-              nixos.funny = [ "atHost perHost ${host.name} fun" ];
+              nixos.funny = [ (throw "atHost perHost ${host.name} fun") ];
             }
           ))
           (den.lib.perUser { nixos.funny = [ "atHost perUser static" ]; })
@@ -129,8 +126,6 @@
           "atHost perUser static" # tux
           "atUser perUser tux@igloo fun"
           "atUser perUser static"
-          "atHost perHost igloo fun"
-          "atHost perHost static"
         ];
       }
     );

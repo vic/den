@@ -27,7 +27,7 @@ modules/
     schema-base-modules.nix              # den.schema modules
     special-args-custom-instantiate.nix  # custom instantiation
     top-level-parametric.nix             # top-level context aspects
-    user-host-bidirectional-config.nix   # bidirectional providers
+    user-host-mutual-config.nix   # mutual providers
     batteries/
       define-user.nix                    # define-user battery
       flake-parts.nix                    # inputs' and self'
@@ -70,7 +70,7 @@ modules/
 
 | Test File | What It Tests |
 |-----------|---------------|
-| [user-host-bidirectional-config.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-bidirectional-config.nix) | Host→user and user→host config flow |
+| [user-host-mutual-config.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-mutual-config.nix) | Host→user and user→host config flow |
 | [context/cross-provider.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/cross-provider.nix) | Source providing config to target context |
 | [context/named-provider.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/named-provider.nix) | Self-named provider mechanism |
 

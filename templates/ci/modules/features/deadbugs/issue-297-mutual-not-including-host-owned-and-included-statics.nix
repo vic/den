@@ -2,7 +2,7 @@
 {
   flake.tests.deadbugs-issue-297 = {
 
-    test-bidirectional-host-owned = denTest (
+    test-mutual-host-owned = denTest (
       {
         den,
         lib,
@@ -12,16 +12,16 @@
       }:
       {
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
-        den.aspects.igloo.homeManager.home.keyboard.model = "denkbd";
+        den.aspects.igloo._.to-users.homeManager.home.keyboard.model = "denkbd";
 
         expr = tuxHm.home.keyboard.model;
         expected = "denkbd";
       }
     );
 
-    test-bidirectional-host-included-statics = denTest (
+    test-mutual-host-included-statics = denTest (
       {
         den,
         lib,
@@ -31,17 +31,17 @@
       }:
       {
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
         den.aspects.base.homeManager.home.keyboard.model = "denkbd";
-        den.aspects.igloo.includes = [ den.aspects.base ];
+        den.aspects.igloo._.to-users.includes = [ den.aspects.base ];
 
         expr = tuxHm.home.keyboard.model;
         expected = "denkbd";
       }
     );
 
-    test-bidirectional-host-owned-home-option = denTest (
+    test-mutual-host-owned-home-option = denTest (
       {
         den,
         lib,
@@ -51,16 +51,16 @@
       }:
       {
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
-        den.aspects.igloo.homeManager.options.foo = lib.mkOption { default = "foo"; };
+        den.aspects.igloo._.to-users.homeManager.options.foo = lib.mkOption { default = "foo"; };
 
         expr = tuxHm.foo;
         expected = "foo";
       }
     );
 
-    test-bidirectional-host-owned-host-option = denTest (
+    test-mutual-host-owned-host-option = denTest (
       {
         den,
         lib,
@@ -70,12 +70,12 @@
       }:
       {
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
         # NOTE: this causes an error: Option already defined!
-        # This is because bidirectionality includes host configs again.
+        # This is because mutuality includes host configs again.
         # den.aspects.igloo.nixos.options.foo = lib.mkOption { default = "foo"; };
-        # NOTE: Under bidirectionality, use perHost
+        # NOTE: Under mutuality, use perHost
         den.aspects.igloo.includes = [
           (den.lib.perHost {
             nixos.options.foo = lib.mkOption { default = "foo"; };

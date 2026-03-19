@@ -38,27 +38,22 @@ den.default.includes = [ den.provides.hostname ];
 
 ### `den.provides.mutual-provider`
 
-Allows hosts and users to contribute configuration **to each other** through `provides`:
+Allows hosts and users to contribute configuration **to each other** through `.provides.`:
 
 ```nix
 den.hosts.x86_64-linux.igloo.users.tux = { };
-den.default.includes = [ den._.mutual-provider ];
+den.ctx.user.includes = [ den._.mutual-provider ];
 ```
-
-This is not the same as the built-in bidirectionality:
 
 ```nix
 # contributes to ALL users of this host
-den.aspects.my-host.homeManager = { ... }
+den.aspects.my-host.provides.to-users.homeManager = { ... }
 
 # contributes to ALL hosts of where my-user exist
-den.aspects.my-user.nixos = { ... }
+den.aspects.my-user.provides.to-hosts.nixos = { ... }
 ```
 
-The difference is that this allows you to wire bidirectionality between
-explictly-named hosts/users pairs.
-
-A user providing config TO the host:
+A `tux` user providing config to **specific host** `igloo`:
 
 ```nix
 den.aspects.tux = {
@@ -68,7 +63,7 @@ den.aspects.tux = {
 };
 ```
 
-A host providing config TO the user:
+A host providing config to **specific user** `tux`:
 
 ```nix
 den.aspects.igloo = {

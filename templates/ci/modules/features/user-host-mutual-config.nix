@@ -1,6 +1,6 @@
 { denTest, ... }:
 {
-  flake.tests.user-host-bidirectional-config = {
+  flake.tests.user-host-mutual-config = {
 
     test-host-owned-unidirectional = denTest (
       {
@@ -15,7 +15,7 @@
           pingu = { };
         };
 
-        # no bidirectionality enabled, this is ignored
+        # no mutuality enabled, this is ignored
         den.aspects.igloo.homeManager.programs.direnv.enable = true;
 
         expr = [
@@ -29,7 +29,7 @@
       }
     );
 
-    test-host-owned-bidirectional = denTest (
+    test-host-owned-mutual = denTest (
       {
         den,
         tuxHm,
@@ -42,8 +42,8 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.bidirectional ];
-        den.aspects.igloo.homeManager.programs.direnv.enable = true;
+        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.aspects.igloo._.to-users.homeManager.programs.direnv.enable = true;
 
         expr = [
           tuxHm.programs.direnv.enable
@@ -56,7 +56,7 @@
       }
     );
 
-    test-host-bidirectional-static-includes-configures-all-users = denTest (
+    test-host-mutual-static-includes-configures-all-users = denTest (
       {
         den,
         tuxHm,
@@ -69,9 +69,9 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
-        den.aspects.igloo.includes = [
+        den.aspects.igloo._.to-users.includes = [
           {
             homeManager.programs.direnv.enable = true;
           }
@@ -122,7 +122,7 @@
       }
     );
 
-    test-host-parametric-bidirectional = denTest (
+    test-host-parametric-mutual = denTest (
       {
         den,
         tuxHm,
@@ -136,9 +136,9 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.bidirectional ];
+        den.ctx.user.includes = [ den._.mutual-provider ];
 
-        den.aspects.igloo.includes = [
+        den.aspects.igloo._.to-users.includes = [
           (
             { host, user }:
             {
