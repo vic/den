@@ -3,6 +3,51 @@
 {
   flake.tests.schema-base-modules = {
 
+    test-host-schema-module-args = denTest (
+      { den, lib, ... }:
+      {
+        den.hosts.x86_64-linux.igloo = { };
+        den.schema.host =
+          { host, ... }:
+          {
+            options.ok = lib.mkOption { default = true; };
+          };
+        expr = den.hosts.x86_64-linux.igloo.ok;
+        expected = true;
+      }
+    );
+
+    test-user-schema-module-args = denTest (
+      { den, lib, ... }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+        den.schema.user =
+          { user, host, ... }:
+          {
+            # host can also be read from user.host
+            options.ok = lib.mkOption { default = user ? host; };
+          };
+        expr = den.hosts.x86_64-linux.igloo.users.tux.ok;
+        expected = true;
+      }
+    );
+
+    test-home-bound-schema-module-args = denTest (
+      { den, lib, ... }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+        den.homes.x86_64-linux."tux@igloo" = { };
+        den.schema.home =
+          { home, ... }:
+          {
+            # host and user can also be read from home
+            options.ok = lib.mkOption { default = home ? host && home ? user; };
+          };
+        expr = den.homes.x86_64-linux."tux@igloo".ok;
+        expected = true;
+      }
+    );
+
     test-host-base = denTest (
       { den, lib, ... }:
       {

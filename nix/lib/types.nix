@@ -122,6 +122,7 @@ let
             default = [ "user" ];
           };
           aspect = strOpt "main aspect name" config.name;
+          host = lib.mkOption { default = host; };
         };
       }
     );
@@ -155,6 +156,7 @@ let
         userName = if nameWithHost then lib.head (builtins.split "@" name) else name;
         hostName = if nameWithHost then lib.last (builtins.split "@" name) else null;
         hostByName = den.hosts.${system}.${hostName};
+        userByName = hostByName.users.${userName};
 
         homeManagerConfiguration =
           if nameWithHost then
@@ -171,11 +173,13 @@ let
         imports = [ den.schema.home ];
         config._module.args.home = config;
         config._module.args.host = hostByName;
-        config._module.args.user = hostByName.users.${userName};
+        config._module.args.user = userByName;
         options = {
           name = strOpt "home configuration name" name;
           userName = strOpt "user account name" userName;
           hostName = strOpt "host name" hostName;
+          user = lib.mkOption { default = userByName; };
+          host = lib.mkOption { default = hostByName; };
           system = strOpt "platform system" system;
           class = strOpt "home management nix class" "homeManager";
           aspect = strOpt "main aspect name" userName;
