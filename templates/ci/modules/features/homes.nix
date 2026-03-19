@@ -53,5 +53,43 @@
       }
     );
 
+    test-home-with-user-and-host-automatic-osArgs = denTest (
+      { den, config, ... }:
+      {
+        den.default.homeManager.home.stateVersion = "25.11";
+
+        # When an standalone home has user@host and there exist such host
+        den.homes.x86_64-linux."tux@igloo" = { };
+        den.hosts.x86_64-linux.iglooo.users.tux = { };
+
+        den.aspects.igloo.nixos.networking.hostName = "blizzard";
+        den.aspects.tux.includes = [ den._.define-user ];
+        den.aspects.tux.homeManager = { osConfig, ... }: {
+          home.keyboard.model = "blizzard";
+        };
+
+        expr = {
+          homeSchema = {
+            inherit (den.homes.x86_64-linux."tux@igloo")
+            userName
+            hostName
+            aspect
+            ;
+          };
+          configuredUserName =
+            config.flake.homeConfigurations."tux@igloo".config.home.username;
+          hasOsConfig = 
+            config.flake.homeConfigurations."tux@igloo".config.home.keyboard.model;
+        };
+        expected = {
+          homeSchema.aspect = "tux"; # re-uses same aspect as hosted HM.
+          homeSchema.userName = "tux";
+          homeSchema.hostName = "igloo";
+          configuredUserName = "tux";
+          hasOsConfig = "blizzard";
+        };
+      }
+    );
+
   };
 }
