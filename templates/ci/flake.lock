@@ -22,11 +22,11 @@
     },
     "den": {
       "locked": {
-        "lastModified": 1773434013,
-        "narHash": "sha256-PrpDQ9hQr4DxgpRmapH6k49+hkp/RKbn8Dlw1fbxw5Q=",
+        "lastModified": 1773960860,
+        "narHash": "sha256-DEZ3Vc1hrt47V8L1knDFw8b/K+vClAazlYe0D/MjdMs=",
         "owner": "vic",
         "repo": "den",
-        "rev": "c5320826a9e4633cf90b7566c6446303e32180e8",
+        "rev": "5ab19d88134bfb623e6068987cd79605c7da0d41",
         "type": "github"
       },
       "original": {
@@ -37,11 +37,11 @@
     },
     "flake-aspects": {
       "locked": {
-        "lastModified": 1773339018,
-        "narHash": "sha256-sPPriYJpLmukixc6/KBzeOhw83OSodco5YbeayHzAgo=",
+        "lastModified": 1773552804,
+        "narHash": "sha256-a0kjpCZGnD5lt7yW6C3hzPhSf5KjnTyvX6XZ2NuhGs4=",
         "owner": "vic",
         "repo": "flake-aspects",
-        "rev": "b51a00bc0140e7708e421a64f20170a2e8ccae93",
+        "rev": "56fa8d4d4772d58eb7f9d66c28c1cd2762b60423",
         "type": "github"
       },
       "original": {
