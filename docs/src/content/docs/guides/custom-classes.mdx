@@ -6,9 +6,11 @@ description: Create new classes via den.provides.forward.
 import { Aside } from '@astrojs/starlight/components';
 
 <Aside title="Source" icon="github">
-[`modules/aspects/provides/forward.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) --
-[`modules/aspects/provides/os-user.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/os-user.nix) --
-[forward tests](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-from-custom-class.nix)
+[`forward.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/forward.nix) --
+[`os-user.nix`](https://github.com/vic/den/blob/main/modules/aspects/provides/os-user.nix) --
+[`forward-alias-class.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-alias-class.nix) --
+[`forward-from-custom-class.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-from-custom-class.nix) --
+[`guarded-forward.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/guarded-forward.nix)
 </Aside>
 
 ## What is a Custom Class
@@ -44,13 +46,14 @@ den.provides.forward {
 | `each` | List of items to forward (typically `[ user ]` or `[ true ]`) |
 | `fromClass` | The custom class name to read from |
 | `intoClass` | The target class to write into |
-| `intoPath` | Target attribute path in the target class |
+| `intoPath` | Target attribute path in the target class|
 | `fromAspect` | The aspect to read the custom class from |
+
 
 ## Example: The Built-in `user` Class
 
-The `user` class (`modules/aspects/provides/os-user.nix`) forwards OS-level
-user settings without requiring Home Manager:
+The `user` class ([`provides/os-user.nix`](https://github.com/vic/den/tree/main/modules/aspects/provides/os-user.nix)) 
+forwards OS-level user settings to NixOS/nix-Darwin lightweight user-environment.
 
 ```nix
 # Instead of:
@@ -156,7 +159,71 @@ guard = { config, ... }: _item: lib.mkIf (config.programs.vim.enable);
 
 ## User contributed examples
 
-#### Example: Config across `nixos` and `darwin` classes.
+### Example: Alias a Class into the Target Root
+
+This pattern is useful when you want a class to behave like an alias for another
+class while keeping a separate name in your aspects.
+
+```nix
+hmAlias =
+  { class, aspect-chain }:
+  den._.forward {
+    each = lib.singleton class;
+    fromClass = _: "hm";
+    intoClass = _: "homeManager";
+    intoPath = _: [ ];
+    fromAspect = _: lib.head aspect-chain;
+    adaptArgs = { config, ... }: { osConfig = config; };
+  };
+
+den.aspects.tux = {
+  includes = [ hmAlias ];
+  hm =
+    { osConfig, ... }:
+    {
+      programs.fish.enable = true;
+      home.keyboard.model = osConfig.networking.hostName;
+    };
+};
+```
+
+This forwards `hm.*` directly into `homeManager.*`. A more interesting use case is the following:
+
+
+### Example: Platform specific `hm` classes
+
+This pattern is useful when you need HM to distinguish between
+different OS Platforms, because some packages only build in
+Darwin and not NixOS.
+
+
+```nix
+hmPlatforms =
+  { class, aspect-chain }:
+  den._.forward {
+    each = [ "Linux" "Darwin" "Aarch64" "64bit" ];
+    fromClass = platform: "hm${platform}";
+    intoClass = _: "homeManager";
+    intoPath = _: [ ];
+    fromAspect = _: lib.head aspect-chain;
+    guard = { pkgs, ... }: platform: lib.mkIf pkgs.stdenv."is${platform}";
+    adaptArgs = { config, ... }: { osConfig = config; };
+  };
+
+den.aspects.tux = {
+  includes = [ hmPlatforms ];
+
+  hmLinux = { pkgs, ... }: {
+    home.packages = [ pkgs.wl-clipboard-rs ];
+  };
+
+  hmDarwin = { pkgs, ... }: {
+    home.packages = [ pkgs.iterm2 ];
+  };
+};
+```
+
+### Example: Config across `nixos` and `darwin` classes.
 
 The `os` forward class ([provided by Den](https://github.com/vic/den/blob/main/modules/aspects/provides/os-class.nix)) can be useful for settings that must be forwarded to both on NixOS and MacOS.
 
@@ -180,7 +247,7 @@ den.aspects.my-laptop = {
 };
 ```
 
-#### Example: Role based configuration between users and hosts
+### Example: Role based configuration between users and hosts
 
 A dynamic class for matching roles between users and hosts.
 
@@ -215,7 +282,7 @@ den.aspects.alice = {
 };
 ```
 
-#### Example: A git class that checks enable.
+### Example: A git class that checks enable.
 
 ```nix
 gitClass =
@@ -237,7 +304,7 @@ den.aspects.tux = {
 
 This will set at host: `home-manager.users.tux.programs.git.userEmail`
 
-#### Example: A `nix` class that propagates settings to NixOS and HomeManager
+### Example: A `nix` class that propagates settings to NixOS and HomeManager
 
 This can be used when you don't want NixOS and HomeManager to share the
 same pkgs but still configure both at the same time. 
@@ -265,7 +332,7 @@ nix-allowed = { user, ... }: { nix.allowed-users = [ user.userName ]; };
 den.aspects.tux.includes = [ nix-allowed ];
 ```
 
-#### Example: An impermanence class
+### Example: An impermanence class
 
 > Suggested by @Doc-Steve
 
