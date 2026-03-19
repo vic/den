@@ -294,44 +294,14 @@ Use the right parametric constructor:
 
 ---
 
-## 5. Bidirectional Configuration (Critical Advanced Feature)
+## 5. Mutual Host<->User Configuration
 
-Den supports two patterns for Host↔User bidirectional configuration.
-Read `https://den.oeiuwq.com/guides/bidirectional` and apply these rules:
+Den supports a patterns for Host↔User mutual configuration.
+Read `https://den.oeiuwq.com/guides/mutual` and apply these rules:
 
-### 5.1 Built-in Bidirectionality (`den._.bidirectional`)
+### 5.1 Explicit Mutual Provider (`den._.mutual-provider`)
 
-This makes a HOST contribute configuration TO its users' home environments.
-Enable per-user or globally:
-
-```nix
-# Only for specific user
-den.aspects.alice.includes = [ den._.bidirectional ];
-
-# For ALL users (recommended for host-provides-home-env patterns)
-den.ctx.user.includes = [ den._.bidirectional ];
-```
-
-**How it works:** When bidirectionality is enabled, the user pipeline calls
-`igloo.includes` TWICE: once with `{host}` (for host-only config) and once
-with `{host, user}` (so the host can contribute to THIS specific user's home).
-
-**Mandatory: use take guards** in `igloo.includes` to handle dual invocation:
-
-```nix
-# In igloo.includes — only runs for host-level context
-(den.lib.take.exactly ({ host }: { nixos.networking.hostName = host.hostName; }))
-
-# In igloo.includes — only runs when user is present (host→user home contribution)
-(den.lib.take.atLeast ({ host, user }: { homeManager.programs.vim.enable = true; }))
-```
-
-This pattern is ideal when: a host wants to provide a common home environment
-to ALL of its users (e.g., all users on `igloo` get `vim` configured in their home).
-
-### 5.2 Explicit Mutual Provider (`den._.mutual-provider`)
-
-For EXPLICIT named host↔user pairings. More verbose, more precise:
+For EXPLICIT named host↔user pairings.
 
 ```nix
 # Enable for everything
@@ -346,16 +316,13 @@ den.aspects.igloo.provides.tux = { user, ... }: {
 den.aspects.tux.provides.igloo = { host, ... }: {
   nixos.programs.nh.enable = true;
 };
+
+# Host provides to all users
+den.aspects.igloo.provides.to-users = {};
+
+# User provides to all hosts
+den.aspects.tux.provides.to-hosts = {};
 ```
-
-### 5.3 When to Use Which
-
-| Pattern | Use when |
-|---------|----------|
-| Built-in bidirectionality | Host provides common env to ALL its users |
-| `mutual-provider` | Explicit, named host↔user pair configurations |
-| User `nixos` class | User always contributes to any host it's on |
-| Host `homeManager` class | Host always contributes to all user homes |
 
 ---
 
@@ -393,7 +360,6 @@ Battery reference:
 - `unfree [...]` — `nixpkgs.config.allowUnfreePredicate` for named packages
 - `tty-autologin "user"` — `services.getty.autologinUser`
 - `mutual-provider` — explicit named host↔user cross-config
-- `bidirectional` — host contributes to user homes in pipeline
 - `forward` — creates custom Nix classes (see §7)
 - `import-tree` — auto-imports legacy non-dendritic `.nix` directories
 - `inputs'` — flake-parts system-qualified inputs
@@ -519,14 +485,14 @@ den.aspects.alice = {
 };
 ```
 
-### 8.3 Host contributing home config to users (bidirectional)
+### 8.3 Host contributing home config to users
 
 ```nix
 # Host igloo provides vim to ALL its users' home environments
-den.aspects.igloo = {
+den.aspects.igloo.provides.to-users = {
   homeManager.programs.vim.enable = true;   # goes to ALL users on igloo
 };
-den.ctx.user.includes = [ den._.bidirectional ];
+den.ctx.user.includes = [ den._.mutual-provider ];
 ```
 
 ### 8.4 Multiple home environments per user
@@ -711,8 +677,8 @@ Before submitting any Den configuration, verify:
 - [ ] `den.schema.*` defines shared options instead of repeating per-host
 - [ ] `den.default` sets `stateVersion` for all classes
 - [ ] All batteries used instead of manual equivalents
-- [ ] `bidirectional` or `mutual-provider` used for host↔user cross-config
-- [ ] `take.exactly`/`take.atLeast` guards on bidirectional aspects
+- [ ] `mutual-provider` used for host↔user cross-config
+- [ ] `perHost`/`perUser`/`take.exactly`/`take.atLeast` guards on mutual aspects
 - [ ] One file per concern in `modules/aspects/`
 - [ ] Non host/user specific re-usable aspects in `modules/community/<namespace>/`
 - [ ] No monolithic `configuration.nix` style files
@@ -729,7 +695,7 @@ Before submitting any Den configuration, verify:
 
 All source truth lives at:
 - `https://den.oeiuwq.com` — official documentation
-- `https://den.oeiuwq.com/guides/bidirectional` — bidirectional guide, Bidirectionality is an advanced feature not recommended.
+- `https://den.oeiuwq.com/guides/mutual` — Mutual Host<->User config
 - `https://github.com/vic/den/tree/main/templates/ci/modules/features/` — executable feature tests (best learning resource)
 - `https://github.com/vic/den/tree/main/modules/aspects/provides/` — all batteries source
 - `https://github.com/vic/flake-aspects` — underlying aspect library
@@ -772,108 +738,7 @@ An aspect consolidates all class-specific configuration for a single concern.
 Adding bluetooth to a new host is one line: include the aspect.
 Removing it is deleting that line.
 
-```
-
-**File:** docs/src/content/docs/guides/bidirectional.mdx (L60-153)
-```text
-## What Bidirectionality means
-
-__Bidirectionality__ means that not only a User contributes
-configuration to a Host, but **also** that a Host contributes
-configurations to a User.
-
-This is useful when the Host wishes to provide a
-commmon home environment for its users.
-
-## `den.provides.bidirectional`
-
-Bidirectionality is enabled __per-user__ or for _all_ of them.
-
-```nix
-# only tux takes configurations from its hosts
-den.aspects.tux.includes = [ den._.bidirectional ];
-
-# for ALL users
-den.ctx.user.includes = [ den._.bidirectional ];
-```
-
-When Bidirectionality is enabled, the interaction looks like this:
-
-```mermaid
-sequenceDiagram
-   participant Den
-   participant host as den.ctx.host
-   participant user as den.ctx.user
-   participant igloo as den.aspects.igloo
-   participant tux as den.aspects.tux
-
-   Den  ->>  host  :  {host = igloo}
-
-   host ->> igloo : request nixos class
-   igloo -->> igloo : each igloo.includes takes { host }
-   igloo -->> host : { nixos = ... } owned and parametric results
-
-   host ->> user : fan-outs for each user: { host, user }
-
-   user ->> tux : request nixos class
-
-   tux ->> igloo : request home class
-   igloo -->> igloo : each igloo.includes takes { host, user }
-   igloo -->> tux : { hjem = ... } owned and parametric results
-
-   tux -->> tux : home classes forwarded as nixos class
-
-   tux -->> tux : each tux.includes takes { host, user }
-   tux -->> user : { nixos = ... } owned and parametric results
-
-   user -->> host : { nixos = ... } all user contributions
-
-   host -->> Den : complete nixos module for lib.nixosSystem
-
-```
-
-Crucial points here are `igloo.includes takes { host }` and `igloo.includes takes { host, user }`.
-
-Because the list of aspects at `igloo.includes` get invoked twice, with different contexts,
-functions at `igloo.includes` must take care of the following:
-
-```nix
-# use den.lib.take.exactly to avoid being called with `{host, user}`
-take.exactly ({ host }: ...)
-
-# use den.lib.take.atLeast to avoid being called with `{host}`
-take.atLeast ({ host, user }: ...)
-```
-
-Read the documentation at [`context/user.nix`](https://github.com/vic/den/blob/main/modules/context/user.nix) for all the details.
-
-## `den.provides.mutual-provider`
-
-An alternative to bidirectionality is [`den.provides.mutual-provider`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix).
-
-This battery is more explicit, since it requires an explicit `.provides.` relationship between users and hosts.
-
-```nix
-# Host provides to a particular user
-den.aspects.igloo.provides.tux = {
-  hjem = ...; 
-};
-
-# User provides to a particular host
-den.aspects.tux.provides.igloo = {
-  nixos = ...;
-};
-```
-
-To enable it for both users and hosts, include at default:
-
-```nix
-den.default.includes = [ den._.mutual-provider ];
-```
-```
-
 **File:** docs/src/content/docs/guides/configure-aspects.mdx (L127-187)
-```text
 
 1. Static (plain attribute set): `{ nixos.foo = ...; }`
 2. Static (flake-aspects' leaf): `{class, aspect-chain}: { ${class}.foo = ...; }`
@@ -1032,18 +897,13 @@ den.hosts.x86_64-linux.igloo.users.tux = { };
 den.default.includes = [ den._.mutual-provider ];
 ```
 
-This is not the same as the built-in bidirectionality:
-
 ```nix
 # contributes to ALL users of this host
-den.aspects.my-host.homeManager = { ... }
+den.aspects.my-host.provides.to-users.homeManager = { ... }
 
 # contributes to ALL hosts of where my-user exist
 den.aspects.my-user.nixos = { ... }
 ```
-
-The difference is that this allows you to wire bidirectionality between
-explictly-named hosts/users pairs.
 
 A user providing config TO the host:
 
@@ -2355,7 +2215,7 @@ modules/
     schema-base-modules.nix              # den.schema modules
     special-args-custom-instantiate.nix  # custom instantiation
     top-level-parametric.nix             # top-level context aspects
-    user-host-bidirectional-config.nix   # bidirectional providers
+    user-host-mutual-config.nix   # mutual providers
     batteries/
       define-user.nix                    # define-user battery
       flake-parts.nix                    # inputs' and self'
@@ -2398,7 +2258,7 @@ modules/
 
 | Test File | What It Tests |
 |-----------|---------------|
-| [user-host-bidirectional-config.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-bidirectional-config.nix) | Host→user and user→host config flow |
+| [user-host-mutual-config.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/user-host-mutual-config.nix) | Host→user and user→host config flow |
 | [context/cross-provider.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/cross-provider.nix) | Source providing config to target context |
 | [context/named-provider.nix](https://github.com/vic/den/blob/main/templates/ci/modules/features/context/named-provider.nix) | Self-named provider mechanism |
 
