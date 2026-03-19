@@ -1,9 +1,10 @@
 {
   inputs,
+  config,
   lib,
   den,
   ...
-}:
+}@top:
 let
   hostsOption = lib.mkOption {
     description = "den hosts definition";
@@ -115,13 +116,14 @@ let
         config._module.args.user = config;
         options = {
           name = strOpt "user configuration name" name;
-          userName = strOpt "user account name" config.name;
+          userName = strOpt "user account name" name;
           classes = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             description = "home management nix classes";
             default = [ "user" ];
           };
           aspect = strOpt "main aspect name" config.name;
+          host = lib.mkOption { default = host; };
         };
       }
     );
@@ -150,17 +152,41 @@ let
     system:
     lib.types.submodule (
       { name, config, ... }:
+      let
+        nameWithHost = lib.hasInfix "@" name;
+        userName = if nameWithHost then lib.head (builtins.split "@" name) else name;
+        hostName = if nameWithHost then lib.last (builtins.split "@" name) else null;
+        hostByName = den.hosts.${system}.${hostName};
+        userByName = hostByName.users.${userName};
+
+        homeManagerConfiguration =
+          if nameWithHost then
+            { pkgs, modules }:
+            inputs.home-manager.lib.homeManagerConfiguration {
+              inherit pkgs modules;
+              extraSpecialArgs.osConfig = lib.attrByPath (
+                [ "flake" ] ++ hostByName.intoAttr ++ [ "config" ]
+              ) null top.config;
+            }
+          else
+            inputs.home-manager.lib.homeManagerConfiguration;
+      in
       {
         freeformType = lib.types.attrsOf lib.types.anything;
         imports = [ den.schema.home ];
         config._module.args.home = config;
+        config._module.args.host = hostByName;
+        config._module.args.user = userByName;
         options = {
           name = strOpt "home configuration name" name;
-          userName = strOpt "user account name" config.name;
+          userName = strOpt "user account name" userName;
+          hostName = strOpt "host name" hostName;
+          user = lib.mkOption { default = userByName; };
+          host = lib.mkOption { default = hostByName; };
           system = strOpt "platform system" system;
           class = strOpt "home management nix class" "homeManager";
-          aspect = strOpt "main aspect name" config.name;
-          description = strOpt "home description" "home.${config.userName}@${config.system}";
+          aspect = strOpt "main aspect name" userName;
+          description = strOpt "home description" "home.${config.name}@${config.system}";
           pkgs = lib.mkOption {
             description = ''
               nixpkgs instance used to build the home configuration.
@@ -185,7 +211,7 @@ let
             type = lib.types.raw;
             default =
               {
-                homeManager = inputs.home-manager.lib.homeManagerConfiguration;
+                homeManager = homeManagerConfiguration;
               }
               .${config.class};
           };

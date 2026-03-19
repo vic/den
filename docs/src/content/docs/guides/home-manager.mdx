@@ -1,5 +1,5 @@
 ---
-title: Homes Integration
+title: Home Environments
 description: Home Manager, hjem, and nix-maid setup with Den.
 ---
 
@@ -13,11 +13,16 @@ import { Aside } from '@astrojs/starlight/components';
 [`home-env.nix`](https://github.com/vic/den/blob/main/nix/home-env.nix)
 </Aside>
 
-## Home Manager
+## Enabling Homes
 
-### Enabling on Homes
+Den supports several Home Nix classes:
 
-All Home integrations are opt-in and must be enabled explicitly.
+- `homeManager`
+- `hjem`
+- `maid`
+- `user`
+
+All Home integrations are opt-in and must be enabled explicitly, except for `user` which is the built-in user environment on NixOS and nix-Darwin.
 
 ```nix
 # Per user
@@ -29,7 +34,7 @@ den.schema.user.classes = lib.mkDefault [ "homeManager" ];
 
 Home integration contexts, like `den.ctx.hm-host` only activate when
 at least one host user has `homeManager` in their `classes`.
-When true, the integration imports the HomeManager OS module, 
+If so, the integration imports the HomeManager OS module, 
 and forwards each user's `homeManager` class into `home-manager.users.<userName>`.
 
 Same details regarding `home-manager` apply to other home types like `hjem` and `maid`.
@@ -79,16 +84,32 @@ den.hosts.x86_64-linux.laptop = {
 };
 ```
 
-## Standalone Homes
+## Standalone Homes (homeManager)
 
 For machines without root access:
 
 ```nix
-den.homes.x86_64-linux.alice = { };
+den.homes.x86_64-linux.tux = { };
 ```
 
-This produces `flake.homeConfigurations.alice`, built with
-`inputs.home-manager.lib.homeManagerConfiguration`.
+This produces a `homeConfigurations.tux` that can be built with the `home-manager` CLI.
+
+### Standalone Homes bound to Host OS
+
+Also, if you define an standalone home with `tux@igloo` name _and_ you also
+have a host named `igloo` in the same platform with user `tux`,
+
+```
+den.homes.x86_64-linux."tux@igloo" = {};
+den.hosts.x86_64-linux.igloo.users.tux = {};
+```
+Den will:
+
+- Correctly set `<home>.userName` so that batteries like `define-user` work.
+- Automatically bind the standalone HM instance to the OS host configuration.
+
+This means that by declaring `tux@igloo` you can quickly rebuild your home
+environment without rebuilding the whole `igloo` OS.
 
 ## hjem
 
