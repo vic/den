@@ -74,7 +74,7 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 > Want yours featured? send me a DM via matrix or zulip (links at GH Discussions)
 
-[`vic/vix`](https://github.com/vic/vix): author spends more time in Den itself (-flakes)
+[`vic/vix`](https://github.com/vic/vix): Fleet sharing user, author spends more time in Den itself. (-flakes +npins +auto-update +ci)
 
 [`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
 
