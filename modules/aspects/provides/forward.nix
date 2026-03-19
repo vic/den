@@ -26,10 +26,10 @@ let
     Any other user-environments like `nix-maid` or `hjem` or user-custom classes
     are easily implemented using `den._.forward`.
 
-    Note: `den._.forward` is a high-level aspect, its result 
-    is another aspect that needs to be included for the new class to exist.
+    Note: `den._.forward` returns an aspect that needs to be included for
+    the new class to exist.
 
-    See templates/ci/modules/forward.nix for usage example.
+    See templates/ci/modules/guarded-forward.nix, templates/ci/modules/forward-from-custom-class.nix
     See also: https://github.com/vic/den/issues/160, https://github.com/vic/flake-aspects/pull/31
   '';
 
@@ -50,19 +50,29 @@ let
         "adaptArgs"
         "adapterModule"
       ];
-      fromClass = fwd.fromClass (lib.head fwd.each);
-      intoClass = fwd.intoClass (lib.head fwd.each);
-      intoPath = fwd.intoPath (lib.head fwd.each);
+      item = lib.head fwd.each;
+      fromClass = fwd.fromClass item;
+      intoClass = fwd.intoClass item;
+      intoPath = fwd.intoPath item;
       freeformMod = {
         config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
       };
-      adapterKey = lib.concatStringsSep "_" (
+      adapterKey = lib.concatStringsSep "/" (
         [
           fromClass
           intoClass
         ]
         ++ intoPath
       );
+
+      guardArgs = if guard == null then { } else lib.functionArgs guard;
+      guardFn =
+        args: guarded:
+        let
+          res = (if guard == null then _: true else guard) args;
+        in
+        if lib.isFunction res then res item guarded else lib.optionalAttrs res guarded;
+
       adapter = {
         includes = [
           (den.lib.aspects.forward (
@@ -76,17 +86,18 @@ let
             }
           ))
         ];
-        ${intoClass} = args: {
-          options.den.fwd.${adapterKey} = lib.mkOption {
-            default = { };
-            type = lib.types.submoduleWith {
-              specialArgs = if adaptArgs == null then args else adaptArgs args;
-              modules = if adapterModule == null then [ freeformMod ] else [ adapterModule ];
+        ${intoClass} = {
+          __functionArgs = guardArgs;
+          __functor = _: args: {
+            options.den.fwd.${adapterKey} = lib.mkOption {
+              default = { };
+              type = lib.types.submoduleWith {
+                specialArgs = if adaptArgs == null then args else adaptArgs args;
+                modules = if adapterModule == null then [ freeformMod ] else [ adapterModule ];
+              };
             };
+            config = guardFn args (lib.setAttrByPath intoPath args.config.den.fwd.${adapterKey});
           };
-          config = lib.optionalAttrs (guard == null || guard args) (
-            lib.setAttrByPath intoPath args.config.den.fwd.${adapterKey}
-          );
         };
       };
 

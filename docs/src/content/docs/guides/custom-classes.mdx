@@ -107,15 +107,18 @@ den.aspects.alice.container = {
 
 ```nix
 den.provides.forward {
-  each = lib.singleton true;
-  fromClass = _: "wsl";
-  intoClass = _: host.class;
-  intoPath  = _: [ "wsl" ];
-  fromAspect = _: lib.head aspect-chain;
+  each = lib.singleton true; # <- true is the single item, mostly ignored.
+  fromClass = _item: "wsl";
+  intoClass = _item: host.class;
+  intoPath  = _item: [ "wsl" ];
+  fromAspect = _item: lib.head aspect-chain;
+
   # Only forward if target has wsl options
   guard = { options, ... }: options ? wsl;
+
   # Modify module args for the forwarded module
-  adaptArgs = args: args // { osConfig = args.config; };
+  adaptArgs = args: { osConfig = args.config; };
+
   # Custom module type for the forwarded submodule
   adapterModule = { config._module.freeformType = lib.types.anything; };
 }
@@ -126,6 +129,30 @@ den.provides.forward {
 | `guard` | Only forward when this predicate returns true |
 | `adaptArgs` | Transform module arguments before forwarding |
 | `adapterModule` | Custom module for the forwarded submodule type |
+
+<Aside title="Guards reading config values">
+
+From our previous example, both of these are exactly the same:
+
+```nix "lib.optionalAttrs"
+guard = { options, ... }: options ? wsl;
+
+guard = { options, ... }: _item: lib.optionalAttrs (options ? wsl);
+```
+
+The second form is more advanced and can be used to read values from
+each item or from config values.
+
+For example, to test when vim is enabled, you have to use `mkIf`:
+
+```nix "lib.mkIf"
+guard = { config, ... }: _item: lib.mkIf (config.programs.vim.enable);
+```
+
+- Use `lib.optionalAttrs` when testing if an **option is defined**.
+- Use `lib.mkIf` when testing for a **config value**.
+
+</Aside>
 
 ## User contributed examples
 
@@ -188,7 +215,7 @@ den.aspects.alice = {
 };
 ```
 
-#### Example: A git class that forwards to home-manager.
+#### Example: A git class that checks enable.
 
 ```nix
 gitClass =
@@ -199,7 +226,7 @@ gitClass =
     intoClass = _: "homeManager";
     intoPath = _: [ "programs" "git" ];
     fromAspect = _: lib.head aspect-chain;
-    adaptArgs = lib.id;
+    guard = { config, ... }: _: lib.mkIf config.programs.git.enable;
   };
 
 den.aspects.tux = {

@@ -84,5 +84,64 @@ in
       }
     );
 
+    test-guard-can-read-config-values = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        tuxHm,
+        pinguHm,
+        ...
+      }:
+      {
+
+        den.hosts.x86_64-linux.igloo.users = {
+          tux = { };
+          pingu = { };
+        };
+
+        den.schema.user.classes = [ "homeManager" ];
+
+        den.aspects.pingu.homeManager.programs.vim.enable = true;
+
+        den.ctx.user.includes =
+          let
+            unset.homeManager.home.keyboard.model = lib.mkDefault "unset";
+
+            vimer-home =
+              { class, aspect-chain }:
+              den._.forward {
+                each = lib.singleton true;
+                fromAspect = _: lib.head aspect-chain;
+                fromClass = _: "home-pingu";
+                intoClass = _: "homeManager";
+                intoPath = _: [ "home" ];
+                guard = { config, ... }: _: lib.mkIf config.programs.vim.enable;
+              };
+
+            doit.home-pingu =
+              { pkgs, ... }:
+              {
+                keyboard.model = lib.getName pkgs.hello;
+              };
+
+          in
+          [
+            unset
+            doit
+            vimer-home
+          ];
+
+        expr = {
+          tux = tuxHm.home.keyboard.model;
+          pingu = pinguHm.home.keyboard.model;
+        };
+        expected = {
+          tux = "unset";
+          pingu = "hello";
+        };
+      }
+    );
+
   };
 }
