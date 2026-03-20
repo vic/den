@@ -116,23 +116,39 @@ nix run github:vic/den
 > Den is a playground for some very advanced concepts. I’m convinced that some of its ideas will play a role in future Nix areas. In my opinion there are some raw diamonds in Den.\
 > — `@Doc-Steve` - Author of [Dendritic Design Guide](https://github.com/Doc-Steve/dendritic-design-with-flake-parts)
 
-## Code example (OS configuration domain)
+## Code examples (OS configuration framework)
 
 ### Defining hosts, users and homes.
+
+Simplest example, one-liner definitions.
 
 ```nix
 den.hosts.x86_64-linux.lap.users.vic = {};
 den.hosts.aarch64-darwin.mac.users.vic = {};
-den.homes.aarch64-darwin.vic = {};
+den.homes.aarch64-darwin."vic@mac" = {};
 ```
 
+The `den.aspects.vic` aspect is shared between
+these two hosts and standalone home-manager.
+
+The `vic@mac` homeConfiguration has `osConfig = mac.config`.
+
+Activate with:
+
 ```console
-$ nixos-rebuild switch --flake .#lap
+$ nixos-rebuild  switch --flake .#lap
 $ darwin-rebuild switch --flake .#mac
 $ home-manager   switch --flake .#vic
 ```
 
 ### Extensible Schemas for hosts, users and homes.
+
+These allow meta-configuration on entities, akin to
+what Dendritic flake-parts users do with top-level
+options, but here scoped to each entity type.
+
+People use this for declaring host or user capabilities
+that will later be used by aspects to implement configurations.
 
 ```nix
 # extensible base modules for common, typed schemas
@@ -147,10 +163,15 @@ den.schema.user = { user, lib, ... }: {
 
 ### Dendritic Multi-Platform Hosts
 
+A single aspect like `den.aspects.workstation` can be
+shared between (included-at) NixOS/nix-Darwin/WSL hosts.
+
+Each aspect uses several Nix classes to define behaviour.
+
 ```nix
-# modules/my-laptop.nix
+# modules/workstation.nix
 { den, inputs, ... }: {
-  den.aspects.my-laptop = {
+  den.aspects.workstation = {
     # re-usable configuration aspects. Den batteries and yours.
     includes = [ den.provides.hostname den.aspects.work-vpn ];
 
@@ -158,33 +179,52 @@ den.schema.user = { user, lib, ... }: {
     nixos  = { pkgs, ... }: { imports = [ inputs.disko.nixosModules.disko ]; };
     darwin = { pkgs, ... }: { imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ]; };
 
-    # Custom Nix classes. `os` applies to both nixos and darwin. contributed by @Risa-G.
+    # Custom Nix classes. `os` applies to both nixos and darwin.
+    # Contributed by @Risa-G.
     # See https://den.oeiuwq.com/guides/custom-classes/#user-contributed-examples
     os = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.direnv ];
     };
 
-    # host can contribute default home environments to all its users.
-    homeManager.programs.vim.enable = true;
+    # host can contribute default home environments
+    # to all its users.
+    provides.to-users = {
+      homeManager = { pkgs, ... }: {
+        programs.vim.enable = true;
+        home.packages = [ pkgs.neovide ];
+      };
+    };
   };
 }
 ```
 
 ### Multiple User Home Environments
 
+Each user can define configurations for different
+home environments, aiding with migration from
+homeManager to hjem or others.
+
 ```nix
 # modules/vic.nix
 { den, ... }: {
+
   den.aspects.vic = {
-    # supports multiple home environments, eg: for migrating from homeManager.
+    # supports multiple home environments
     homeManager = { pkgs, ... }: { };
     hjem.files.".envrc".text = "use flake ~/hk/home";
     maid.kconfig.settings.kwinrc.Desktops.Number = 3;
 
-    # user can contribute OS-configurations to any host it lives on
+    # user can contribute OS-configurations
+    # to all hosts it lives on
     darwin.services.karabiner-elements.enable = true;
 
-    # user class forwards into {nixos/darwin}.users.users.<userName>
+    # user can specify config for specific host
+    provides.rog-tower = {
+      nixos = ...; # enable CUDA and gaming profile
+    };
+
+    # user class forwards into
+    # {nixos/darwin}.users.users.<userName>
     user = { pkgs, ... }: {
       packages = [ pkgs.helix ];
       description = "oeiuwq";
@@ -202,7 +242,9 @@ den.schema.user = { user, lib, ... }: {
 
 ### Custom Dendritic Nix Classes
 
-[Custom classes](https://den.oeiuwq.com/guides/custom-classes) is how Den implements `homeManager`, `hjem`, `wsl`, `microvm` support. You can use the very same mechanism to create your own classes.
+[Custom classes](https://den.oeiuwq.com/guides/custom-classes) is how Den implements `user`, `homeManager`, `hjem`, `wsl`, `microvm` support. You can use the very same mechanism to create your own Nix classes.
+
+The `den.provides.forward` battery is the core of it.
 
 ```nix
 # Example: A class for role-based configuration between users and hosts
@@ -244,11 +286,14 @@ den.aspects.bob = {
 
 ### Guarded Forwarding Classes
 
-Forward guards allow feature-detection without mkIf/mkMerge cluttering.
+Any module/file can contribute to any aspects directly
+into their feature-concern Nix classes, without
+having to deal with feature-detection or having
+`mkIf`/`mkMerge` clutterring on all the codebase.
 
-Aspects can simply assign configurations into a class (here `persys`)
-from any file, without any `mkIf`/`mkMerge` cluttering. The logic for
-determining if the class takes effect is defined at a single place.
+The logic (guard) for conditional inclusion of a
+forwarded-class configuration is defined at a
+single place.
 
 #### Example: Platform Aware `homeManager` classes
 
@@ -257,7 +302,11 @@ because some hm configurations might be only available
 on specific platforms.
 
 ```nix
-hmPlatforms =
+# aspect `tux` is used on both platforms
+den.hosts.x86_64-linux.igloo.users.tux = { };
+den.hosts.aarch64-darwin.apple.users.tux = { };
+
+den.aspects.hmPlatforms =
   { class, aspect-chain }:
   den._.forward {
     each = [ "Linux" "Darwin" ];
@@ -269,23 +318,26 @@ hmPlatforms =
     adaptArgs = { config, ... }: { osConfig = config; };
   };
 
-den.hosts.x86_64-linux.igloo.users.tux = { };
-den.hosts.aarch64-darwin.apple.users.tux = { };
-
 den.aspects.tux = {
-  includes = [ hmPlatforms ];
+  includes = [ den.aspects.hmPlatforms ];
+
   hmDarwin = { pkgs, ... }: { home.packages = [ pkgs.iterm2 ]; };
+
   hmLinux = { pkgs, ... }: { home.packages = [ pkgs.wl-clipboard-rs ]; };
 };
 ```
 
 #### Example: Class for Impermanence Capability
 
+Modules define configurations at aspects using the
+`persys` class directly, without any conditional.
+
+The guard guarantees they are applied **only**
+when impermanence module is enabled at host.
+
 > Inspired by @Doc-Steve
 
 ```nix
-# Aspects use the `persys` class without any conditional. And guard guarantees
-# settings are applied **only** when impermanence module has been imported.
 persys = { host }: den._.forward {
   each = lib.singleton true;
   fromClass = _: "persys";
