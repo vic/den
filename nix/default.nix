@@ -17,6 +17,8 @@ let
     example.description = "Example";
     microvm.path = ../templates/microvm;
     microvm.description = "MicroVM example";
+    nvf-standalone.path = ../templates/nvf-standalone;
+    nvf-standalone.description = "Standalone NVF";
     ci.path = ../templates/ci;
     ci.description = "Feature Tests";
     bogus.path = ../templates/bogus;
