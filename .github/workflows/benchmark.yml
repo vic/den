@@ -25,7 +25,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v6
       - run: git fetch origin ${{github.base_ref}} --depth 1 
-      - run: nix develop -c just -- bench --head HEAD --base ${{github.base_ref}} -- --style basic --export-markdown "$GITHUB_STEP_SUMMARY"
+      - run: nix develop -c just -- bench --head HEAD --base origin/${{github.base_ref}} -- --style basic --export-markdown "$GITHUB_STEP_SUMMARY"
       - run: grep "faster than base" "$GITHUB_STEP_SUMMARY"
         if: ${{!contains(github.event.pull_request.labels.*.name, 'bench-approved')}}
 
