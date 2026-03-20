@@ -1,7 +1,7 @@
 ---
 
-name: Bug report
-about: Issues are testable/actionable tasks. Use Discussions for questions, feature-requests, problem solving.
+name: Bug report with tests
+about: "Issues are for maintainer's time-allocated tasks! Use Discussions for questions, feature-requests, problem solving, etc."
 title: 'BUG: '
 labels: 'bug'
 assignees: ''
@@ -12,7 +12,7 @@ assignees: ''
 > The BUG tag is for failing code with tests.
 > DO-NOT use it unless you have code for a failing test.
 > You are welcome to send either bogus repo or just a `denTest` code snippet reproducing a bug.
-> Issues are for maintainer's time-allocated tasks, for everything else we have GH Discussions.
+> Issues are for maintainer's time-allocated tasks! Use Discussions for questions, feature-requests, problem solving, etc.
 
 Please read https://den.oeiuwq.com/tutorials/bogus/ first.
 
