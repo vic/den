@@ -22,5 +22,4 @@ See https://microvm-nix.github.io/microvm.nix/packages.html
 nixos-rebuild build --flake .#server
 ```
 
-See https://microvm-nix.github.io/microvm.nix/host.html\
-https://microvm-nix.github.io/microvm.nix/declarative.html
+See https://microvm-nix.github.io/microvm.nix/host.html https://microvm-nix.github.io/microvm.nix/declarative.html

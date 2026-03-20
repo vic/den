@@ -9,10 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        # add more releases or commits to test
-        # rev: [ "main", "v0.8.0", "caa328d" ]
-        rev: ["main"]
+        os: [ubuntu-latest]
+        rev: ["main"] # Add other releases, `latest` or commits
     name: Den (rev ${{matrix.rev}})
     runs-on: ${{matrix.os}}
     steps:
