@@ -57,6 +57,7 @@ export default defineConfig({
 						{ label: 'Minimal', slug: 'tutorials/minimal' },
 						{ label: 'Default', slug: 'tutorials/default' },
 						{ label: 'No-Flake', slug: 'tutorials/noflake' },
+						{ label: 'NVF Standalone', slug: 'tutorials/nvf-standalone' },
 						{ label: 'MicroVM', slug: 'tutorials/microvm' },
 						{ label: 'Example', slug: 'tutorials/example' },
 						{ label: 'Bug Reproduction', slug: 'tutorials/bogus' },

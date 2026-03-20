@@ -83,7 +83,7 @@ jobs:
     needs: [approved]
     strategy:
       matrix:
-        template: [bogus, minimal, microvm]
+        template: [bogus, minimal, microvm, nvf-standalone]
         os: [ubuntu-latest]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
@@ -100,6 +100,8 @@ jobs:
           EOF
           git add templates/${{matrix.template}}/modules/ci-runtime.nix
       - run: nix flake check -L ./templates/${{matrix.template}} --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
+      - run: (cd templates/nvf-standalone && nix build .#my-neovim)
+        if: matrix.template == 'nvf-standalone'
       - run: (cd templates/minimal && nix build .#.nixosConfigurations.igloo.config.system.build.toplevel)
         if: matrix.template == 'minimal'
       - run: (cd templates/minimal && nix run .#igloo -- build --offline)
