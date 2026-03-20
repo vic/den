@@ -53,6 +53,47 @@
       }
     );
 
+    test-home-standalone-without-existing-host = denTest (
+      {
+        den,
+        lib,
+        config,
+        ...
+      }:
+      {
+        den.homes.x86_64-linux."tux@igloo" = { };
+
+        den.aspects.tux.includes = [ den._.define-user ];
+
+        den.aspects.tux.homeManager = args: {
+          home.keyboard.model = if args ? osConfig then "os-bound" else "standalone";
+        };
+
+        expr = {
+          homeSchema = {
+            inherit (den.homes.x86_64-linux."tux@igloo")
+              userName
+              hostName
+              aspect
+              host
+              user
+              ;
+          };
+          configuredUserName = config.flake.homeConfigurations."tux@igloo".config.home.username;
+          hasOsConfig = config.flake.homeConfigurations."tux@igloo".config.home.keyboard.model;
+        };
+        expected = {
+          homeSchema.aspect = "tux";
+          homeSchema.userName = "tux";
+          homeSchema.hostName = "igloo";
+          homeSchema.host = null;
+          homeSchema.user = null;
+          configuredUserName = "tux";
+          hasOsConfig = "standalone";
+        };
+      }
+    );
+
     test-home-with-user-and-host-automatic-osArgs = denTest (
       { den, config, ... }:
       {
