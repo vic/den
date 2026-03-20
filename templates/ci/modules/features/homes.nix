@@ -69,6 +69,19 @@
           home.keyboard.model = if args ? osConfig then "os-bound" else "standalone";
         };
 
+        den.ctx.home.includes = [ den._.mutual-provider ];
+        den.aspects.tux.provides.igloo = {
+          homeManager.home.keyboard.layout = "enthium";
+          includes = [
+            (den.lib.perHome (
+              { home }:
+              {
+                homeManager.home.keyboard.variant = home.name;
+              }
+            ))
+          ];
+        };
+
         expr = {
           homeSchema = {
             inherit (den.homes.x86_64-linux."tux@igloo")
@@ -80,7 +93,7 @@
               ;
           };
           configuredUserName = config.flake.homeConfigurations."tux@igloo".config.home.username;
-          hasOsConfig = config.flake.homeConfigurations."tux@igloo".config.home.keyboard.model;
+          keyboard = config.flake.homeConfigurations."tux@igloo".config.home.keyboard;
         };
         expected = {
           homeSchema.aspect = "tux";
@@ -89,7 +102,10 @@
           homeSchema.host = null;
           homeSchema.user = null;
           configuredUserName = "tux";
-          hasOsConfig = "standalone";
+          keyboard.model = "standalone";
+          keyboard.layout = "enthium";
+          keyboard.variant = "tux@igloo";
+          keyboard.options = [ ];
         };
       }
     );
