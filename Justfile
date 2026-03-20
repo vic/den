@@ -50,6 +50,6 @@ bench tmpdir="/tmp" head="HEAD" base="refs/remotes/origin/main" warm="1" runs="1
   git clone --local --depth 1 --revision "$(git rev-list -n1 {{head}})" .git "{{tmpdir}}/den-head" 2>/dev/null
   git clone --local --depth 1 --revision "$(git rev-list -n1 {{base}})" .git "{{tmpdir}}/den-base" 2>/dev/null
   hyperfine -m "{{runs}}" -w "{{warm}}" {{args}} \
-    -n head "cd {{tmpdir}}/den-head && nix-shell ./shell.nix --run 'just ci | grep successful'" \
-    -n base "cd {{tmpdir}}/den-base && nix-shell ./shell.nix --run 'just ci | grep successful'" 
+    -n head "cd {{tmpdir}}/den-head && nix-shell ./shell.nix --run 'just ci 2>&1 | grep successful'" \
+    -n base "cd {{tmpdir}}/den-base && nix-shell ./shell.nix --run 'just ci 2>&1 | grep successful'" 
   rm -rf "{{tmpdir}}/den-head" "{{tmpdir}}/den-base"
