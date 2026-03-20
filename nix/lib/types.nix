@@ -156,11 +156,11 @@ let
         nameWithHost = lib.hasInfix "@" name;
         userName = if nameWithHost then lib.head (builtins.split "@" name) else name;
         hostName = if nameWithHost then lib.last (builtins.split "@" name) else null;
-        hostByName = den.hosts.${system}.${hostName};
-        userByName = hostByName.users.${userName};
+        hostByName = den.hosts.${system}.${hostName} or null;
+        userByName = hostByName.users.${userName} or null;
 
         homeManagerConfiguration =
-          if nameWithHost then
+          if hostByName != null then
             { pkgs, modules }:
             inputs.home-manager.lib.homeManagerConfiguration {
               inherit pkgs modules;
