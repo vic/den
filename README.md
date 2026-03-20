@@ -20,29 +20,33 @@
 
 <img width="300" height="300" alt="den" src="https://github.com/user-attachments/assets/af9c9bca-ab8b-4682-8678-31a70d510bbb" />
 
-# [Documentation](https://den.oeiuwq.com)
+## [Documentation](https://den.oeiuwq.com)
 
-### [From Zero To Den](https://den.oeiuwq.com/guides/from-zero-to-den/)
+- [From Zero To Den](https://den.oeiuwq.com/guides/from-zero-to-den/)
 
-### [From Flake To Den](https://den.oeiuwq.com/guides/from-flake-to-den/)
+- [From Flake To Den](https://den.oeiuwq.com/guides/from-flake-to-den/)
 
-### [Core Principles](https://den.oeiuwq.com/explanation/core-principles/)
+- [Core Principles](https://den.oeiuwq.com/explanation/core-principles/)
 
-### [Custom Nix Classes](https://den.oeiuwq.com/guides/custom-classes/)
+- [Custom Nix Classes](https://den.oeiuwq.com/guides/custom-classes/)
 
-### [Homes Integration](https://den.oeiuwq.com/guides/home-manager/)
+- [Homes Integration](https://den.oeiuwq.com/guides/home-manager/)
 
-### [Batteries](https://den.oeiuwq.com/guides/batteries/)
+- [Batteries](https://den.oeiuwq.com/guides/batteries/)
 
-### [Versioning](https://den.oeiuwq.com/releases/)
+- [Mutual Providers](https://den.oeiuwq.com/guides/mutual/)
 
-### [Reference](https://den.oeiuwq.com/reference/ctx/)
+- [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
 
-### [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
+## Project
 
-### [Motivation](https://den.oeiuwq.com/motivation/)
+- [Versioning](https://den.oeiuwq.com/releases/)
 
-### [Community](https://den.oeiuwq.com/community/)
+- [Motivation](https://den.oeiuwq.com/motivation/)
+
+- [Community](https://den.oeiuwq.com/community/)
+
+- [Contributing](https://den.oeiuwq.com/contributing/)
 
 </div>
 </td>
