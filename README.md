@@ -111,6 +111,11 @@ nix run github:vic/den?dir=templates/microvm#runnable-microvm
 ```
 
 ```console
+# Run NVF-Standalone neovim from templates/nvf-standalone
+nix run github:vic/den?dir=templates/nvf-standalone#my-neovim
+```
+
+```console
 # Run qemu VM from templates/example
 nix run github:vic/den
 ```
