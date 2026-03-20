@@ -96,20 +96,73 @@ This produces a `homeConfigurations.tux` that can be built with the `home-manage
 
 ### Standalone Homes bound to Host OS
 
-Also, if you define an standalone home with `tux@igloo` name _and_ you also
-have a host named `igloo` in the same platform with user `tux`,
+To associate a home with a specific host, name the home using the following
+format:
+
+```nix
+den.homes.x86_64-linux."tux@igloo" = { };
+```
+
+This will output `homeConfigurations."tux@igloo"`. Given a system where the
+following is true:
+
+```bash
+$ whoami
+tux
+
+$ hostname
+igloo
+```
+
+The `home-manager` CLI will automatically select `homeConfigurations."tux@igloo"`
+as the output.
+
+You can configure the home using the aspect named after the user:
+
+```nix
+den.aspects.tux = { }; # user configuration for tux that should apply on any hosts
+```
+
+Den will correctly set `<home>.userName` so that batteries like `define-user` work.
+
+Note: `igloo` here does *not* need to be a host managed by den (e.g.
+`den.hosts.<system>.igloo`), it can also represent the hostname of an externally
+managed machine outside of your control.
+
+#### Host-specific standalone home configuration
+
+To create host-specific configurations for your standalone home, you can use the
+[`den.provides.mutual-provider`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix)
+battery:
+
+```nix
+den.homes.x86_64-linux."tux@igloo" = { };
+den.ctx.user.includes = [ den._.mutual-provider ];
+```
+
+You can then configure it using the following aspect:
+
+```nix
+den.aspects.tux.provides.igloo = { }; # user configuration for tux that should only apply on igloo
+```
+
+#### Separate host and user configuration
+
+This pattern allows you to manage your host and user separately:
 
 ```
-den.homes.x86_64-linux."tux@igloo" = {};
-den.hosts.x86_64-linux.igloo.users.tux = {};
+den.hosts.x86_64-linux.igloo.users.tux = { };
+den.homes.x86_64-linux."tux@igloo" = { };
 ```
-Den will:
 
-- Correctly set `<home>.userName` so that batteries like `define-user` work.
-- Automatically bind the standalone HM instance to the OS host configuration.
+Unlike host-managed user configurations, the host and user configuration can be
+activated independently from each other.
 
-This means that by declaring `tux@igloo` you can quickly rebuild your home
-environment without rebuilding the whole `igloo` OS.
+This can speed up the rebuild process since you no longer need to rebuild both
+environments every time.
+
+Tip: The host configuration can still be read by the user via the `osConfig`
+module argument
 
 ## hjem
 
