@@ -30,7 +30,7 @@
 
   # Expose my-neovim app. Runnable with `nix run .#my-neovim`.
   # Adapt if you use flake-parts or whatever
-  flake.legacyPackages = lib.genAttrs lib.systems.flakeExposed (
+  flake.packages = lib.genAttrs lib.systems.flakeExposed (
     system:
     let
       ctx = { }; # whatever context your aspects need
