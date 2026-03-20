@@ -52,9 +52,26 @@
 </td>
 <td>
 
-At its core, Den is a [library](https://den.oeiuwq.com/explanation/library-vs-framework/) built on [flake-aspects](https://github.com/vic/flake-aspects) for activating configuration-aspects via context-transformation pipelines.
+Den allows creating parametric configurations by taking the Dendritic pattern to the function-level.
 
-On top of the library, Den provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
+These configurations become specific when applied to your particular infra entities (hosts/users),
+while allowing re-usable aspects to be shared between hosts, users, or across other flakes and non-flake projects.
+
+```nix
+# An aspect is a function that takes context and returs
+# an attrset of modules of different Nix classes
+{ host, user }: {
+  nixos = { pkgs, ... }: ...;
+  darwin = ...;
+  hjem = ...;
+  homeManager = ...;
+}
+```
+
+Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic, it can be
+used to configure anything Nix-configurable.
+
+On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
 Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
 
@@ -84,7 +101,7 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`adda/nixos-config`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
 
-Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code) - [AI Instructions Search](https://github.com/search?q=%28den.aspects+OR+vic%2Fden%29++language%3AMarkdown+%28agent+OR+claude+OR+gemini+OR+readme%29&type=code)
+Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
 
 **❄️ Try it:**
 
