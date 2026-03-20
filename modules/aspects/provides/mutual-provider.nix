@@ -38,11 +38,9 @@ let
   user-to-hosts = user: den.aspects.${user.aspect}._.to-hosts or { };
   host-to-users = host: den.aspects.${host.aspect}._.to-users or { };
 
-in
-{
-  den.provides.mutual-provider = take.exactly (
-    { host, user }@ctx:
-    parametric.fixedTo ctx {
+  mutual-host-user =
+    { host, user }:
+    parametric.fixedTo { inherit host user; } {
       inherit description;
       includes = [
         (find-mutual host user)
@@ -50,6 +48,20 @@ in
         (host-to-users host)
         (user-to-hosts user)
       ];
-    }
-  );
+    };
+
+  mutual-standalone-home =
+    { home }:
+    parametric.fixedTo { inherit home; } (
+      if home.hostName == null then { } else den.aspects.${home.aspect}._.${home.hostName} or { }
+    );
+
+in
+{
+  den.provides.mutual-provider = parametric.exactly {
+    includes = [
+      mutual-host-user
+      mutual-standalone-home
+    ];
+  };
 }
