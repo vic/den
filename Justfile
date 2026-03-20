@@ -45,11 +45,11 @@ unit:
   nix flake check --override-input target . github:vic/checkmate
 
 [arg("tmpdir",long="tmpdir"), arg("head",long="head",short="h"), arg("base",long="base",short="b"), arg("warm",long="warm",short="w"), arg("runs",long="runs",short="r")]
-bench tmpdir="/tmp" head="HEAD" base="refs/remotes/origin/main" warm="10" runs="20": 
+bench tmpdir="/tmp" head="HEAD" base="refs/remotes/origin/main" warm="2" runs="5" *args: 
   rm -rf "{{tmpdir}}/den-head" "{{tmpdir}}/den-base"
   git clone --local --depth 1 --revision "$(git rev-list -n1 {{head}})" .git "{{tmpdir}}/den-head" 2>/dev/null
   git clone --local --depth 1 --revision "$(git rev-list -n1 {{base}})" .git "{{tmpdir}}/den-base" 2>/dev/null
-  hyperfine -m "{{runs}}" -w "{{warm}}" --show-output \
+  hyperfine -m "{{runs}}" -w "{{warm}}" {{args}} \
     -n head "cd {{tmpdir}}/den-head && nix-shell ./shell.nix --run 'just ci'" \
     -n base "cd {{tmpdir}}/den-base && nix-shell ./shell.nix --run 'just ci'" 
   rm -rf "{{tmpdir}}/den-head" "{{tmpdir}}/den-base"

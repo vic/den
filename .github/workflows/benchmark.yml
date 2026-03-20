@@ -1,0 +1,31 @@
+name: benchmark
+on:
+  pull_request:
+    types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  NIX_PATH: "nixpkgs=https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
+jobs:
+  approved:
+    name: approved
+    runs-on: ubuntu-latest
+    if: ${{contains(github.event.pull_request.labels.*.name, 'approved')}}
+    steps:
+      - run: true
+  benchmark:
+    needs: [approved]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: wimpysworld/nothing-but-nix@v10
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v6
+      - run: git fetch origin ${{github.base_ref}} --depth 1 
+      - run: nix develop -c just -- bench --head HEAD --base ${{github.base_ref}} -- --style basic --export-markdown "$GITHUB_STEP_SUMMARY"
+      - run: grep "faster than base" "$GITHUB_STEP_SUMMARY"
+        if: ${{!contains(github.event.pull_request.labels.*.name, 'bench-approved')}}
+
