@@ -4,6 +4,7 @@
     "docs/*"
     "Justfile"
     "AGENT*.md"
+    "*.txt"
   ];
   perSystem.treefmt.programs.deadnix.enable = false;
   perSystem.treefmt.programs.nixf-diagnose.enable = false;
