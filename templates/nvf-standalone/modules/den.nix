@@ -22,6 +22,14 @@
             pkgs.fd
             pkgs.fzf
           ];
+
+          # nvf.vim.options
+          opts = {
+            expandtab = true;
+            tabstop = 2;
+            shiftwidth = 2;
+            wrap = false;
+          };
         };
 
       includes = [ den.aspects.nvf ];
