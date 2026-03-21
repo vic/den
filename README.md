@@ -23,18 +23,18 @@ while allowing re-usable aspects to be shared between hosts, users, or across ot
 <td>
 
 ```nix
-# An aspect is a function that takes context and returns
-# an attrset of modules of different Nix classes
+# An aspect is a function taking context and
+# returning modules of different Nix classes
 den.aspects.gaming = { host, user }: {
   nixos = { pkgs, ... }: ...;
   darwin = ...;
   hjem = ...;
   homeManager = ...;
 
-  # Aspects can depend on other aspects
+  # aspects can depend on other aspects
   includes = [ den.aspects.performance ];
 
-  # Aspects can provider sub-aspects
+  # aspects can be organized in sub-aspects
   provides.emulation = {
     nixos = { pkgs, ... }: ... ;
   };
@@ -53,7 +53,7 @@ den.aspects.gaming = { host, user }: {
 # and traverses its topology (host->users->homes) aggregating deps
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.my-laptop; };
 
-# flake-parts API (re-exported by Den) resolves final NixOS module
+# flake-aspects API (re-exported by Den) resolves final NixOS module
 nixosModule = den.lib.aspects.resolve "nixos" [ ] aspect;
 
 # Use NixOS API to instantiate or mix-in with other custom modules
