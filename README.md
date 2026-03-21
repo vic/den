@@ -11,7 +11,6 @@
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://dendritic.oeiuwq.com) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://dendritic.oeiuwq.com/sponsor)
 
-
 # den - Aspect-oriented, Context-driven Dendritic Nix configurations.
 
 ### Den allows creating parametric configurations by taking the Dendritic pattern to the function-level.
@@ -22,7 +21,7 @@ while allowing re-usable aspects to be shared between hosts, users, or across ot
 <table>
 <tr>
 <td>
-  
+
 ```nix
 # An aspect is a function that takes context and returns
 # an attrset of modules of different Nix classes
@@ -41,6 +40,7 @@ den.aspects.gaming = { host, user }: {
   };
 }
 ```
+
 </td>
 <td>
 
@@ -50,7 +50,7 @@ den.aspects.gaming = { host, user }: {
 # can use the same pattern. demo: templates/nvf-standalone
 
 # A transformation pipeline takes initial context: {host}
-# and traverses its topology (host->users->homes) aggregating deps 
+# and traverses its topology (host->users->homes) aggregating deps
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.my-laptop; };
 
 # flake-parts API (re-exported by Den) resolves final NixOS module
@@ -61,7 +61,7 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
   modules = [ nixosModule ];
 };
 ```
-  
+
 </td>
 </tr>
 </table>
@@ -72,7 +72,6 @@ used to configure anything Nix-configurable.
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
 Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
-
 
 <table>
 <tr>
