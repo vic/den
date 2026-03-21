@@ -7,44 +7,58 @@
 {
   imports = [ inputs.den.flakeModule ];
 
-  # a custom `vim` class that forwards to `nvf.config.vim`
-  den.aspects.vimClass =
-    { class, aspect-chain }:
-    den._.forward {
-      each = lib.singleton true;
-      fromClass = _: "vim";
-      intoClass = _: "nvf";
-      intoPath = _: [
-        "config"
-        "vim"
-      ];
-      fromAspect = _: lib.head aspect-chain;
-      adaptArgs = lib.id;
+  den.aspects.my-neovim =
+    { mine }:
+    {
+      vim.theme.enable = true;
+      vim.theme.name = "catppuccin";
+      vim.theme.style = if mine then "latte" else "mocha";
     };
 
-  den.aspects.my-neovim = {
-    includes = [ den.aspects.vimClass ];
+  den.lib.nvfModule =
+    vimAspect: ctx:
+    let
+      # a custom `vim` class that forwards to `nvf.vim`
+      vimClass =
+        { class, aspect-chain }:
+        den._.forward {
+          each = lib.singleton true;
+          fromClass = _: "vim";
+          intoClass = _: "nvf";
+          intoPath = _: [
+            "vim"
+          ];
+          fromAspect = _: lib.head aspect-chain;
+          adaptArgs = lib.id;
+        };
 
-    vim.theme.enable = true;
-  };
+      aspect = den.lib.parametric.fixedTo ctx {
+        includes = [
+          vimClass
+          vimAspect
+        ];
+      };
+
+      module = den.lib.aspects.resolve "nvf" [ aspect ] aspect;
+    in
+    module;
 
   # Expose my-neovim app. Runnable with `nix run .#my-neovim`.
   # Adapt if you use flake-parts or whatever
   flake.packages = lib.genAttrs lib.systems.flakeExposed (
     system:
     let
-      ctx = { }; # whatever context your aspects need
-      aspect = den.aspects.my-neovim ctx;
-      module = den.lib.aspects.resolve "nvf" [ ] aspect;
-
-      nvf = inputs.nvf.lib.neovimConfiguration {
-        pkgs = inputs.nixpkgs.legacyPackages.${system};
-        modules = [ module ];
-      };
-      my-neovim = nvf.neovim;
+      pkgs = inputs.nixpkgs.legacyPackages.${system};
+      nvf =
+        aspect: ctx:
+        (inputs.nvf.lib.neovimConfiguration {
+          inherit pkgs;
+          modules = [ (den.lib.nvfModule aspect ctx) ];
+        }).neovim;
     in
     {
-      inherit my-neovim;
+      my-neovim = nvf den.aspects.my-neovim { mine = true; };
+      your-neovim = nvf den.aspects.my-neovim { mine = false; };
     }
   );
 }
