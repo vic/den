@@ -9,9 +9,70 @@
   <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
 </p>
 
-# den - Aspect-oriented context-driven Dendritic Nix configurations.
-
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://dendritic.oeiuwq.com) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://dendritic.oeiuwq.com/sponsor)
+
+
+# den - Aspect-oriented, Context-driven Dendritic Nix configurations.
+
+### Den allows creating parametric configurations by taking the Dendritic pattern to the function-level.
+
+These configurations become specific when applied to your particular infra entities (hosts/users),
+while allowing re-usable aspects to be shared between hosts, users, or across other flakes and non-flake projects.
+
+<table>
+<tr>
+<td>
+  
+```nix
+# An aspect is a function that takes context and returns
+# an attrset of modules of different Nix classes
+den.aspects.gaming = { host, user }: {
+  nixos = { pkgs, ... }: ...;
+  darwin = ...;
+  hjem = ...;
+  homeManager = ...;
+
+  # Aspects can depend on other aspects
+  includes = [ den.aspects.performance ];
+
+  # Aspects can provider sub-aspects
+  provides.emulation = {
+    nixos = { pkgs, ... }: ... ;
+  };
+}
+```
+</td>
+<td>
+
+```nix
+# These three lines is how Den instantiates a configuration.
+# Other Nix configuration domains outside NixOS/nix-Darwin
+# can use the same pattern. demo: templates/nvf-standalone
+
+# A transformation pipeline takes initial context: {host}
+# and traverses its topology (host->users->homes) aggregating deps 
+aspect = den.ctx.host { host = den.hosts.x86_64-linux.my-laptop; };
+
+# flake-parts API (re-exported by Den) resolves final NixOS module
+nixosModule = den.lib.aspects.resolve "nixos" [ ] aspect;
+
+# Use NixOS API to instantiate or mix-in with other custom modules
+nixosConfigurations.my-laptop = lib.nixosConfiguration {
+  modules = [ nixosModule ];
+};
+```
+  
+</td>
+</tr>
+</table>
+
+Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic, it can be
+used to configure anything Nix-configurable.
+
+On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
+
+Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
+
 
 <table>
 <tr>
@@ -52,29 +113,6 @@
 </td>
 <td>
 
-Den allows creating parametric configurations by taking the Dendritic pattern to the function-level.
-
-These configurations become specific when applied to your particular infra entities (hosts/users),
-while allowing re-usable aspects to be shared between hosts, users, or across other flakes and non-flake projects.
-
-```nix
-# An aspect is a function that takes context and returs
-# an attrset of modules of different Nix classes
-{ host, user }: {
-  nixos = { pkgs, ... }: ...;
-  darwin = ...;
-  hjem = ...;
-  homeManager = ...;
-}
-```
-
-Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic, it can be
-used to configure anything Nix-configurable.
-
-On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
-
-Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
-
 ### Templates:
 
 [default](https://den.oeiuwq.com/tutorials/default/): +flake-file +flake-parts +home-manager
@@ -82,6 +120,8 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 [minimal](https://den.oeiuwq.com/tutorials/minimal): +flakes -flake-parts -home-manager
 
 [noflake](https://den.oeiuwq.com/tutorials/noflake): -flakes +npins +lib.evalModules +nix-maid
+
+[nvf-standalone](https://den.oeiuwq.com/tutorials/nvf-standalone): Standalone neovim apps, showcasing Den without NixOS/Darwin.
 
 [microvm](https://den.oeiuwq.com/tutorials/microvm): MicroVM runnable-pkg and guests. custom ctx-pipeline.
 
