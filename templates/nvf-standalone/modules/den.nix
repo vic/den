@@ -10,38 +10,14 @@
   den.aspects.my-neovim =
     { mine }:
     {
-      vim.theme.enable = true;
-      vim.theme.name = "catppuccin";
-      vim.theme.style = if mine then "latte" else "mocha";
-    };
-
-  den.lib.nvfModule =
-    vimAspect: ctx:
-    let
-      # a custom `vim` class that forwards to `nvf.vim`
-      vimClass =
-        { class, aspect-chain }:
-        den._.forward {
-          each = lib.singleton true;
-          fromClass = _: "vim";
-          intoClass = _: "nvf";
-          intoPath = _: [
-            "vim"
-          ];
-          fromAspect = _: lib.head aspect-chain;
-          adaptArgs = lib.id;
+      vim =
+        { pkgs, ... }:
+        {
+          theme.enable = true;
+          theme.name = "catppuccin";
+          theme.style = if mine then "latte" else "frappe";
         };
-
-      aspect = den.lib.parametric.fixedTo ctx {
-        includes = [
-          vimClass
-          vimAspect
-        ];
-      };
-
-      module = den.lib.aspects.resolve "nvf" [ aspect ] aspect;
-    in
-    module;
+    };
 
   # Expose my-neovim app. Runnable with `nix run .#my-neovim`.
   # Adapt if you use flake-parts or whatever
@@ -49,12 +25,8 @@
     system:
     let
       pkgs = inputs.nixpkgs.legacyPackages.${system};
-      nvf =
-        aspect: ctx:
-        (inputs.nvf.lib.neovimConfiguration {
-          inherit pkgs;
-          modules = [ (den.lib.nvfModule aspect ctx) ];
-        }).neovim;
+      # custom den.lib.nvf from ./nvf-integration.nix
+      nvf = den.lib.nvf.package pkgs;
     in
     {
       my-neovim = nvf den.aspects.my-neovim { mine = true; };
