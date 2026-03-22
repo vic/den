@@ -64,7 +64,7 @@ Also read the **No Monoliths** aside in that page about splitting this example c
 { inputs, den, lib, ... }: {
   imports = [ inputs.den.flakeModule ];
 
-  den.ctx.user.classes = lib.mkDefault [ "homeManager" ];
+  den.schema.user.classes = lib.mkDefault [ "homeManager" ];
 
   den.hosts.x86_64-linux.igloo.users.tux = {};
 
