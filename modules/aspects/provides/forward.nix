@@ -56,10 +56,12 @@ let
       intoClass = fwd.intoClass item;
       intoPath = fwd.intoPath item;
 
-      sourceModule = den.lib.aspects.resolve fromClass [ ] (fwd.fromAspect item);
+      asp = fwd.fromAspect item;
+
+      sourceModule = den.lib.aspects.resolve fromClass [ asp ] asp;
 
       freeformMod = {
-        config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
+        config._module.freeformType = lib.types.lazyAttrsOf lib.types.anything;
       };
 
       adapterKey = lib.concatStringsSep "/" (
@@ -106,28 +108,57 @@ let
         };
       };
 
+      extraArgsFor =
+        args:
+        if adaptArgs == null then { } else builtins.removeAttrs (adaptArgs args) (builtins.attrNames args);
+
+      wrapTree =
+        gApply: outerArgs: node:
+        if builtins.isAttrs node && node ? imports then
+          { imports = map (wrapTree gApply outerArgs) node.imports; }
+        else
+          _modArgs:
+          let
+            result = if lib.isFunction node then node outerArgs else node;
+          in
+          {
+            config = gApply result;
+          };
+
+      evalImport =
+        args:
+        let
+          extraArgs = extraArgsFor args;
+          specialArgs =
+            builtins.removeAttrs args [
+              "config"
+              "options"
+              "lib"
+            ]
+            // extraArgs;
+          evaluated = lib.evalModules {
+            inherit specialArgs;
+            modules = (if adapterModule == null then [ freeformMod ] else [ adapterModule ]) ++ [
+              sourceModule
+            ];
+          };
+        in
+        guardFn args evaluated.config;
+
+      canDirectImport = adapterModule == null;
+
       topLevelAdapter.${intoClass} = {
         __functionArgs = guardArgs;
         __functor =
           _: args:
           let
-            extraArgs =
-              if adaptArgs == null then { } else builtins.removeAttrs (adaptArgs args) (builtins.attrNames args);
-            specialArgs =
-              builtins.removeAttrs args [
-                "config"
-                "options"
-                "lib"
-              ]
-              // extraArgs;
-            evaluated = lib.evalModules {
-              inherit specialArgs;
-              modules = (if adapterModule == null then [ freeformMod ] else [ adapterModule ]) ++ [
-                sourceModule
-              ];
-            };
+            gApply = if guard == null then lib.id else guardFn args;
+            fullArgs = args // extraArgsFor args;
           in
-          guardFn args evaluated.config;
+          if canDirectImport then
+            { imports = [ (wrapTree gApply fullArgs sourceModule) ]; }
+          else
+            evalImport args;
       };
 
       needsAdapter = guard != null || adaptArgs != null || adapterModule != null;

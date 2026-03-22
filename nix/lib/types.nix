@@ -250,7 +250,7 @@ let
     let
       asp = intent { ${name} = from; };
     in
-    den.lib.aspects.resolve (from.class) [ ] asp;
+    den.lib.aspects.resolve (from.class) [ asp ] asp;
 in
 {
   inherit hostsOption homesOption;

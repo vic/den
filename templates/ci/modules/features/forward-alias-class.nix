@@ -7,6 +7,7 @@
         den,
         lib,
         igloo,
+        tuxHm,
         ...
       }:
       let
@@ -18,6 +19,7 @@
             intoClass = _: "homeManager";
             intoPath = _: [ ];
             fromAspect = _: lib.head aspect-chain;
+            guard = { pkgs, ... }: true;
             adaptArgs =
               { config, ... }:
               {
@@ -31,22 +33,41 @@
         den.aspects.igloo.nixos.networking.hostName = "storm";
 
         den.aspects.tux = {
-          includes = [ forwarded ];
-          home =
-            { osConfig, ... }:
-            {
-              programs.fish.enable = true;
-              home.keyboard.model = osConfig.networking.hostName;
-            };
+          includes = [
+            forwarded
+            den.aspects.foo
+          ];
         };
 
+        den.aspects.foo.includes = [
+          den.aspects.bar
+          den.aspects.baz
+        ];
+        den.aspects.bar.home =
+          { osConfig, pkgs, ... }:
+          {
+            programs.fish.enable = true;
+            home.keyboard.model = osConfig.networking.hostName;
+            home.packages = [ pkgs.hello ];
+          };
+
+        den.aspects.baz.home =
+          { pkgs, ... }:
+          {
+            home.packages = [ pkgs.direnv ];
+          };
+
         expr = {
-          enable = igloo.home-manager.users.tux.programs.fish.enable;
-          model = igloo.home-manager.users.tux.home.keyboard.model;
+          enable = tuxHm.programs.fish.enable;
+          model = tuxHm.home.keyboard.model;
+          hello = lib.any (p: "hello" == lib.getName p) tuxHm.home.packages;
+          direnv = lib.any (p: "direnv" == lib.getName p) tuxHm.home.packages;
         };
         expected = {
           enable = true;
           model = "storm";
+          hello = true;
+          direnv = true;
         };
       }
     );
@@ -107,6 +128,7 @@
         lib,
         igloo,
         apple,
+        tuxHm,
         ...
       }:
       let
@@ -134,18 +156,38 @@
         den.hosts.aarch64-darwin.apple.users.tux = { };
 
         den.aspects.tux = {
-          includes = [ forwarded ];
+          includes = [
+            forwarded
+            den.aspects.foo
+            den.aspects.bar
+          ];
           hmLinux.home.keyboard.model = "freedom";
           hmDarwin.home.keyboard.model = "closed";
         };
 
+        den.aspects.foo.hmLinux =
+          { pkgs, ... }:
+          {
+            home.packages = [ pkgs.hello ];
+          };
+
+        den.aspects.bar.hmLinux =
+          { pkgs, ... }:
+          {
+            home.packages = [ pkgs.direnv ];
+          };
+
         expr = {
           linux = igloo.home-manager.users.tux.home.keyboard.model;
           darwin = apple.home-manager.users.tux.home.keyboard.model;
+          hello = lib.any (p: "hello" == lib.getName p) tuxHm.home.packages;
+          direnv = lib.any (p: "direnv" == lib.getName p) tuxHm.home.packages;
         };
         expected = {
           linux = "freedom";
           darwin = "closed";
+          hello = true;
+          direnv = true;
         };
       }
     );
