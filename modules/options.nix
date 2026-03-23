@@ -14,21 +14,20 @@ let
       config
       ;
   };
-  baseMod = lib.mkOption {
-    type = lib.types.deferredModule;
+  schemaOption = lib.mkOption {
+    description = "freeform deferred modules per entity kind";
     default = { };
+    type = lib.types.submodule {
+      freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;
+    };
   };
 in
 {
   options.den.hosts = types.hostsOption;
   options.den.homes = types.homesOption;
-  options.den.schema = {
-    conf = baseMod;
-    host = baseMod;
-    user = baseMod;
-    home = baseMod;
-  };
+  options.den.schema = schemaOption;
   config.den.schema = {
+    conf = { };
     host.imports = [ den.schema.conf ];
     user.imports = [ den.schema.conf ];
     home.imports = [ den.schema.conf ];
