@@ -27,17 +27,10 @@
           adaptArgs = lib.id;
         };
 
-      # workaround NVF `options` option
-      # see: https://github.com/NotAShelf/nvf/issues/1469
-      vimOpts.nvf = _: {
-        imports = [ (lib.mkAliasOptionModule [ "vim" "opts" ] [ "vim" "options" ]) ];
-      };
-
       aspect = den.lib.parametric.fixedTo ctx {
         includes = [
           vimClass
           vimAspect
-          vimOpts
         ];
       };
 
