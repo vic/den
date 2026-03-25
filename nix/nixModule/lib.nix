@@ -10,5 +10,6 @@
     internal = true;
     visible = false;
     type = lib.types.attrsOf lib.types.raw;
+    defaultText = lib.literalExpression "den-lib";
   };
 }
