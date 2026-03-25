@@ -142,6 +142,8 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`@adda`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
 
+> Den is also being used at internal infra at The European Commission.
+
 Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
 
 **❄️ Try it:**
