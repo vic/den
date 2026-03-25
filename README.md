@@ -49,7 +49,7 @@ den.aspects.gaming = { host, user }: {
 # Other Nix configuration domains outside NixOS/nix-Darwin
 # can use the same pattern. demo: templates/nvf-standalone
 
-# A transformation pipeline takes initial context: {host}
+# A context transformation pipeline takes initially {host}
 # and traverses its topology (host->users->homes) aggregating deps
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.my-laptop; };
 
@@ -66,7 +66,7 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
 </tr>
 </table>
 
-Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic, it can be
+Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic. It can be
 used to configure anything Nix-configurable.
 
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
@@ -134,11 +134,13 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 > Want yours featured? send me a DM via matrix or zulip (links at GH Discussions)
 
-[`vic/vix`](https://github.com/vic/vix): Fleet sharing user, author spends more time in Den itself. (-flakes +npins +auto-update +ci)
+[`@vic`](https://github.com/vic/vix): Fleet sharing user, author spends more time in Den itself. (-flakes +npins +auto-update +ci)
 
-[`quasigod.xyz`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
+[`@quasigod`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
 
-[`adda/nixos-config`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
+[`@Gwenodai`](https://github.com/Gwenodai/nixos): Cleaver organization with path naming conventions, factories for guarded classes
+
+[`@adda`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
 
 Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
 
