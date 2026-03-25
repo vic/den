@@ -96,6 +96,10 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 - [Mutual Providers](https://den.oeiuwq.com/guides/mutual/)
 
+- [Sharing Namespaces](https://den.oeiuwq.com/guides/namespaces/)
+
+- [`<angle/brackets>`](https://den.oeiuwq.com/guides/angle-brackets/)
+
 - [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
 
 ## Project
@@ -138,11 +142,11 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`@quasigod`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
 
-[`@Gwenodai`](https://github.com/Gwenodai/nixos): Cleaver organization with path naming conventions, factories for guarded classes
+[`@Gwenodai`](https://github.com/Gwenodai/nixos): Clever organization with path-naming conventions, custom guarded and forwarding classes
 
 [`@adda`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
 
-> Den is also being used at internal infra at The European Commission.
+> Den is also being used on internal infra at The European Commission.
 
 Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
 
