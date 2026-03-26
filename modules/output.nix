@@ -1,4 +1,4 @@
-{ inputs, lib, ... }:
+{ options, lib, ... }:
 let
   message = ''
     If you see this message it likely means you have more than
@@ -25,7 +25,7 @@ let
     https://github.com/hercules-ci/flake-parts/blob/main/modules/flake.nix
   '';
 
-  has-flake-parts = inputs ? flake-parts;
+  has-flake-parts = options ? flake.nixosConfigurations;
 
   outputOptions.flake = lib.mkOption {
     default = { };
@@ -39,5 +39,5 @@ let
 
 in
 {
-  options = lib.optionalAttrs (!has-flake-parts) outputOptions;
+  options = lib.mkIf (!has-flake-parts) outputOptions;
 }
