@@ -2,7 +2,7 @@ name: sources:
 { config, lib, ... }:
 let
   from = lib.flatten [ sources ];
-  isOutput = builtins.any (x: x == true) from;
+  isOutput = builtins.elem true from;
   denfuls = map (lib.getAttrFromPath [
     "denful"
     name
@@ -11,8 +11,6 @@ let
   internals = [
     "_"
     "_module"
-    "modules"
-    "resolve"
     "__functor"
     "__functionArgs"
   ];
@@ -22,22 +20,15 @@ let
     if !builtins.isAttrs v then
       v
     else
-      let
-        stripped = builtins.removeAttrs v internals;
-        withProvides = lib.optionalAttrs (stripped ? provides) {
-          provides = lib.mapAttrs (_: stripAspect) stripped.provides;
-        };
-        deepStripped = lib.mapAttrs (
-          n: child:
-          if n == "provides" then
-            child
-          else if builtins.isAttrs child then
-            builtins.removeAttrs child internals
-          else
-            child
-        ) stripped;
-      in
-      deepStripped // withProvides;
+      lib.mapAttrs (
+        n: child:
+        if n == "provides" then
+          lib.mapAttrs (_: stripAspect) child
+        else if builtins.isAttrs child then
+          builtins.removeAttrs child internals
+        else
+          child
+      ) (builtins.removeAttrs v internals);
 
   stripNamespace = lib.mapAttrs (_: stripAspect);
 

@@ -18,13 +18,11 @@ let
         ;
     };
   den-lib = builtins.mapAttrs (_: load) {
-    aspects = ./aspects.nix;
+    aspects = ./aspects;
     canTake = ./can-take.nix;
     ctxApply = ./ctx-apply.nix;
     ctxTypes = ./ctx-types.nix;
     __findFile = ./den-brackets.nix;
-    functor = ./functor.nix;
-    fwTypes = ./types.nix;
     home-env = ./home-env.nix;
     nh = ./nh.nix;
     nixModule = ../nixModule;

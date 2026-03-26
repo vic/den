@@ -22,7 +22,7 @@ let
         y = 1;
       };
       resolve = ev.config.den.lib.aspects.resolve;
-      fooModule = resolve "foo" [ ] fooAspect;
+      fooModule = resolve "foo" fooAspect;
 
       namesModule.options.names = lib.mkOption { type = lib.types.listOf lib.types.str; };
       ev2 = lib.evalModules {

@@ -8,7 +8,6 @@
   };
 
   inputs.den.url = "github:vic/den";
-  inputs.flake-aspects.url = "github:vic/flake-aspects";
   inputs.import-tree.url = "github:vic/import-tree";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";

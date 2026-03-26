@@ -120,9 +120,9 @@
 
         expr = igloo.funny;
         expected = [
-          "atHost perUser pingu@igloo fun"
-          "atHost perUser static" # pingu
           "atHost perUser tux@igloo fun"
+          "atHost perUser static" # pingu
+          "atHost perUser pingu@igloo fun"
           "atHost perUser static" # tux
           "atUser perUser tux@igloo fun"
           "atUser perUser static"

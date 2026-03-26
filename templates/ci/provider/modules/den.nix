@@ -5,11 +5,6 @@
   ...
 }:
 {
-  systems = [
-    "x86_64-linux"
-    "aarch64-darwin"
-  ];
-
   imports = [
     inputs.den.flakeModule
     (inputs.den.namespace "provider" true)
