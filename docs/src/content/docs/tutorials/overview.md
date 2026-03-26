@@ -17,7 +17,7 @@ nix flake init -t github:vic/den#<template>
 | [**default**](/tutorials/default/) | Recommended starting point | ✓ | ✓ | ✓ |
 | [**example**](/tutorials/example/) | Feature showcase with namespaces | ✓ | ✓ | ✓ |
 | [**noflake**](/tutorials/noflake/) | Stable Nix, no flakes | ✗ | ✗ | ✗ |
-| [**nvf-standalone**](/tutorials/nv-standalone/) | Den based NVF without NixOS | ✓ | ✗ | ✗ |
+| [**nvf-standalone**](/tutorials/nvf-standalone/) | Den based NVF without NixOS | ✓ | ✗ | ✗ |
 | [**microvm**](/tutorials/microvm/) | MicroVM host and guests | ✓ | ✗ | ✗ |
 | [**bogus**](/tutorials/bogus/) | Bug reproduction | ✓ | ✓ | ✓ |
 | [**ci**](/tutorials/ci/) | Den's own test suite | ✓ | ✓ | ✓ |
