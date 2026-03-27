@@ -17,5 +17,6 @@ in
 {
   __functor = self: self.atLeast;
   atLeast = params: func: (check params func).satisfied;
+  upTo = params: func: (check params func).satisfied;
   exactly = params: func: (check params func).exactly;
 }

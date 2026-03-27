@@ -1,6 +1,6 @@
 { lib, den, ... }:
 let
-  inherit (den.lib) take functor;
+  inherit (den.lib) take functor recursiveFunctor;
   inherit (den.lib.statics) owned statics isCtxStatic;
 
   fixedRecurse =
@@ -19,7 +19,7 @@ let
   parametric.expands =
     attrs: parametric.withOwn (aspect: ctx: parametric.atLeast aspect (ctx // attrs));
 
-  parametric.fixedTo =
+  parametric.fixedTo.__functor =
     attrs: aspect:
     aspect
     // {
@@ -34,6 +34,10 @@ let
           ];
         };
     };
+
+  parametric.fixedTo.atLeast = recursiveFunctor (lib.flip take.atLeast);
+  parametric.fixedTo.exactly = recursiveFunctor (lib.flip take.exactly);
+  parametric.fixedTo.upTo = recursiveFunctor (lib.flip take.upTo);
 
   parametric.withOwn =
     functor: aspect:
