@@ -19,7 +19,6 @@ Migration to Den is incremental. You do not need to rewrite everything at once.
     {
       inputs.den.url = "github:vic/den";
       inputs.import-tree.url = "github:vic/import-tree";
-      inputs.flake-aspects.url = "github:vic/flake-aspects";
 
       outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; }
         (inputs.import-tree ./modules);

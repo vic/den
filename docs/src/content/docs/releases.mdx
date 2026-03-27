@@ -20,19 +20,15 @@ Until it reaches a more definitive form.
 
 ## Den Dependencies.
 
-`den.lib` is built with [`flake-aspects`](https://github.com/vic/flake-aspects)
-and Den framework uses a [`import-tree`](https://github.com/vic/import-tree) to
-load its `modules/` directory. Of these two, only `flake-aspects` version is
-important because it provides the underlying aspects features Den uses.
+Den is a standalone library and has no dependencies.
+Den's `flakeModule` expects to be imported in a Nix module providing nixpkgs lib.
 
-Some people use `flake-aspects` independently of Den,
-and it does not follow Den versioning numbers
-because it is not as fast-paced as Den.
+It is very common for Den projects to use 
+[`import-tree`](https://github.com/vic/import-tree) to load their `modules/` directory.
 
+Den bundles its own aspect types -originally based on [`flake-aspects`](https://github.com/vic/flake-aspects) but now optimized for Den.
 
 ## Bleeding-Edge Den
-
-**The `main` branch of Den will always depend on flake-aspects `main` branch**.
 
 This branch follows development, this is where PRs are merged, it is stable in the sense that every PR checks CI. 
 
@@ -41,7 +37,6 @@ This branch follows development, this is where PRs are merged, it is stable in t
 # Main Den - updates on each PR merge
 {
   inputs.den.url = "github:vic/den";
-  inputs.flake-aspects.url = "github:vic/flake-aspects";
 }
 ```
 
@@ -57,8 +52,6 @@ Den has a `latest` tag that always follows the latest created release tag.
 
 > Diff of changes since latest release: [latest...main](https://github.com/vic/den/compare/latest...main)
 
-**The `latest` version of Den will always depend on flake-aspects `latest`**.
-
 This is intended for people that wishes to move only between release points.
 People still need to read `Release Notes` since they might contain important
 information on how Den is evolving.
@@ -69,14 +62,10 @@ information on how Den is evolving.
 # Latest Den - no longer gets updates until next release
 {
   inputs.den.url = "github:vic/den/latest";
-  inputs.flake-aspects.url = "github:vic/flake-aspects/latest";
 }
 ```
 
 ## Released Den
-
-For other than `main` and `latest` versions, each `Release Notes` document
-detailsthe particular flake-aspects version needed by Den. 
 
 **Read [Den Releases](https://github.com/vic/den/releases)**
 

@@ -22,7 +22,7 @@ Den's core (`/default.nix`) is domain-agnostic. It provides:
 | `owned` | Extract only owned configs (no includes, no functor) |
 | `isFn` | Check if value is a function or has `__functor` |
 | `__findFile` | Angle bracket resolution for deep aspect paths |
-| `aspects` | The flake-aspects API (resolve, merge, types) |
+| `aspects` | Den aspects API (resolve, types) |
 
 These primitives compose into context transformation pipelines for any domain.
 
@@ -71,7 +71,7 @@ flowchart TD
   subgraph "Den Library (domain-agnostic)"
     parametric["parametric dispatch"]
     canTake["canTake / take"]
-    aspects["flake-aspects API"]
+    aspects["aspects API"]
   end
   subgraph "Den Framework (OS-specific)"
     schema["den.hosts / den.homes"]
