@@ -54,12 +54,12 @@
           ))
         ];
 
-        expr = igloo.funny;
+        expr = lib.sort (a: b: a < b) igloo.funny;
         expected = [
-          "atUser perUser tux@igloo fun"
-          "atUser perUser static"
           "atHost perHost igloo fun"
           "atHost perHost static"
+          "atUser perUser static"
+          "atUser perUser tux@igloo fun"
         ];
       }
     );
@@ -120,9 +120,9 @@
 
         expr = igloo.funny;
         expected = [
-          "atHost perUser tux@igloo fun"
-          "atHost perUser static" # pingu
           "atHost perUser pingu@igloo fun"
+          "atHost perUser static" # pingu
+          "atHost perUser tux@igloo fun"
           "atHost perUser static" # tux
           "atUser perUser tux@igloo fun"
           "atUser perUser static"

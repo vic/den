@@ -2,35 +2,20 @@ lib:
 let
 
   resolve =
-    step:
+    class: aspect-chain: aspect:
     let
       provided =
-        if lib.isFunction step.aspect then
-          step.aspect { inherit (step) class aspect-chain; }
-        else
-          step.aspect;
+        if lib.isFunction aspect 
+        then aspect { inherit class aspect-chain; }
+        else aspect;
 
-      module = provided.${step.class} or { };
-      nextChain = step.aspect-chain ++ [ provided ];
-      includes = provided.includes or [ ];
-      nextStep =
-        aspect:
-        resolve {
-          inherit (step) class;
-          inherit aspect;
-          aspect-chain = nextChain ++ [ aspect ];
-          result = [ ];
-        };
+      next-chain = aspect-chain ++ [ provided ];
 
-      result = step.result ++ (lib.optional (module != { }) module) ++ (lib.concatMap nextStep includes);
-    in
-    result;
+      imports = 
+        (lib.optional (provided ? ${class}) provided.${class}) ++
+        (map (resolve class next-chain) (provided.includes or []));
+
+    in { inherit imports; };
 
 in
-class: aspect: {
-  imports = resolve {
-    inherit class aspect;
-    aspect-chain = [ aspect ];
-    result = [ ];
-  };
-}
+class: aspect: resolve class [ aspect ] aspect
