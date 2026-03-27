@@ -15,6 +15,6 @@
 
     # user can provide NixOS configurations
     # to any host it is included on
-    provides.to-hosts.nixos = { pkgs, ... }: { };
+    # nixos = { pkgs, ... }: { };
   };
 }
