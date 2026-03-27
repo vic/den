@@ -10,7 +10,6 @@
       url = "github:nix-darwin/nix-darwin";
     };
     den.url = "github:vic/den";
-    flake-aspects.url = "github:vic/flake-aspects";
     flake-file.url = "github:vic/flake-file";
     flake-parts = {
       inputs.nixpkgs-lib.follows = "nixpkgs-lib";

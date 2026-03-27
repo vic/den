@@ -8,18 +8,11 @@ let
   build =
     builder: cfg:
     let
-      items = map builtins.attrValues (builtins.attrValues cfg);
-      buildItem =
-        item:
-        if
-          item.intoAttr == [ ] # no output requested
-        then
-          { }
-        else
-          lib.setAttrByPath item.intoAttr (builder item);
-      built = map buildItem (lib.flatten items);
+      items = lib.concatMap builtins.attrValues (builtins.attrValues cfg);
     in
-    built;
+    map (
+      item: if item.intoAttr == [ ] then { } else lib.setAttrByPath item.intoAttr (builder item)
+    ) items;
 
   osConfiguration =
     host:

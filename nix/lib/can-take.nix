@@ -1,21 +1,19 @@
 { lib, ... }:
 let
-  check =
+  canTake =
     params: func:
     let
-      givenFn = builtins.isFunction func || (builtins.isAttrs func && func ? __functor);
-      fargs = lib.functionArgs func;
-      required = lib.filterAttrs (_: optional: !optional) fargs;
-      reqNames = builtins.attrNames required;
-      satisfied = givenFn && builtins.isAttrs params && builtins.all (n: params ? ${n}) reqNames;
-      exactly = satisfied && builtins.length reqNames == builtins.length (builtins.attrNames params);
+      valid = lib.isFunction func && builtins.isAttrs params;
+      args = lib.functionArgs func;
+      required = builtins.filter (n: !args.${n}) (builtins.attrNames args);
     in
     {
-      inherit satisfied exactly;
+      satisfied = valid && builtins.all (n: params ? ${n}) required;
+      exactly = valid && required == builtins.attrNames params;
     };
 in
 {
   __functor = self: self.atLeast;
-  atLeast = params: func: (check params func).satisfied;
-  exactly = params: func: (check params func).exactly;
+  atLeast = params: func: (canTake params func).satisfied;
+  exactly = params: func: (canTake params func).exactly;
 }

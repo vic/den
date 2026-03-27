@@ -5,7 +5,6 @@
   ...
 }:
 let
-  inherit (den.lib.take) unused;
   inherit (den.lib) parametric;
 
   description = ''

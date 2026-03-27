@@ -34,7 +34,7 @@
         ];
       };
 
-      module = den.lib.aspects.resolve "nvf" [ aspect ] aspect;
+      module = den.lib.aspects.resolve "nvf" aspect;
     in
     module;
 }

@@ -81,6 +81,7 @@ jobs:
       - run: (cd templates/noflake && nix-shell ./default.nix -A den.sh --run 'igloo build --offline')
   template:
     needs: [approved]
+    # max-parallel: 2
     strategy:
       matrix:
         template: [bogus, minimal, microvm, nvf-standalone]
@@ -100,16 +101,19 @@ jobs:
           EOF
           git add templates/${{matrix.template}}/modules/ci-runtime.nix
       - run: nix flake check -L ./templates/${{matrix.template}} --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA
-      - run: (cd templates/nvf-standalone && nix build .#my-neovim)
+      - run: (cd templates/nvf-standalone && nix build .#my-neovim --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA)
         if: matrix.template == 'nvf-standalone'
-      - run: (cd templates/minimal && nix build .#.nixosConfigurations.igloo.config.system.build.toplevel)
+      - run: (cd templates/minimal && nix build .#.nixosConfigurations.igloo.config.system.build.toplevel --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA)
         if: matrix.template == 'minimal'
-      - run: (cd templates/minimal && nix run .#igloo -- build --offline)
+      - run: |
+          cd templates/minimal
+          sed -i "s#github:$GITHUB_REPOSITORY#github:$GITHUB_REPOSITORY/$GITHUB_SHA#" flake.nix
+          nix flake update den
+          nix run .#igloo -- build --offline
         if: matrix.template == 'minimal'
   flake-file-template:
     needs: [approved]
     strategy:
-      # max-parallel: 1
       matrix:
         os: [ubuntu-latest]
         template: [default, example]
@@ -119,7 +123,7 @@ jobs:
       - uses: wimpysworld/nothing-but-nix@v10
         if: matrix.os == 'ubuntu-latest'
       - uses: cachix/install-nix-action@v31
-      # - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
       - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#${{matrix.template}}
       - run: |
           cat <<-EOF > modules/ci-runtime.nix

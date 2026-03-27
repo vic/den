@@ -11,7 +11,6 @@ let
     className = "maid";
     supportedOses = [ "nixos" ];
     optionPath = "nix-maid";
-    inputsPath = "nix-maid";
     getModule = { host, ... }: inputs.nix-maid."${host.class}Modules".default;
     forwardPathFn =
       { user, ... }:

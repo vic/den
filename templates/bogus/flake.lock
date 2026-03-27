@@ -2,32 +2,17 @@
   "nodes": {
     "den": {
       "locked": {
-        "lastModified": 1773960860,
-        "narHash": "sha256-DEZ3Vc1hrt47V8L1knDFw8b/K+vClAazlYe0D/MjdMs=",
+        "lastModified": 1774498900,
+        "narHash": "sha256-THw/ly8KvXGQ0EI+Nhu/Eo9w8w7wtgHhAeWpteNiz/Q=",
         "owner": "vic",
         "repo": "den",
-        "rev": "5ab19d88134bfb623e6068987cd79605c7da0d41",
+        "rev": "eb92bbfdefd22b76fa5781e8adbeff42c4fe429e",
         "type": "github"
       },
       "original": {
         "owner": "vic",
         "ref": "main",
         "repo": "den",
-        "type": "github"
-      }
-    },
-    "flake-aspects": {
-      "locked": {
-        "lastModified": 1773552804,
-        "narHash": "sha256-a0kjpCZGnD5lt7yW6C3hzPhSf5KjnTyvX6XZ2NuhGs4=",
-        "owner": "vic",
-        "repo": "flake-aspects",
-        "rev": "56fa8d4d4772d58eb7f9d66c28c1cd2762b60423",
-        "type": "github"
-      },
-      "original": {
-        "owner": "vic",
-        "repo": "flake-aspects",
         "type": "github"
       }
     },
@@ -148,7 +133,6 @@
     "root": {
       "inputs": {
         "den": "den",
-        "flake-aspects": "flake-aspects",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "import-tree": "import-tree",

@@ -13,10 +13,8 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## `den.aspects`
 
-Type: `aspectsType` (from `flake-aspects`)
-
 An attribute set of aspects. Each aspect key names an aspect; its value is
-an aspect set containing per-class config and an `includes` list:
+an aspect set containing per-class deferred modules and optional `includes` and `provides`:
 
 ```nix
 den.aspects = {
@@ -73,21 +71,12 @@ evaluated once during aspect resolution. Functions receiving context
 arguments (`{ host }`, `{ user }`, etc.) are **parametric** -- evaluated
 per context during `ctxApply`.
 
-## `den.provides`
+## `den.provides` (aliased as `den._`)
 
-Type: freeform `attrsOf providerType` (aliased as `den._`)
+This is the place for Den built-in batteries, reusable aspects that serve
+as basic utilities and examples.
 
-Batteries-included reusable aspects. Each provider is a `providerType`
-from `flake-aspects`. See [Batteries Reference](/reference/batteries/).
-
-```nix
-den._ = {
-  my-battery = {
-    nixos.services.something.enable = true;
-    includes = [ ./my-module.nix ];
-  };
-};
-```
+See [Batteries Reference](/reference/batteries/).
 
 ## Class resolution
 

@@ -50,11 +50,11 @@ den.aspects.gaming = { host, user }: {
 # can use the same pattern. demo: templates/nvf-standalone
 
 # A context transformation pipeline takes initially {host}
-# and traverses its topology (host->users->homes) aggregating deps
+# and traverses its topology (host->[users]->[homes]) aggregating deps
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.my-laptop; };
 
-# flake-aspects API (re-exported by Den) resolves final NixOS module
-nixosModule = den.lib.aspects.resolve "nixos" [ ] aspect;
+# obtain the final module for nixos class
+nixosModule = den.lib.aspects.resolve "nixos" aspect;
 
 # Use NixOS API to instantiate or mix-in with other custom modules
 nixosConfigurations.my-laptop = lib.nixosConfiguration {
@@ -66,8 +66,7 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
 </tr>
 </table>
 
-Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic. It can be
-used to configure anything Nix-configurable.
+Den library is domain agnostic. It can be used to configure anything Nix-configurable.
 
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 

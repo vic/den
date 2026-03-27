@@ -40,7 +40,15 @@ let
     merge =
       loc: defs:
       let
-        hasKey = x: x ? into || x ? provides || x ? _ || x ? includes || x ? __functor || x ? _module;
+        ctxNodeKeys = [
+          "into"
+          "provides"
+          "_"
+          "includes"
+          "__functor"
+          "_module"
+        ];
+        hasKey = x: builtins.any (k: x ? ${k}) ctxNodeKeys;
         isLeaf = lib.any (d: hasKey d.value) defs;
       in
       if isLeaf then ctxSubmodule.merge loc defs else (lib.types.lazyAttrsOf ctxTreeType).merge loc defs;
