@@ -66,7 +66,9 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
 </tr>
 </table>
 
-Den library is domain agnostic. It can be used to configure anything Nix-configurable.
+Den has Zero Dependencies. The only requirement is being included in a module that has `{ config, lib, ... }`
+
+`den.lib` is domain agnostic, it can be used to configure anything Nix-configurable.
 
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
