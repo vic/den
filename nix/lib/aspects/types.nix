@@ -1,25 +1,5 @@
 lib:
 let
-  resolve = import ./resolve.nix lib;
-
-  ignoredType = lib.types.mkOptionType {
-    name = "ignored type";
-    description = "ignored values";
-    merge = _loc: _defs: null;
-    check = _: true;
-  };
-
-  mkInternal =
-    desc: type: fn:
-    lib.mkOption {
-      internal = true;
-      visible = false;
-      readOnly = true;
-      description = desc;
-      inherit type;
-      apply = fn;
-    };
-
   functorType = lib.types.mkOptionType {
     name = "aspectFunctor";
     description = "aspect functor function";
