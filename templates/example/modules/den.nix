@@ -1,5 +1,9 @@
+{ lib, ... }:
 {
-  den.hosts.x86_64-linux.igloo.users.alice.classes = [ "homeManager" ];
-  den.hosts.aarch64-darwin.apple.users.alice.classes = [ "homeManager" ];
+  den.hosts.x86_64-linux.igloo.users.alice = { };
+  den.hosts.aarch64-darwin.apple.users.alice = { };
   den.homes.x86_64-linux.alice = { };
+
+  # enable hm for all users
+  den.schema.user.classes = lib.mkDefault [ "homeManager" ];
 }
