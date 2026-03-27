@@ -9,7 +9,7 @@
       };
 
     # host provides default home environment for its users
-    homeManager =
+    provides.to-users.homeManager =
       { pkgs, ... }:
       {
         home.packages = [ pkgs.vim ];
