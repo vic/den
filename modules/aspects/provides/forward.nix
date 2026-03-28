@@ -49,7 +49,15 @@ let
     let
       fromClass = fwd.fromClass item;
       intoClass = fwd.intoClass item;
-      intoPath = fwd.intoPath item;
+      intoPath =
+        let
+          raw = fwd.intoPath;
+        in
+        if lib.functionArgs raw != { } then raw else raw item;
+
+      intoPathArgs = if builtins.isFunction intoPath then lib.functionArgs intoPath else { };
+      intoPathFn = if builtins.isFunction intoPath then intoPath else _: intoPath;
+      staticIntoPath = if builtins.isFunction intoPath then [ ] else intoPath;
 
       asp = fwd.fromAspect item;
       sourceModule = den.lib.aspects.resolve fromClass asp;
@@ -76,7 +84,7 @@ let
           fromClass
           intoClass
         ]
-        ++ intoPath
+        ++ staticIntoPath
       );
 
       guardArgs = if guard == null then { } else lib.functionArgs guard;
@@ -99,7 +107,7 @@ let
           ])
         ];
         ${intoClass} = {
-          __functionArgs = guardArgs;
+          __functionArgs = guardArgs // intoPathArgs;
           __functor = _: args: {
             options.den.fwd.${adapterKey} = lib.mkOption {
               default = { };
@@ -108,7 +116,7 @@ let
                 modules = adapterMods;
               };
             };
-            config = guardFn args (lib.setAttrByPath intoPath args.config.den.fwd.${adapterKey});
+            config = guardFn args (lib.setAttrByPath (intoPathFn args) args.config.den.fwd.${adapterKey});
           };
         };
       };
@@ -161,7 +169,8 @@ let
             evalImport args;
       };
 
-      needsAdapter = guard != null || adaptArgs != null || adapterModule != null;
+      needsAdapter =
+        guard != null || adaptArgs != null || adapterModule != null || builtins.isFunction intoPath;
       needsTopLevelAdapter = needsAdapter && intoPath == [ ];
       forwarded = forward intoPath;
 
