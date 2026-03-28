@@ -416,9 +416,9 @@ persys = { host }: den._.forward {
   each = lib.singleton true;
   fromClass = _: "persys";
   intoClass = _: host.class;
-  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
+  intoPath = _: [ "environment" "persistence" "/nix/persist/system" ];
   fromAspect = _: den.aspects.${host.aspect};
-  guard = { options, config, ... }: options ? environment.persistance;
+  guard = { options, config, ... }: options ? environment.persistence;
 };
 
 # enable on all hosts
