@@ -51,9 +51,7 @@ let
       intoClass = fwd.intoClass item;
       intoPath =
         let
-          raw = 
-            builtins.trace item
-            fwd.intoPath;
+          raw = fwd.intoPath;
         in
         if lib.functionArgs raw != { } then raw else raw item;
 
