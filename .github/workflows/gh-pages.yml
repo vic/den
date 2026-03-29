@@ -21,7 +21,7 @@ jobs:
       versions: ${{ steps.versions.outputs.versions }}
     steps:
       - run: gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts" | tee ~/artifacts.json
-      - run: jq -r '.artifacts | map({id,name} | select(.name | match("docs-"))) | group_by(.name) | map(.[0]) ~/artifacts.json | tee ~/docs.json
+      - run: jq -r '.artifacts | map({id,name} | select(.name | match("docs-"))) | group_by(.name) | map(.[0])' ~/artifacts.json | tee ~/docs.json
       - id: artifactIds
         run: |
           jq -r 'map(.id) | join(",")' ~/docs.json | tee ~/artifactIds
