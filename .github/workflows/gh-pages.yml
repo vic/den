@@ -25,7 +25,7 @@ jobs:
       - run: jq -r '.artifacts | map({id,name} | select(.name | match("docs-"))) | group_by(.name) | map(.[0])' ~/versioned/artifacts.json | tee ~/versioned/docs.json
       - run: |
           for id in $(jq -r 'map(.id)|.[]'  ~/versioned/docs.json); do
-            gh api "/repos/$GITHUB_REPOSITORY/artifacts/${id}/zip" > ~/versioned/${id}.zip
+            gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts/${id}/zip" > ~/versioned/${id}.zip
             unzip -u -d ~/versioned/docs ~/versioned/${id}.zip
           done
       - uses: actions/checkout@v6
