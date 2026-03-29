@@ -53,6 +53,7 @@ jobs:
           artifact-ids: ${{needs.versioned.outputs.artifactIds}}
           path: "./docs/dist"
           merge-multiple: true
+          github-token: ${{github.token}}
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
