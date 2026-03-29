@@ -28,6 +28,13 @@ jobs:
           pnpm install
           pnpm run build
           popd
+      - run: |
+          curl https://api.github.com/repos/vic/den/releases | jq 'map(.tag_name) + ["main","latest"]' | tee docs/dist/versions.json
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: "docs-*"
+          path: "./docs/dist"
+          merge-multiple: true
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

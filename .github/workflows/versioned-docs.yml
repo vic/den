@@ -19,7 +19,8 @@ jobs:
           pushd docs
           pnpm install
           pnpm run build
-          grep '\(src\|href\)="/' dist -l | xargs -n 1 sed -i 's#\(src\|href\)="/#\1="/${{github.ref_name}}/#g'
+          sudo apt-get install -y ripgrep
+          rg '(src|href)="/' dist -l -0 | xargs -0 -n 1 sed -i 's#\(src\|href\)="/#\1="/${{github.ref_name}}/#g'
           mkdir -p versioned
           mv dist versioned/${{github.ref_name}}
           popd
