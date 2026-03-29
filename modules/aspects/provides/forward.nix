@@ -49,15 +49,11 @@ let
     let
       fromClass = fwd.fromClass item;
       intoClass = fwd.intoClass item;
-      intoPath =
-        let
-          raw = fwd.intoPath;
-        in
-        if lib.functionArgs raw != { } then raw else raw item;
+      intoPath = fwd.intoPath item;
 
-      intoPathArgs = if builtins.isFunction intoPath then lib.functionArgs intoPath else { };
-      intoPathFn = if builtins.isFunction intoPath then intoPath else _: intoPath;
-      staticIntoPath = if builtins.isFunction intoPath then [ ] else intoPath;
+      intoPathArgs = if lib.isFunction intoPath then lib.functionArgs intoPath else { };
+      intoPathFn = if lib.isFunction intoPath then intoPath else _: intoPath;
+      staticIntoPath = if lib.isFunction intoPath then [ ] else intoPath;
 
       asp = fwd.fromAspect item;
       sourceModule = den.lib.aspects.resolve fromClass asp;

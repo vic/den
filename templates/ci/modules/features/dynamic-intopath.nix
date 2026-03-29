@@ -38,6 +38,7 @@
             fromClass = _: "src";
             intoClass = _: "nixos";
             intoPath =
+              _:
               { config, ... }:
               [
                 "my-box"
@@ -96,6 +97,7 @@
             fromClass = _: "src";
             intoClass = _: "homeManager";
             intoPath =
+              _:
               { config, ... }:
               [
                 "my-box"
