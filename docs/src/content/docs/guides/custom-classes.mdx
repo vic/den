@@ -46,7 +46,7 @@ den.provides.forward {
 | `each = items` | List of items to forward (typically `[ user ]` or `[ true ]`) |
 | `fromClass = item: class` | The custom class name to read from |
 | `intoClass = item: class` | The target class to write into |
-| `intoPath = item: path | args: path` | Target attribute path in the target class |
+| `intoPath = item: path or args: path` | Target attribute path in the target class |
 | `fromAspect = item: aspect` | The aspect to read the custom class from |
 
 
@@ -129,7 +129,7 @@ den.provides.forward {
 
 | Parameter | Description |
 |---|---|
-| `guard = args: bool | item: mkIf` | Only forward when this predicate returns true |
+| `guard = args: bool or item: mkIf` | Only forward when this predicate returns true |
 | `adaptArgs = args: attrs` | Transform module arguments before forwarding |
 | `adapterModule = deferredModule` | Custom module for the forwarded submodule type |
 
