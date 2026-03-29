@@ -11,6 +11,8 @@ permissions:
 concurrency:
   group: "pages"
   cancel-in-progress: true
+env:
+  GH_TOKEN: ${{ github.token }}
 jobs:
   versioned:
     runs-on: ubuntu-latest
