@@ -2,7 +2,7 @@ name: Versioned docs
 on:
   workflow_dispatch:
   push:
-    tags:
+    tags: ["*"]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.number }}
   cancel-in-progress: true
@@ -19,13 +19,13 @@ jobs:
           pushd docs
           pnpm install
           pnpm run build
-          rg '(src|href)="/' dist -l -0 | xargs -0 -n 1 sed -i 's#\(src\|href\)="/#\1="/${{github.ref}}/#g'
+          grep '\(src\|href\)="/' dist -l | xargs -n 1 sed -i 's#\(src\|href\)="/#\1="/${{github.ref_name}}/#g'
           mkdir -p versioned
-          mv dist versioned/${{github.ref}}
+          mv dist versioned/${{github.ref_name}}
           popd
       - uses: actions/upload-artifact@v4
         with:
-          name: docs-${{github.ref}}
+          name: docs-${{github.ref_name}}
           path: ./docs/versioned
           overwrite: true
         
