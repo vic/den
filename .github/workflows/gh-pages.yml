@@ -14,30 +14,22 @@ concurrency:
 env:
   GH_TOKEN: ${{ github.token }}
 jobs:
-  versioned:
-    runs-on: ubuntu-latest
-    outputs:
-      artifactIds: ${{ steps.artifactIds.outputs.artifactIds }}
-      versions: ${{ steps.versions.outputs.versions }}
-    steps:
-      - run: gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts" | tee ~/artifacts.json
-      - run: jq -r '.artifacts | map({id,name} | select(.name | match("docs-"))) | group_by(.name) | map(.[0])' ~/artifacts.json | tee ~/docs.json
-      - id: artifactIds
-        run: |
-          jq -r 'map(.id) | join(",")' ~/docs.json | tee ~/artifactIds
-          echo "artifactIds=$(cat ~/artifactIds)" | tee $GITHUB_OUTPUT
-      - id: versions
-        run: |
-          jq -r 'map(.name | sub("docs-";"")) | join(",")' ~/docs.json | tee ~/versions
-          echo "versions=$(cat ~/versions)" | tee $GITHUB_OUTPUT
   deploy:
-    needs: [versioned]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - run: mkdir -p ~/versioned/docs
+      - run: gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts" | tee ~/versioned/artifacts.json
+      - run: jq -r '.artifacts | map({id,name} | select(.name | match("docs-"))) | group_by(.name) | map(.[0])' ~/versioned/artifacts.json | tee ~/versioned/docs.json
+      - run: |
+          for id in $(jq -r 'map(.id)|.[]'  ~/versioned/docs.json); do
+            gh api "/repos/$GTHUB_REPOSITORY/artifacts/${id}/zip" > ~/versioned/${id}.zip
+            unzip -u -d ~/versioned/docs ~/versioned/${id}.zip
+          done
       - uses: actions/checkout@v6
+      - run: cp ~/versioned/docs.json docs/src/components/versions.json
       - uses: pnpm/action-setup@v4
         with:
           version: latest
@@ -47,13 +39,7 @@ jobs:
           pnpm install
           pnpm run build
           popd
-      - run: echo "${{needs.versioned.outputs.versions}}" | tee docs/dist/versions
-      - uses: actions/download-artifact@v8
-        with:
-          artifact-ids: ${{needs.versioned.outputs.artifactIds}}
-          path: "./docs/dist"
-          merge-multiple: true
-          github-token: ${{github.token}}
+      - run: cp -r ~/versioned/docs/* docs/dist/
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
