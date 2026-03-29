@@ -12,7 +12,24 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 jobs:
+  versioned:
+    runs-on: ubuntu-latest
+    outputs:
+      artifactIds: ${{ steps.artifactIds.outputs.artifactIds }}
+      versions: ${{ steps.versions.outputs.versions }}
+    steps:
+      - run: gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts" | tee ~/artifacts.json
+      - run: jq -r '.artifacts | map({id,name} | select(.name | match("docs-"))) | group_by(.name) | map(.[0]) ~/artifacts.json | tee ~/docs.json
+      - id: artifactIds
+        run: |
+          jq -r 'map(.id) | join(",")' ~/docs.json | tee ~/artifactIds
+          echo "artifactIds=$(cat ~/artifactIds)" | tee $GITHUB_OUTPUT
+      - id: versions
+        run: |
+          jq -r 'map(.name | sub("docs-";"")) | join(",")' ~/docs.json | tee ~/versions
+          echo "versions=$(cat ~/versions)" | tee $GITHUB_OUTPUT
   deploy:
+    needs: [versioned]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -28,11 +45,10 @@ jobs:
           pnpm install
           pnpm run build
           popd
-      - run: |
-          curl https://api.github.com/repos/vic/den/releases | jq 'map(.tag_name) + ["main","latest"]' | tee docs/dist/versions.json
+      - run: echo "${{needs.versioned.outputs.versions}}" | tee docs/dist/versions
       - uses: actions/download-artifact@v8
         with:
-          pattern: "docs-*"
+          artifact-ids: ${{needs.versioned.outputs.artifactIds}}
           path: "./docs/dist"
           merge-multiple: true
       - name: Setup Pages
