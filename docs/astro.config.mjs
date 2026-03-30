@@ -73,6 +73,9 @@ export default defineConfig({
 				},
 				{ label: 'Community', slug: 'community' },
 			],
+      components: {
+        SocialIcons: './src/components/SocialIcons.astro',
+      },
 			plugins: [
 				catppuccin({
 					dark: { flavor: "macchiato", accent: "mauve" },
