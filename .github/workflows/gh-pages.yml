@@ -29,7 +29,6 @@ jobs:
             unzip -u -d ~/versioned/docs ~/versioned/${id}.zip
           done
       - uses: actions/checkout@v6
-      - run: cp ~/versioned/docs.json docs/src/components/versions.json
       - uses: pnpm/action-setup@v4
         with:
           version: latest
@@ -40,6 +39,7 @@ jobs:
           pnpm run build
           popd
       - run: cp -r ~/versioned/docs/* docs/dist/
+      - run: cp ~/versioned/docs.json docs/dist/versions.json
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

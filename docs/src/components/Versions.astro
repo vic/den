@@ -1,16 +1,20 @@
 ---
-import versions from './versions.json';
+const versions = await fetch('https://den.oeiuwq.com/versions.json').then(r => r.ok ? r.json() : []).catch(e => []);
 ---
 
-<select id="versions">
-<option value="/">main</option>
+{
+versions.length > 0 && <select id="versions">
+  <option value="/">main {versions.length}</option>
 {versions.map(v => <option value={"/"+v.name.replace("docs-","")}>{v.name.replace("docs-","")}</option>)}
 </select>
+}
 
 <script>
   const versions = document.getElementById("versions");
-  versions.addEventListener("change", _ => { document.location.pathname = versions.value; });
-  document.querySelectorAll("#versions options").map(opt => {
-    if (document.location.pathname.startsWith(opt.value)) { opt.selected = "selected"; }
-  });
+  if (versions != null) { 
+    versions.addEventListener("change", _ => { document.location.pathname = versions.value; });
+    document.querySelectorAll("#versions options").map(opt => {
+      if (document.location.pathname.startsWith(opt.value)) { opt.selected = "selected"; }
+    });
+  }
 </script>
