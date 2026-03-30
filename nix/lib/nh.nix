@@ -16,16 +16,23 @@ let
       text =
         let
           command = getCommand item;
-          attr = lib.concatStringsSep "." (outPrefix ++ item.intoAttr);
+          attr = if command == "home" then "" else lib.concatStringsSep "." (outPrefix ++ item.intoAttr);
           from =
-            if fromFlake then
-              [ "${fromPath}#${attr}" ]
-            else
-              [
-                "--file"
-                fromPath
-                attr
-              ];
+            (
+              if fromFlake then
+                [ "${fromPath}#${attr}" ]
+              else
+                [
+                  "--file"
+                  fromPath
+                  attr
+                ]
+            )
+            ++ (lib.optionals (command == "home") [
+              "-c"
+              item.name
+            ]);
+
           args = lib.concatStringsSep " " from;
         in
         ''
