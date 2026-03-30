@@ -13,7 +13,9 @@
           fromAspect =
             _:
             { class, aspect-chain }:
-            { src.names = [ "forwarded" ]; };
+            {
+              src.names = [ "forwarded" ];
+            };
         };
       in
       {
@@ -42,7 +44,9 @@
           fromAspect =
             item:
             { class, aspect-chain }:
-            { src.names = [ item ]; };
+            {
+              src.names = [ item ];
+            };
         };
       in
       {

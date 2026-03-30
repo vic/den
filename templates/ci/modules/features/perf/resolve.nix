@@ -42,7 +42,9 @@ let
     funny.names = [ "top" ];
     includes =
       let
-        shared = { funny.names = [ "shared" ]; };
+        shared = {
+          funny.names = [ "shared" ];
+        };
       in
       lib.genList (_: {
         funny.names = [ "mid" ];

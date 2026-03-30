@@ -1,14 +1,24 @@
-{ denTest, inputs, lib, ... }:
+{
+  denTest,
+  inputs,
+  lib,
+  ...
+}:
 {
   flake.tests.performance.namespace = {
 
     test-namespace-many-aspects = denTest (
-      { den, ns, funnyNames, ... }:
+      {
+        den,
+        ns,
+        funnyNames,
+        ...
+      }:
       {
         imports = [ (inputs.den.namespace "ns" false) ];
-        ns = lib.genAttrs (lib.genList (i: "a${toString i}") 30) (
-          name: { funny.names = [ name ]; }
-        );
+        ns = lib.genAttrs (lib.genList (i: "a${toString i}") 30) (name: {
+          funny.names = [ name ];
+        });
         den.aspects.root = {
           funny.names = [ "root" ];
           includes = lib.genList (i: ns."a${toString i}") 30;
@@ -20,15 +30,18 @@
     );
 
     test-namespace-merged-sources = denTest (
-      { den, ns, funnyNames, ... }:
+      {
+        den,
+        ns,
+        funnyNames,
+        ...
+      }:
       let
-        mkSrc =
-          i:
-          {
-            denful.ns = lib.genAttrs (lib.genList (j: "x${toString j}") 10) (
-              name: { funny.names = [ "${name}-src${toString i}" ]; }
-            );
-          };
+        mkSrc = i: {
+          denful.ns = lib.genAttrs (lib.genList (j: "x${toString j}") 10) (name: {
+            funny.names = [ "${name}-src${toString i}" ];
+          });
+        };
         sources = lib.genList mkSrc 5;
       in
       {
@@ -44,14 +57,19 @@
     );
 
     test-namespace-with-providers = denTest (
-      { den, ns, funnyNames, ... }:
+      {
+        den,
+        ns,
+        funnyNames,
+        ...
+      }:
       {
         imports = [ (inputs.den.namespace "ns" false) ];
         ns.parent = {
           funny.names = [ "parent" ];
-          provides = lib.genAttrs (lib.genList (i: "p${toString i}") 10) (
-            name: { funny.names = [ name ]; }
-          );
+          provides = lib.genAttrs (lib.genList (i: "p${toString i}") 10) (name: {
+            funny.names = [ name ];
+          });
         };
         den.aspects.root = {
           funny.names = [ "root" ];

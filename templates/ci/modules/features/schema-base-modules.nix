@@ -137,12 +137,15 @@
             options.main-group = lib.mkOption { default = user.name; };
             options.description = lib.mkOption { default = "${user.name}@${host.name}"; };
             options.meta = lib.mkOption {
-              type = lib.types.submodule ({ ... }: {
-                options = {
-                  email = lib.mkOption { type = lib.types.str; };
-                  key = lib.mkOption { type = lib.types.str; };
-                };
-              });
+              type = lib.types.submodule (
+                { ... }:
+                {
+                  options = {
+                    email = lib.mkOption { type = lib.types.str; };
+                    key = lib.mkOption { type = lib.types.str; };
+                  };
+                }
+              );
             };
           };
 

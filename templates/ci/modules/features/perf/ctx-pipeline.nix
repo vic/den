@@ -14,14 +14,12 @@ let
               funny.names = [ "${name}-${x}" ];
             };
         };
-        withInto =
-          if i + 1 < n then
-            { into.${next} = { x }: [ { x = "${x}+${toString i}"; } ]; }
-          else
-            { };
+        withInto = if i + 1 < n then { into.${next} = { x }: [ { x = "${x}+${toString i}"; } ]; } else { };
       in
       { den, ... }:
-      { den.ctx.${name} = base // withInto; }
+      {
+        den.ctx.${name} = base // withInto;
+      }
     ) n;
 
   mkFanOut =
@@ -31,12 +29,16 @@ let
       den.ctx.root = {
         _.root =
           { x }:
-          { funny.names = [ "root-${x}" ]; };
+          {
+            funny.names = [ "root-${x}" ];
+          };
         into.leaf = { x }: lib.genList (i: { x = "${x}-${toString i}"; }) n;
       };
       den.ctx.leaf._.leaf =
         { x }:
-        { funny.names = [ "leaf-${x}" ]; };
+        {
+          funny.names = [ "leaf-${x}" ];
+        };
     };
 
   mkCrossProviders =
@@ -48,16 +50,16 @@ let
           den.ctx.src = {
             _.src =
               { v }:
-              { funny.names = [ "src-${v}" ]; };
-            into = lib.genAttrs (lib.genList (i: "t${toString i}") n) (
-              _:
-              { v }:
-              [ { v = "${v}!"; } ]
-            );
+              {
+                funny.names = [ "src-${v}" ];
+              };
+            into = lib.genAttrs (lib.genList (i: "t${toString i}") n) (_: { v }: [ { v = "${v}!"; } ]);
             provides = lib.genAttrs (lib.genList (i: "t${toString i}") n) (
               name:
               { v }:
-              { funny.names = [ "cross-${name}-${v}" ]; }
+              {
+                funny.names = [ "cross-${name}-${v}" ];
+              }
             );
           };
         };
@@ -70,7 +72,9 @@ let
         {
           den.ctx.${name}._.${name} =
             { v }:
-            { funny.names = [ "${name}-${v}" ]; };
+            {
+              funny.names = [ "${name}-${v}" ];
+            };
         }
       ) n;
     in

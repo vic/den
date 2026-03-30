@@ -19,7 +19,11 @@
       in
       {
         den.ctx.start = {
-          _.start = { level }: { funny.names = [ level ]; };
+          _.start =
+            { level }:
+            {
+              funny.names = [ level ];
+            };
           includes = [ top ];
         };
 
@@ -38,7 +42,9 @@
             includes = [
               (
                 { host, ... }:
-                { funny.names = [ "i${toString i}-${host}" ]; }
+                {
+                  funny.names = [ "i${toString i}-${host}" ];
+                }
               )
             ];
           };
@@ -46,7 +52,11 @@
       in
       {
         den.ctx.start = {
-          _.start = { host }: { funny.names = [ host ]; };
+          _.start =
+            { host }:
+            {
+              funny.names = [ host ];
+            };
           includes = aspects;
         };
 
@@ -60,7 +70,9 @@
       let
         inner =
           { host, planet, ... }:
-          { funny.names = [ "${host}-${planet}" ]; };
+          {
+            funny.names = [ "${host}-${planet}" ];
+          };
         expanded = den.lib.parametric.expands { planet = "mars"; } {
           funny.names = [ "exp" ];
           includes = lib.genList (_: inner) 15;
@@ -68,7 +80,11 @@
       in
       {
         den.ctx.start = {
-          _.start = { host }: { funny.names = [ host ]; };
+          _.start =
+            { host }:
+            {
+              funny.names = [ host ];
+            };
           includes = [ expanded ];
         };
 
@@ -83,18 +99,31 @@
         shared = den.lib.parametric {
           funny.names = [ "shared" ];
           includes = [
-            ({ host, ... }: { funny.names = [ "inner-${host}" ]; })
+            (
+              { host, ... }:
+              {
+                funny.names = [ "inner-${host}" ];
+              }
+            )
           ];
         };
       in
       {
         den.ctx.a = {
-          _.a = { host }: { funny.names = [ "a-${host}" ]; };
+          _.a =
+            { host }:
+            {
+              funny.names = [ "a-${host}" ];
+            };
           into.b = { host }: [ { host = "${host}!"; } ];
           includes = [ shared ];
         };
         den.ctx.b = {
-          _.b = { host }: { funny.names = [ "b-${host}" ]; };
+          _.b =
+            { host }:
+            {
+              funny.names = [ "b-${host}" ];
+            };
           includes = [ shared ];
         };
 

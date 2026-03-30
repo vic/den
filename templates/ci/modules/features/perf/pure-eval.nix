@@ -1,4 +1,9 @@
-{ denTest, inputs, lib, ... }:
+{
+  denTest,
+  inputs,
+  lib,
+  ...
+}:
 let
   denModule = (import inputs.den.outPath).nixModule inputs;
 
@@ -30,7 +35,9 @@ in
         expr = builtins.length (builtins.attrNames ev.config.den.aspects);
         expected = 50;
       in
-      { inherit expr expected; };
+      {
+        inherit expr expected;
+      };
 
     test-pure-ctx-chain =
       let
@@ -38,10 +45,18 @@ in
           { den, ... }:
           {
             den.ctx.a = {
-              _.a = { v }: { my.val = [ v ]; };
+              _.a =
+                { v }:
+                {
+                  my.val = [ v ];
+                };
               into.b = { v }: [ { v = "${v}!"; } ];
             };
-            den.ctx.b._.b = { v }: { my.val = [ v ]; };
+            den.ctx.b._.b =
+              { v }:
+              {
+                my.val = [ v ];
+              };
           }
         );
         asp = ev.config.den.ctx.a { v = "x"; };
@@ -58,7 +73,9 @@ in
           "x!"
         ];
       in
-      { inherit expr expected; };
+      {
+        inherit expr expected;
+      };
 
     test-pure-resolve-100 =
       let
@@ -67,10 +84,7 @@ in
           {
             den.aspects.root = {
               my.val = [ "root" ];
-              includes = lib.genList (
-                i:
-                { my.val = [ "i${toString i}" ]; }
-              ) 100;
+              includes = lib.genList (i: { my.val = [ "i${toString i}" ]; }) 100;
             };
           }
         );
@@ -84,7 +98,9 @@ in
         expr = builtins.length ev2.config.val;
         expected = 101;
       in
-      { inherit expr expected; };
+      {
+        inherit expr expected;
+      };
 
     test-pure-statics =
       let
@@ -94,7 +110,12 @@ in
             den.aspects.base = den.lib.parametric {
               my.val = [ "base" ];
               includes = [
-                ({ class, ... }: { my.val = [ "static-${class}" ]; })
+                (
+                  { class, ... }:
+                  {
+                    my.val = [ "static-${class}" ];
+                  }
+                )
               ];
             };
           }
@@ -112,7 +133,9 @@ in
           "static-my"
         ];
       in
-      { inherit expr expected; };
+      {
+        inherit expr expected;
+      };
 
   };
 }
