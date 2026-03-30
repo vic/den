@@ -13,8 +13,6 @@ versions.length > 0 && <select id="versions">
   const versions = document.getElementById("versions");
   if (versions != null) { 
     versions.addEventListener("change", _ => { document.location.pathname = versions.value; });
-    document.querySelectorAll("#versions options").map(opt => {
-      if (document.location.pathname.startsWith(opt.value)) { opt.selected = "selected"; }
-    });
+    Array.from(versions.options).forEach(opt => document.location.pathname.startsWith(opt.value) && opt.selected = "selected");
   }
 </script>
