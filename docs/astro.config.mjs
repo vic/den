@@ -28,6 +28,9 @@ export default defineConfig({
 		}),
 		starlight({
 			title: 'den',
+			social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/vic/den' }
+      ],
 			sidebar: [
 				{
 					label: 'Den',
