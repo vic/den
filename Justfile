@@ -49,7 +49,10 @@ bench tmpdir="/tmp" head="HEAD" base="refs/remotes/origin/main" warm="2" runs="5
   rm -rf "{{tmpdir}}/den-head" "{{tmpdir}}/den-base"
   git clone --local --depth 1 --revision "$(git rev-list -n1 {{head}})" .git "{{tmpdir}}/den-head" 2>/dev/null
   git clone --local --depth 1 --revision "$(git rev-list -n1 {{base}})" .git "{{tmpdir}}/den-base" 2>/dev/null
+  rm -rf "{{tmpdir}}/den-base/templates/ci"
+  cp -r "{{tmpdir}}/den-head/templates/ci" "{{tmpdir}}/den-base/templates/ci"
+  pushd "{{tmpdir}}/den-base" && git add templates/ci && popd
   hyperfine -m "{{runs}}" -w "{{warm}}" {{args}} \
-    -n head "cd {{tmpdir}}/den-head && nix-shell ./shell.nix --run 'just ci 2>&1 | grep successful'" \
-    -n base "cd {{tmpdir}}/den-base && nix-shell ./shell.nix --run 'just ci 2>&1 | grep successful'" 
+    -n head "nix-unit --override-input den {{tmpdir}}/den-head --flake {{tmpdir}}/den-head/templates/ci#.tests.performance 2>&1 | tail -1" \
+    -n base "nix-unit --override-input den {{tmpdir}}/den-base --flake {{tmpdir}}/den-base/templates/ci#.tests.performance 2>&1 | tail -1"
   rm -rf "{{tmpdir}}/den-head" "{{tmpdir}}/den-base"

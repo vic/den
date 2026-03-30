@@ -132,7 +132,10 @@
       { den, lib, ... }:
       {
         den.schema.user =
+          { user, host, ... }:
           {
+            options.main-group = lib.mkOption { default = user.name; };
+            options.description = lib.mkOption { default = "${user.name}@${host.name}"; };
             options.meta = lib.mkOption {
               type = lib.types.submodule ({ ... }: {
                 options = {
