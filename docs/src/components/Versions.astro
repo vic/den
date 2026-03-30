@@ -1,16 +1,35 @@
 ---
-import versions from './versions.json';
 ---
 
-<select id="versions">
-<option value="/">main</option>
-{versions.map(v => <option value={"/"+v.name.replace("docs-","")}>{v.name.replace("docs-","")}</option>)}
-</select>
+<den-version-select />
 
 <script>
-  const versions = document.getElementById("versions");
-  versions.addEventListener("change", _ => { document.location.pathname = versions.value; });
-  document.querySelectorAll("#versions options").map(opt => {
-    if (document.location.pathname.startsWith(opt.value)) { opt.selected = "selected"; }
-  });
+  class DenVersionSelect extends HTMLElement {
+    constructor() {
+      super();
+      const sel = document.createElement("select");
+
+      const init = () => {
+        this.appendChild(sel);
+        sel.addEventListener("change", _ => { document.location.pathname = sel.value; });
+        addVersion("main");
+      };
+
+      const addVersion = version => {
+        const name = version.replace("docs-", "");
+        const value = (name === "main") ? "/" : "/"+name;
+        const opt = document.createElement("option");
+        opt.selected = document.location.pathname.startsWith(value);
+        opt.value = value;
+        opt.innerHTML = name;
+        sel.appendChild(opt);
+      };
+
+      fetch('https://den.oeiuwq.com/versions.json')
+        .then(r => r.json()).catch(e => [])
+        .then(r => { init(); return r.map(v => v.name) })
+        .then(r => r.forEach(addVersion));
+    }
+  };
+  customElements.define('den-version-select', DenVersionSelect);
 </script>
