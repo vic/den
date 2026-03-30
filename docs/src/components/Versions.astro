@@ -1,0 +1,35 @@
+---
+---
+
+<den-version-select />
+
+<script>
+  class DenVersionSelect extends HTMLElement {
+    constructor() {
+      super();
+      const sel = document.createElement("select");
+
+      const init = () => {
+        this.appendChild(sel);
+        sel.addEventListener("change", _ => { document.location.pathname = sel.value; });
+        addVersion("main");
+      };
+
+      const addVersion = version => {
+        const name = version.replace("docs-", "");
+        const value = (name === "main") ? "/" : "/"+name;
+        const opt = document.createElement("option");
+        opt.selected = document.location.pathname.startsWith(value);
+        opt.value = value;
+        opt.innerHTML = name;
+        sel.appendChild(opt);
+      };
+
+      fetch('https://den.oeiuwq.com/versions.json')
+        .then(r => r.json()).catch(e => [])
+        .then(r => { init(); return r.map(v => v.name) })
+        .then(r => r.forEach(addVersion));
+    }
+  };
+  customElements.define('den-version-select', DenVersionSelect);
+</script>
