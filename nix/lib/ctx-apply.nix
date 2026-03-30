@@ -61,11 +61,11 @@ let
         in
         recurse {
           inherit name;
-          into = _: { };
+          into = noop;
         } name
       else
         [ ]
-    ) (flattenInto (self.into ctxValue) [ ]);
+    ) (flattenInto ((self.into or noop) ctxValue) [ ]);
 
   noop = _: { };
 

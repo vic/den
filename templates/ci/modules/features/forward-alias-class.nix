@@ -21,9 +21,9 @@
             fromAspect = _: lib.head aspect-chain;
             guard = { pkgs, ... }: true;
             adaptArgs =
-              { config, ... }:
+              { osConfig, ... }:
               {
-                osConfig = config;
+                inherit osConfig;
               };
           };
       in

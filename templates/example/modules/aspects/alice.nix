@@ -46,11 +46,11 @@
         home.packages = [ pkgs.htop ];
       };
 
-    # <user>.provides.<host>, via eg/routes.nix
+    # <user>.provides.<host>, via den._.mutual-provider
     provides.igloo =
       { host, ... }:
       {
-        nixos.programs.nh.enable = host.name == "igloo";
+        nixos.programs.nh.enable = true;
       };
   };
 

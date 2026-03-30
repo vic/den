@@ -5,7 +5,23 @@
   ...
 }:
 {
-  imports = [ inputs.den.flakeModule ];
+  imports = [
+    inputs.den.flakeModule
+    inputs.den.flakeOutputs.packages
+  ];
+
+  den.ctx.flake-packages.includes = [ den.aspects.flake ];
+
+  den.aspects.flake.packages =
+    { pkgs, ... }:
+    let
+      # custom den.lib.nvf from ./nvf-integration.nix
+      nvf = den.lib.nvf.package pkgs;
+    in
+    {
+      my-neovim = nvf den.aspects.my-neovim { mine = true; };
+      your-neovim = nvf den.aspects.my-neovim { mine = false; };
+    };
 
   den.aspects.my-neovim =
     { mine }:
@@ -123,18 +139,4 @@
       };
   };
 
-  # Expose my-neovim app. Runnable with `nix run .#my-neovim`.
-  # Adapt if you use flake-parts or whatever
-  flake.packages = lib.genAttrs lib.systems.flakeExposed (
-    system:
-    let
-      pkgs = inputs.nixpkgs.legacyPackages.${system};
-      # custom den.lib.nvf from ./nvf-integration.nix
-      nvf = den.lib.nvf.package pkgs;
-    in
-    {
-      my-neovim = nvf den.aspects.my-neovim { mine = true; };
-      your-neovim = nvf den.aspects.my-neovim { mine = false; };
-    }
-  );
 }

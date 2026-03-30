@@ -10,7 +10,7 @@
         environment.systemPackages = [ pkgs.hello ];
       };
 
-    # <host>.provides.<user>, via eg/routes.nix
+    # <host>.provides.<user>, via den._.mutual-provider
     provides.alice =
       { user, ... }:
       {
