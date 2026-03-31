@@ -19,6 +19,8 @@ let
     microvm.description = "MicroVM example";
     nvf-standalone.path = ../templates/nvf-standalone;
     nvf-standalone.description = "Standalone NVF";
+    flake-parts-modules.path = ../templates/flake-parts-modules;
+    flake-parts-modules.description = "flake-parts classes";
     ci.path = ../templates/ci;
     ci.description = "Feature Tests";
     bogus.path = ../templates/bogus;
