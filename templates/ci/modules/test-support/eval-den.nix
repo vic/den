@@ -34,10 +34,6 @@ let
 
   testModule = {
     imports = [ inputs.den.flakeModule ];
-    options.flake.nixosConfigurations = lib.mkOption { };
-    options.flake.darwinConfigurations = lib.mkOption { };
-    options.flake.homeConfigurations = lib.mkOption { };
-    options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
     options.expected = lib.mkOption { };
     config = {

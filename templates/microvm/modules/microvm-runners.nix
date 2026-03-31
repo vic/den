@@ -4,12 +4,10 @@
   den,
   lib,
   config,
+  inputs,
   ...
 }:
 let
-  # omit if you are using flake-parts. create a packages output for us.
-  packagesModule.options.flake.packages = lib.mkOption { };
-
   microvmRunners = lib.pipe den.hosts [
     lib.attrValues
     (lib.concatMap lib.attrValues)
@@ -27,6 +25,5 @@ let
   ];
 in
 {
-  imports = [ packagesModule ];
-  flake.packages = lib.mkMerge microvmRunners;
+  config.flake.packages = lib.mkMerge microvmRunners;
 }
