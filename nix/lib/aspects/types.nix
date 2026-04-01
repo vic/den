@@ -112,6 +112,14 @@ let
             type = functorType;
             default = cnf.defaultFunctor or lib.const;
           };
+
+          __functionArgs = lib.mkOption {
+            internal = true;
+            visible = false;
+            description = "Argument reflection information for the functor";
+            type = lib.types.lazyAttrsOf lib.types.bool;
+            default = { };
+          };
         };
       }
     );
