@@ -4,7 +4,7 @@ let
   ctx.flake-system.into.flake-hm =
     { system }: map (home: { inherit home; }) (builtins.attrValues den.homes.${system} or { });
 
-  ctx.flake-system.provides.flake-hm = hmFwd;
+  ctx.flake-system.provides.flake-hm = _: hmFwd;
 
   hmFwd =
     { home }:
