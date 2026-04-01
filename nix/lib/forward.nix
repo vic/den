@@ -33,7 +33,7 @@ let
         };
 
       freeformMod = {
-        config._module.freeformType = lib.types.lazyAttrsOf lib.types.anything;
+        config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
       };
 
       adapterMods = [

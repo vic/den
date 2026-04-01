@@ -22,14 +22,18 @@
     },
     "den": {
       "locked": {
-        "path": "../..",
-        "type": "path"
+        "lastModified": 1775013549,
+        "narHash": "sha256-e44JWGnngL+P33T4QmJX7S8yGdFEGrCmrgZJmzkaTiQ=",
+        "owner": "vic",
+        "repo": "den",
+        "rev": "75660e94a8b8d3971aed86fe21a56d7c7e6de090",
+        "type": "github"
       },
       "original": {
-        "path": "../..",
-        "type": "path"
-      },
-      "parent": []
+        "owner": "vic",
+        "repo": "den",
+        "type": "github"
+      }
     },
     "home-manager": {
       "inputs": {
