@@ -31,7 +31,7 @@ let
       name,
       description,
       partition,
-      merge ? lastDefType.merge,
+      partitionType,
       baseType,
     }:
     lib.types.mkOptionType {
@@ -41,7 +41,7 @@ let
         let
           partitioned = lib.lists.partition partition defs;
         in
-        baseType.merge loc partitioned.wrong // (merge loc partitioned.right);
+        baseType.merge loc partitioned.wrong // (partitionType.merge loc partitioned.right);
     };
 
   isSubmoduleFn =
@@ -98,6 +98,7 @@ let
           name = "Aspect Freeform Type";
           description = "Aspect freeform type, has a hole in it for __functionArgs";
           partition = def: def.value ? __functionArgs;
+          partitionType = lastDefType;
           baseType = lib.types.lazyAttrsOf lib.types.deferredModule;
         };
         config._module.args.aspect = config;
