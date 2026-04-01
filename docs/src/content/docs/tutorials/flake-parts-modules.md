@@ -1,0 +1,41 @@
+---
+title: "Template: Flake Parts Modules"
+description: Den Forwarding classes for third-party flake-parts perSystem submodules.
+---
+
+The `flake-parts-modules` template demonstrates how to use Den aspects
+that propagate custom classes into third-party flake-parts `perSystem` modules.
+
+For demo purposes, the example showcases:
+
+- `perSystem.packages`: How to expose flake-parts packages.
+- `numtide/devshell`: A default devshell extensible by any aspect.
+- `mightyiam/files`: Generates README from nix code.
+- `nix-community/nix-unit`: Write tests directly on aspects.
+
+## Initialize
+
+```console
+mkdir example && cd example
+nix flake init -t github:vic/den#flake-parts-modules
+nix flake update den
+nix flake show
+nix flake check -L
+```
+
+## Project Structure
+
+```
+flake.nix
+modules/
+  perSystem-forward.nix # Custom den.ctx and perSystem forwarding class.
+  custom-classes.nix # Registers several classes for each third-party
+  den.nix   # Example of aspects using those classes
+```
+
+Key points:
+- New `perSystem` classes are registered via a context transition, from any module.
+
+## Next Steps
+
+- Read [flake.parts Documentation](https://flake.parts) for more `perSystem` modules.

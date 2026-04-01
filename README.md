@@ -129,6 +129,8 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [microvm](https://den.oeiuwq.com/tutorials/microvm): MicroVM runnable-pkg and guests. custom ctx-pipeline.
 
+[flake-parts-modules](https://den.oeiuwq.com/tutorials/flake-parts-modules): Den forward classes for third-party perSystem submodules: nix-unit on aspects, mightyiam/files generation, devshells, etc.
+
 [example](https://den.oeiuwq.com/tutorials/example): cross-platform
 
 [ci](https://den.oeiuwq.com/tutorials/ci): Each feature tested as code examples
