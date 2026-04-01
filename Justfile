@@ -37,6 +37,8 @@ all task:
   just {{task}} ci
   just {{task}} bogus
   just {{task}} microvm
+  just {{task}} nvf-standalone
+  just {{task}} flake-parts-modules
 
 fmt:
   nix run github:vic/checkmate#fmt --override-input target .

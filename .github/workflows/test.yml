@@ -84,7 +84,7 @@ jobs:
     # max-parallel: 2
     strategy:
       matrix:
-        template: [bogus, minimal, microvm, nvf-standalone]
+        template: [bogus, minimal, microvm, nvf-standalone, flake-parts-modules]
         os: [ubuntu-latest]
     name: Check template ${{matrix.template}} ${{matrix.os}}
     runs-on: ${{matrix.os}}
