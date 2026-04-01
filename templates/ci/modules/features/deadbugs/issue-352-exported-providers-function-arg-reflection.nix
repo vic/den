@@ -1,6 +1,6 @@
 { denTest, ... }:
 {
-  flake.tests.deadbugs-issue-xxx =
+  flake.tests.deadbugs-issue-352 =
     let
       module =
         { inputs, ... }:
