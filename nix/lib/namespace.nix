@@ -36,10 +36,14 @@ let
     aspectPath: v:
     lib.optionals (builtins.isAttrs v) (
       lib.optional (v ? __functor) {
-        config = lib.setAttrByPath aspectPath {
-          __functor = v.__functor;
-          __functionArgs = v.__functionArgs or { };
-        };
+        config = lib.setAttrByPath aspectPath (
+          {
+            __functor = v.__functor;
+          }
+          // lib.optionalAttrs (v ? __functionArgs) {
+            __functionArgs = v.__functionArgs;
+          }
+        );
       }
       ++ lib.concatMap (
         pname:
