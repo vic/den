@@ -37,6 +37,19 @@ let
   find-mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
   user-to-hosts = user: den.aspects.${user.aspect}._.to-hosts or { };
   host-to-users = host: den.aspects.${host.aspect}._.to-users or { };
+  user-to-users = user: den.aspects.${user.aspect}._.to-users or { };
+
+  mutual-user-user = host: user: {
+    includes = map (
+      from:
+      parametric.fixedTo { inherit host user; } {
+        includes = [
+          (find-mutual from user)
+          (user-to-users from)
+        ];
+      }
+    ) (builtins.filter (u: u != user) (builtins.attrValues host.users));
+  };
 
   mutual-host-user =
     { host, user }:
@@ -47,6 +60,7 @@ let
         (find-mutual user host)
         (host-to-users host)
         (user-to-hosts user)
+        (mutual-user-user host user)
       ];
     };
 
