@@ -12,6 +12,9 @@ let
         adaptArgs = { config, ... }: config.allModuleArgs;
       }
       // forwardArgs
+      // lib.optionalAttrs (!forwardArgs ? intoPath) {
+        intoPath = x: [ (forwardArgs.fromClass x) ];
+      }
     );
 
   ctx.flake-parts = { };

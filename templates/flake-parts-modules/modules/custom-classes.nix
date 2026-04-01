@@ -46,15 +46,10 @@
       # NOTE: this is different from Den's flake-packages class.
       {
         fromClass = _: "packages";
-        intoPath = _: [ "packages" ];
       }
 
       {
         fromClass = _: "files";
-        intoPath = _: [
-          "files"
-        ];
-        adapterModule = { };
       }
 
       # a default `devshell` class
@@ -68,7 +63,6 @@
 
       {
         fromClass = _: "treefmt";
-        intoPath = _: [ "treefmt" ];
       }
 
       {
@@ -79,14 +73,12 @@
         ];
         # test helpers
         adaptArgs =
-          { pkgs, ... }:
+          args:
           let
             igloo = config.flake.nixosConfigurations.igloo.config;
             tux = igloo.users.users.tux;
           in
-          {
-            inherit pkgs igloo tux;
-          };
+          args.config.allModuleArgs // { inherit igloo tux; };
       }
     ];
   };

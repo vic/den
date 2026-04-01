@@ -244,5 +244,53 @@
       }
     );
 
+    test-user-provides-to-all-users = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      {
+        den.ctx.user.includes = [ den._.mutual-provider ];
+
+        den.hosts.x86_64-linux.igloo.users = {
+          tux = { };
+          alice = { };
+          bob = { };
+          carl = { };
+        };
+
+        den.aspects.tux.provides.to-users =
+          { user, ... }:
+          {
+            homeManager.programs.vim.enable = true;
+          };
+
+        den.aspects.tux.provides.alice = {
+          homeManager.programs.tmux.enable = true;
+        };
+
+        expr = with igloo.home-manager.users; {
+          tux = tux.programs.vim.enable;
+          alice = alice.programs.vim.enable;
+          bob = bob.programs.vim.enable;
+          carl = carl.programs.vim.enable;
+          aliceTmux = alice.programs.tmux.enable;
+          bobTmux = bob.programs.tmux.enable;
+        };
+
+        expected = {
+          tux = false;
+          alice = true;
+          bob = true;
+          carl = true;
+          aliceTmux = true;
+          bobTmux = false;
+        };
+
+      }
+    );
+
   };
 }
