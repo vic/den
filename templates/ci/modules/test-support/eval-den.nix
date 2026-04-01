@@ -1,7 +1,6 @@
 {
   inputs,
   lib,
-  withSystem,
   ...
 }:
 let
@@ -9,6 +8,15 @@ let
   denTest = module: {
     inherit ((evalDen module).config) expr expected;
   };
+
+  # fake-parts
+  withSystem =
+    system:
+    let
+      inputs' = builtins.mapAttrs (_: builtins.mapAttrs (_: value: value.${system})) inputs;
+      self'.packages.hello = inputs.nixpkgs.legacyPackages.${system}.hello;
+    in
+    cb: cb { inherit inputs' self'; };
 
   evalDen =
     module:
@@ -26,10 +34,6 @@ let
 
   testModule = {
     imports = [ inputs.den.flakeModule ];
-    options.flake.nixosConfigurations = lib.mkOption { };
-    options.flake.darwinConfigurations = lib.mkOption { };
-    options.flake.homeConfigurations = lib.mkOption { };
-    options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
     options.expected = lib.mkOption { };
     config = {
@@ -56,7 +60,7 @@ let
         aspect:
         let
           resolve = config.den.lib.aspects.resolve;
-          mod = resolve "funny" [ ] aspect;
+          mod = resolve "funny" aspect;
           namesMod = {
             options.names = lib.mkOption {
               type = lib.types.listOf lib.types.str;
@@ -89,7 +93,10 @@ let
 
 in
 {
-  _module.args = { inherit denTest evalDen; };
+  config._module.args = { inherit denTest evalDen; };
+  config.flake.packages.x86_64-linux.hello = inputs.nixpkgs.legacyPackages.x86_64-linux.hello;
 
-  flake.packages.x86_64-linux.hello = inputs.nixpkgs.legacyPackages.x86_64-linux.hello;
+  options.flake = lib.mkOption {
+    type = lib.types.lazyAttrsOf lib.types.anything;
+  };
 }

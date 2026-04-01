@@ -153,9 +153,10 @@ let
     lib.types.submodule (
       { name, config, ... }:
       let
-        nameWithHost = lib.hasInfix "@" name;
-        userName = if nameWithHost then lib.head (builtins.split "@" name) else name;
-        hostName = if nameWithHost then lib.last (builtins.split "@" name) else null;
+        parts = builtins.split "@" name;
+        nameWithHost = builtins.length parts > 1;
+        userName = lib.head parts;
+        hostName = if nameWithHost then lib.last parts else null;
         hostByName = den.hosts.${system}.${hostName} or null;
         userByName = hostByName.users.${userName} or null;
 
@@ -250,7 +251,7 @@ let
     let
       asp = intent { ${name} = from; };
     in
-    den.lib.aspects.resolve (from.class) [ asp ] asp;
+    den.lib.aspects.resolve (from.class) asp;
 in
 {
   inherit hostsOption homesOption;

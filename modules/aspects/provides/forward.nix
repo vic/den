@@ -1,4 +1,4 @@
-{ den, lib, ... }:
+{ den, ... }:
 let
   description = ''
     An aspect that imports all modules defined for `from` class
@@ -30,153 +30,13 @@ let
     the new class to exist.
 
     See templates/ci/modules/guarded-forward.nix, templates/ci/modules/forward-from-custom-class.nix
-    See also: https://github.com/vic/den/issues/160, https://github.com/vic/flake-aspects/pull/31
+    See also: https://github.com/vic/den/issues/160
   '';
-
-  forwardEach = fwd: {
-    includes = map (item: forwardOne (fwd // { each = [ item ]; })) fwd.each;
-  };
-
-  forwardOne =
-    {
-      guard ? null,
-      adaptArgs ? null,
-      adapterModule ? null,
-      ...
-    }@fwd:
-    let
-      clean = builtins.removeAttrs fwd [
-        "guard"
-        "adaptArgs"
-        "adapterModule"
-      ];
-
-      item = lib.head fwd.each;
-      fromClass = fwd.fromClass item;
-      intoClass = fwd.intoClass item;
-      intoPath = fwd.intoPath item;
-
-      asp = fwd.fromAspect item;
-
-      sourceModule = den.lib.aspects.resolve fromClass [ asp ] asp;
-
-      freeformMod = {
-        config._module.freeformType = lib.types.lazyAttrsOf lib.types.anything;
-      };
-
-      adapterKey = lib.concatStringsSep "/" (
-        [
-          fromClass
-          intoClass
-        ]
-        ++ intoPath
-      );
-
-      guardArgs = if guard == null then { } else lib.functionArgs guard;
-      guardFn =
-        args: guarded:
-        let
-          res = (if guard == null then _: true else guard) args;
-        in
-        if lib.isFunction res then res item guarded else lib.optionalAttrs res guarded;
-
-      adapter = {
-        includes = [
-          (den.lib.aspects.forward (
-            clean
-            // {
-              intoPath = _: [
-                "den"
-                "fwd"
-                adapterKey
-              ];
-            }
-          ))
-        ];
-        ${intoClass} = {
-          __functionArgs = guardArgs;
-          __functor = _: args: {
-            options.den.fwd.${adapterKey} = lib.mkOption {
-              default = { };
-              type = lib.types.submoduleWith {
-                specialArgs = if adaptArgs == null then args else adaptArgs args;
-                modules = if adapterModule == null then [ freeformMod ] else [ adapterModule ];
-              };
-            };
-            config = guardFn args (lib.setAttrByPath intoPath args.config.den.fwd.${adapterKey});
-          };
-        };
-      };
-
-      extraArgsFor =
-        args:
-        if adaptArgs == null then { } else builtins.removeAttrs (adaptArgs args) (builtins.attrNames args);
-
-      wrapTree =
-        gApply: outerArgs: node:
-        if builtins.isAttrs node && node ? imports then
-          { imports = map (wrapTree gApply outerArgs) node.imports; }
-        else
-          _modArgs:
-          let
-            result = if lib.isFunction node then node outerArgs else node;
-          in
-          {
-            config = gApply result;
-          };
-
-      evalImport =
-        args:
-        let
-          extraArgs = extraArgsFor args;
-          specialArgs =
-            builtins.removeAttrs args [
-              "config"
-              "options"
-              "lib"
-            ]
-            // extraArgs;
-          evaluated = lib.evalModules {
-            inherit specialArgs;
-            modules = (if adapterModule == null then [ freeformMod ] else [ adapterModule ]) ++ [
-              sourceModule
-            ];
-          };
-        in
-        guardFn args evaluated.config;
-
-      canDirectImport = adapterModule == null;
-
-      topLevelAdapter.${intoClass} = {
-        __functionArgs = guardArgs;
-        __functor =
-          _: args:
-          let
-            gApply = if guard == null then lib.id else guardFn args;
-            fullArgs = args // extraArgsFor args;
-          in
-          if canDirectImport then
-            { imports = [ (wrapTree gApply fullArgs sourceModule) ]; }
-          else
-            evalImport args;
-      };
-
-      needsAdapter = guard != null || adaptArgs != null || adapterModule != null;
-      needsTopLevelAdapter = needsAdapter && intoPath == [ ];
-      forwarded = den.lib.aspects.forward clean;
-
-    in
-    if needsTopLevelAdapter then
-      topLevelAdapter
-    else if needsAdapter then
-      adapter
-    else
-      forwarded;
 
 in
 {
   den.provides.forward = {
     inherit description;
-    __functor = _self: forwardEach;
+    __functor = _self: den.lib.forward.forwardEach;
   };
 }

@@ -5,7 +5,7 @@ description: Den based NVF configuration without NixOS
 
 The `nvf-standalone` template demonstrates how to use Den for
 other configurations outside NixOS/nix-Darwin/HM. For demo
-purposes this uses [NVF Standalone](https://nvf.notashelf.dev/#ch-standalone-installation) to confirue a runnable `.#my-neovim` app.
+purposes this uses [NVF Standalone](https://nvf.notashelf.dev/#ch-standalone-installation) to configure a runnable `.#my-neovim` app.
 
 ## Initialize
 
@@ -21,7 +21,7 @@ nix run .#my-neovim
 ```
 flake.nix   # dependencies including NVF
 modules/
-  den.nix   # uses Den to expose an standalone neovim app.
+  den.nix   # uses Den to expose a standalone neovim app.
 ```
 
 Key points:

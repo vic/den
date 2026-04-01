@@ -43,11 +43,11 @@ den.provides.forward {
 
 | Parameter | Description |
 |---|---|
-| `each` | List of items to forward (typically `[ user ]` or `[ true ]`) |
-| `fromClass` | The custom class name to read from |
-| `intoClass` | The target class to write into |
-| `intoPath` | Target attribute path in the target class|
-| `fromAspect` | The aspect to read the custom class from |
+| `each = items` | List of items to forward (typically `[ user ]` or `[ true ]`) |
+| `fromClass = item: class` | The custom class name to read from |
+| `intoClass = item: class` | The target class to write into |
+| `intoPath = item: path or args: path` | Target attribute path in the target class |
+| `fromAspect = item: aspect` | The aspect to read the custom class from |
 
 
 ## Example: The Built-in `user` Class
@@ -129,9 +129,9 @@ den.provides.forward {
 
 | Parameter | Description |
 |---|---|
-| `guard` | Only forward when this predicate returns true |
-| `adaptArgs` | Transform module arguments before forwarding |
-| `adapterModule` | Custom module for the forwarded submodule type |
+| `guard = args: bool or item: mkIf` | Only forward when this predicate returns true |
+| `adaptArgs = args: attrs` | Transform module arguments before forwarding |
+| `adapterModule = deferredModule` | Custom module for the forwarded submodule type |
 
 <Aside title="Guards reading config values">
 
@@ -350,10 +350,12 @@ The froward-guard itself is reponsible checking in only one place, instead of ha
 # only if environment.persistance option is present.
 persys = { class, aspect-chain }: den._.forward {
   each = lib.singleton true;
-  fromClass = _: "persys";
-  intoClass = _: class;
-  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
-  fromAspect = _: lib.head aspect-chain;
+  fromClass = _item: "persys";
+  intoClass = _item: class;
+  intoPath = _item:
+    { config, ... }: # access intoClass module arguments:
+    [ "environment" "persistance" config.impermanence.persistence-dir ];
+  fromAspect = _item: lib.head aspect-chain;
   guard = { options, ... }@osArgs: options ? environment.persistance;
 };
 

@@ -10,8 +10,6 @@ let
     "provides"
     "__functor"
     "__functionArgs"
-    "modules"
-    "resolve"
     "_module"
     "_"
   ];
@@ -48,70 +46,60 @@ let
         ctxDef = self;
       }
     ]
-    ++ lib.concatLists (
-      map (
-        { path, into }:
+    ++ lib.concatMap (
+      { path, into }:
+      let
+        target = lib.attrByPath path null ctxNs;
+        tkey = lib.concatStringsSep "." path;
+        recurse = t: k: lib.concatMap (v: transformAll self t v k) into;
+      in
+      if target != null then
+        recurse target tkey
+      else if builtins.length path == 1 && self.provides ? ${lib.head path} then
         let
-          target = lib.attrByPath path null ctxNs;
-          tkey = lib.concatStringsSep "." path;
+          name = lib.head path;
         in
-        if target != null then
-          lib.concatMap (v: transformAll self target v tkey) into
-        else if builtins.length path == 1 && self.provides ? ${lib.head path} then
-          let
-            name = lib.head path;
-          in
-          lib.concatMap (
-            v:
-            transformAll self {
-              inherit name;
-              into = _: { };
-            } v name
-          ) into
-        else
-          [ ]
-      ) (flattenInto (self.into ctxValue) [ ])
-    );
+        recurse {
+          inherit name;
+          into = noop;
+        } name
+      else
+        [ ]
+    ) (flattenInto ((self.into or noop) ctxValue) [ ]);
 
   noop = _: { };
 
-  crossProvider = p: if p.source == null then noop else p.source.provides.${p.key} or noop;
+  crossProvider = p: p.source.provides.${p.key} or noop;
 
-  dedupIncludes =
+  buildIncludes =
+    items:
     let
-      go =
-        acc: remaining:
-        if remaining == [ ] then
-          acc.result
-        else
-          let
-            p = builtins.head remaining;
-            rest = builtins.tail remaining;
-            key = p.key;
-            clean = cleanCtx p.ctxDef;
-            isFirst = !(acc.seen ? ${key});
-            selfFun = p.ctxDef.provides.${p.ctxDef.name} or noop;
-            crossFun = crossProvider p;
-            items = [
-              (if isFirst then parametric.fixedTo p.ctx clean else parametric.atLeast clean p.ctx)
-              (selfFun p.ctx)
-              (crossFun p.ctx)
-            ];
-          in
-          go {
-            seen = acc.seen // {
-              ${key} = true;
-            };
-            result = acc.result ++ items;
-          } rest;
+      step =
+        acc: p:
+        let
+          clean = cleanCtx p.ctxDef;
+          isFirst = !(acc.seen ? ${p.key});
+          selfFun = p.ctxDef.provides.${p.ctxDef.name} or noop;
+          crossFun = crossProvider p;
+        in
+        {
+          seen = acc.seen // {
+            ${p.key} = true;
+          };
+          result = acc.result ++ [
+            (if isFirst then parametric.fixedTo p.ctx clean else parametric.atLeast clean p.ctx)
+            (selfFun p.ctx)
+            (crossFun p.ctx)
+          ];
+        };
     in
-    go {
+    (lib.foldl' step {
       seen = { };
       result = [ ];
-    };
+    } items).result;
 
   ctxApply = self: ctxValue: {
-    includes = dedupIncludes (transformAll null self ctxValue self.name);
+    includes = buildIncludes (transformAll null self ctxValue self.name);
   };
 
 in

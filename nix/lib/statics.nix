@@ -1,12 +1,11 @@
 { lib, den, ... }:
 let
-  # an aspect producing only owned configs
   owned = (lib.flip builtins.removeAttrs) [
     "includes"
     "__functor"
+    "__functionArgs"
   ];
 
-  # only static includes from an aspect.
   statics =
     aspect:
     aspect
@@ -19,20 +18,9 @@ let
         };
     };
 
-  applyStatics =
-    ctx: f:
-    if !lib.isFunction f then
-      f
-    else if isStatic f && isCtxStatic ctx then
-      f ctx
-    else
-      { };
+  applyStatics = ctx: f: if lib.isFunction f then den.lib.take.atLeast f ctx else f;
 
-  isStatic = den.lib.canTake.atLeast {
-    class = "";
-    aspect-chain = [ ];
-  };
-  isCtxStatic = (lib.flip den.lib.canTake.exactly) ({ class, aspect-chain }: class aspect-chain);
+  isCtxStatic = ctx: ctx ? class || ctx ? aspect-chain;
 
 in
 {

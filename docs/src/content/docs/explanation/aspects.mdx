@@ -6,8 +6,8 @@ description: How aspects use the __functor pattern for context-awareness.
 import { Aside } from '@astrojs/starlight/components';
 
 <Aside title="Source" icon="github">
+[`nix/lib/aspects`](https://github.com/vic/den/tree/main/nix/lib/aspects) --
 [`nix/lib.nix`](https://github.com/vic/den/blob/main/nix/lib.nix) --
-Built on [flake-aspects](https://github.com/vic/flake-aspects)
 </Aside>
 
 ## The `__functor` Pattern
@@ -27,15 +27,11 @@ The `__functor` receives `self` (the attrset itself) and returns a function.
 
 ## Aspects as Functors
 
-Every aspect in flake-aspects has a default `__functor` that ignores context
-and returns itself. Den replaces this functor with one that inspects context
+Every aspect in Den has a default `__functor` that inspects context
 parameters to decide what to produce:
 
 ```nix
-# Default: returns self regardless of context
-{ nixos.foo = 1; __functor = self: _ctx: self; }
-
-# Parametric: inspects context shape
+# Default: parametric. inspects context shape
 den.lib.parametric {
   nixos.foo = 1;
   includes = [
@@ -92,10 +88,10 @@ den.aspects.igloo.provides.gpu = { host, ... }:
 
 ## Resolution
 
-Aspects are resolved for a specific class using the `resolve` API from flake-aspects:
+Aspects are resolved for a specific class using the `den.lib.aspects.resolve` API.
 
 ```nix
-module = den.lib.aspects.resolve "nixos" [] den.aspects.igloo;
+module = den.lib.aspects.resolve "nixos" den.aspects.igloo;
 ```
 
 Resolution collects all `nixos` attrs from owned configs, walks `includes`

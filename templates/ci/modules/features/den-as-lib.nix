@@ -104,7 +104,7 @@ in
             ];
           };
 
-        myMod = ev.config.den.aspects.foobar.resolve { class = "my"; };
+        myMod = ev.config.den.lib.aspects.resolve "my" ev.config.den.aspects.foobar;
         nameMod.options.names = lib.mkOption { type = lib.types.listOf lib.types.str; };
         ev2 = lib.evalModules {
           modules = [

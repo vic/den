@@ -10,7 +10,6 @@ let
   result = makeHomeEnv {
     className = "hjem";
     optionPath = "hjem";
-    inputsPath = "hjem";
     getModule = { host, ... }: inputs.hjem."${host.class}Modules".default;
     forwardPathFn =
       { user, ... }:

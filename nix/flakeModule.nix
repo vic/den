@@ -1,4 +1,6 @@
-{ inputs, ... }:
+{ lib, ... }:
 {
-  imports = [ (inputs.import-tree ../modules) ];
+  imports = builtins.filter (p: lib.hasSuffix ".nix" p && !lib.hasInfix "/_" p) (
+    lib.filesystem.listFilesRecursive ../modules
+  );
 }

@@ -9,22 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "5ab19d88134bfb623e6068987cd79605c7da0d41",
-      "url": "https://github.com/vic/den/archive/5ab19d88134bfb623e6068987cd79605c7da0d41.tar.gz",
-      "hash": "sha256-DEZ3Vc1hrt47V8L1knDFw8b/K+vClAazlYe0D/MjdMs="
-    },
-    "flake-aspects": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "vic",
-        "repo": "flake-aspects"
-      },
-      "branch": "main",
-      "submodules": false,
-      "revision": "56fa8d4d4772d58eb7f9d66c28c1cd2762b60423",
-      "url": "https://github.com/vic/flake-aspects/archive/56fa8d4d4772d58eb7f9d66c28c1cd2762b60423.tar.gz",
-      "hash": "sha256-a0kjpCZGnD5lt7yW6C3hzPhSf5KjnTyvX6XZ2NuhGs4="
+      "revision": "91d41ed8b4a07e8b175ef2c9f8fc8470f0d75a41",
+      "url": "https://github.com/vic/den/archive/91d41ed8b4a07e8b175ef2c9f8fc8470f0d75a41.tar.gz",
+      "hash": "sha256-Gf24DeJaS0wttVoqYOiRPC3DrEKPeaQ5XYOXazzdLWA="
     },
     "hjem": {
       "type": "Git",

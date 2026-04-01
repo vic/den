@@ -1,26 +1,35 @@
 { lib, den, ... }:
 let
-  inherit (den.lib) take functor recursiveFunctor;
+  inherit (den.lib) take recursiveFunctor;
   inherit (den.lib.statics) owned statics isCtxStatic;
 
-  fixedRecurse =
-    ctx: provided:
-    provided
+  parametric.applyIncludes =
+    takeFn: aspect:
+    aspect
     // {
-      includes = map (include: if include ? includes then parametric.fixedTo ctx include else include) (
-        provided.includes or [ ]
-      );
+      __functor = self: ctx: {
+        includes = (builtins.filter (x: x != { })) (map (fn: takeFn fn ctx) (self.includes or [ ]));
+      };
     };
 
-  parametric.atLeast = functor (lib.flip take.atLeast);
+  deepRecurse =
+    functor: ctx: provided:
+    provided
+    // {
+      includes = map (
+        include: if include ? includes then parametric.deep functor ctx include else include
+      ) (provided.includes or [ ]);
+    };
 
-  parametric.exactly = functor (lib.flip take.exactly);
+  parametric.atLeast = parametric.applyIncludes take.atLeast;
+
+  parametric.exactly = parametric.applyIncludes take.exactly;
 
   parametric.expands =
     attrs: parametric.withOwn (aspect: ctx: parametric.atLeast aspect (ctx // attrs));
 
-  parametric.fixedTo.__functor =
-    attrs: aspect:
+  parametric.deep =
+    functor: attrs: aspect:
     aspect
     // {
       __functor =
@@ -30,14 +39,16 @@ let
           includes = [
             (owned self)
             (statics self { inherit class aspect-chain; })
-            (fixedRecurse attrs (parametric.atLeast self attrs))
+            (deepRecurse functor attrs (functor self attrs))
           ];
         };
     };
 
-  parametric.fixedTo.atLeast = recursiveFunctor (lib.flip take.atLeast);
-  parametric.fixedTo.exactly = recursiveFunctor (lib.flip take.exactly);
-  parametric.fixedTo.upTo = recursiveFunctor (lib.flip take.upTo);
+  parametric.fixedTo = parametric.deep parametric.atLeast // {
+    atLeast = recursiveFunctor (lib.flip take.atLeast);
+    exactly = recursiveFunctor (lib.flip take.exactly);
+    upTo = recursiveFunctor (lib.flip take.upTo);
+  };
 
   parametric.withOwn =
     functor: aspect:

@@ -38,7 +38,7 @@
         resolve =
           class:
           let
-            mod = den.aspects.tux.resolve { inherit class; };
+            mod = den.lib.aspects.resolve class den.aspects.tux;
             m = {
               options.tag = lib.mkOption {
                 type = lib.types.str;

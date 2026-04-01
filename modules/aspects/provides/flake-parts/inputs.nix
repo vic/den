@@ -6,7 +6,6 @@
 }:
 let
   inherit (den.lib) parametric;
-  inherit (den.lib.take) unused;
 
   description = ''
     Provides the `flake-parts` `inputs'` (the flake's `inputs` with system pre-selected)

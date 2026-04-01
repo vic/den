@@ -50,11 +50,11 @@ den.aspects.gaming = { host, user }: {
 # can use the same pattern. demo: templates/nvf-standalone
 
 # A context transformation pipeline takes initially {host}
-# and traverses its topology (host->users->homes) aggregating deps
+# and traverses its topology (host->[users]->[homes]) aggregating deps
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.my-laptop; };
 
-# flake-aspects API (re-exported by Den) resolves final NixOS module
-nixosModule = den.lib.aspects.resolve "nixos" [ ] aspect;
+# obtain the final module for nixos class
+nixosModule = den.lib.aspects.resolve "nixos" aspect;
 
 # Use NixOS API to instantiate or mix-in with other custom modules
 nixosConfigurations.my-laptop = lib.nixosConfiguration {
@@ -66,8 +66,9 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
 </tr>
 </table>
 
-Den library is built on [flake-aspects](https://github.com/vic/flake-aspects) and is domain agnostic. It can be
-used to configure anything Nix-configurable.
+Den has Zero Dependencies. The only requirement is being included in a module that has `{ config, lib, ... }`
+
+`den.lib` is domain agnostic, it can be used to configure anything Nix-configurable.
 
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
@@ -95,6 +96,10 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 - [Batteries](https://den.oeiuwq.com/guides/batteries/)
 
 - [Mutual Providers](https://den.oeiuwq.com/guides/mutual/)
+
+- [Sharing Namespaces](https://den.oeiuwq.com/guides/namespaces/)
+
+- [`<angle/brackets>`](https://den.oeiuwq.com/guides/angle-brackets/)
 
 - [Tests as Code Examples](https://den.oeiuwq.com/tutorials/ci/)
 
@@ -138,11 +143,11 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 [`@quasigod`](https://tangled.org/quasigod.xyz/nixconfig): Beautiful organization, uses custom Den namespaces and Den angle brackets (+flake-parts)
 
-[`@Gwenodai`](https://github.com/Gwenodai/nixos): Cleaver organization with path naming conventions, factories for guarded classes
+[`@Gwenodai`](https://github.com/Gwenodai/nixos): Clever organization with path-naming conventions, custom guarded and forwarding classes
 
 [`@adda`](https://codeberg.org/Adda/nixos-config): Multiple hosts (+flake-parts +flake-file +home-manager +files)
 
-> Den is also being used at internal infra at The European Commission.
+> Den is also being used on internal infra at The European Commission.
 
 Growing community adoption: [Usage Search](https://github.com/search?q=den.aspects+language%3ANix&type=code)
 
@@ -411,9 +416,9 @@ persys = { host }: den._.forward {
   each = lib.singleton true;
   fromClass = _: "persys";
   intoClass = _: host.class;
-  intoPath = _: [ "environment" "persistance" "/nix/persist/system" ];
+  intoPath = _: [ "environment" "persistence" "/nix/persist/system" ];
   fromAspect = _: den.aspects.${host.aspect};
-  guard = { options, config, ... }: options ? environment.persistance;
+  guard = { options, config, ... }: options ? environment.persistence;
 };
 
 # enable on all hosts

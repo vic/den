@@ -1,4 +1,4 @@
-# This test verifies that flake-aspects do not use lib.functionTo merging semantics on aspect.__functor.
+# This test verifies that aspects do not use lib.functionTo merging semantics on aspect.__functor.
 # See: https://github.com/vic/den/issues/216 and https://github.com/vic/flake-aspects/pull/38
 {
   lib,
@@ -22,7 +22,7 @@ let
         y = 1;
       };
       resolve = ev.config.den.lib.aspects.resolve;
-      fooModule = resolve "foo" [ ] fooAspect;
+      fooModule = resolve "foo" fooAspect;
 
       namesModule.options.names = lib.mkOption { type = lib.types.listOf lib.types.str; };
       ev2 = lib.evalModules {

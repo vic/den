@@ -128,5 +128,39 @@
       }
     );
 
+    test-user-nested-submodule = denTest (
+      { den, lib, ... }:
+      {
+        den.schema.user =
+          { user, host, ... }:
+          {
+            options.main-group = lib.mkOption { default = user.name; };
+            options.description = lib.mkOption { default = "${user.name}@${host.name}"; };
+            options.meta = lib.mkOption {
+              type = lib.types.submodule (
+                { ... }:
+                {
+                  options = {
+                    email = lib.mkOption { type = lib.types.str; };
+                    key = lib.mkOption { type = lib.types.str; };
+                  };
+                }
+              );
+            };
+          };
+
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        expr = [
+          den.hosts.x86_64-linux.igloo.users.tux.main-group
+          den.hosts.x86_64-linux.igloo.users.tux.description
+        ];
+        expected = [
+          "tux"
+          "tux@igloo"
+        ];
+      }
+    );
+
   };
 }

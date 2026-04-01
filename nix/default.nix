@@ -29,6 +29,7 @@ in
   __functor = _: den-lib;
   lib = den-lib;
   namespace = import ./lib/namespace.nix;
+  flakeOutputs = import ./flakeOutputs.nix;
 
   inherit nixModule templates;
   inherit (import ./flake-packages.nix) packages devShells;

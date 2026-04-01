@@ -65,8 +65,9 @@ Den embraces your Nix choices and does not impose itself. All parts of Den are o
 
 ## How Den works
 
-Den uses a Dendritic Nix configuration model. Features are organized using [flake-aspects](https://github.com/vic/flake-aspects) -- composable attrsets with per-class configurations and
-a dependency graph (`provides/includes`). Den's **context pipeline** determines which aspects apply to which targets collecting the configurations they contribute to each context transformation stage, ultimately producing a single, unified system configuration.
+Den uses a Dendritic configuration model. Features are organized as **aspects** -- composable attrsets with per-class modules and a dependency graph (`provides`/`includes`).
+
+A **context transformation pipeline** traverses configurable entities, activating corresponding aspects on each context stage, ultimately producing a single, unified system configuration.
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px;">
 <div>
@@ -135,8 +136,8 @@ of NixOS.
 # Use Den API -- Context transformations happen here, nothing is configured yet.
 aspect = den.ctx.host { host = den.hosts.x86_64-linux.igloo; };
 
-# Use flake-aspects API (re-exported by Den) -- We enter the NixOS domain by resolving for the "nixos" class.
-nixosModule = den.lib.aspects.resolve "nixos" [] aspect;
+# We enter the NixOS domain by resolving for the "nixos" class.
+nixosModule = den.lib.aspects.resolve "nixos" aspect;
 
 # Use NixOS API -- Instantiate using nixosSystem with the resolved module.
 nixosConfigurations.igloo = lib.nixosSystem { modules = [ nixosModule ]; };

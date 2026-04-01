@@ -5,16 +5,10 @@
   ...
 }:
 let
-  atPath = path: obj: lib.foldr (key: obj: obj.${key} or { }) obj path;
+  atPath = path: obj: lib.attrByPath path { } obj;
 
   host-has-user-with-class =
-    host: class:
-    lib.pipe host.users [
-      lib.attrValues
-      (map (user: lib.elem class user.classes))
-      (lib.filter lib.id)
-      (xs: lib.length xs > 0)
-    ];
+    host: class: builtins.any (user: lib.elem class user.classes) (lib.attrValues host.users);
 
   detectHost =
     {
@@ -28,11 +22,8 @@ let
     { host }:
     let
       isOsSupported = builtins.elem host.class supportedOses;
-      classUsers = builtins.filter (u: lib.elem className u.classes) (lib.attrValues host.users);
-      hasClassUsers = builtins.length classUsers > 0;
-      getOption = atPath (lib.splitString "." optionPath);
-      isEnabled = (getOption host).enable or false;
-      shouldActivate = isEnabled && isOsSupported && hasClassUsers;
+      isEnabled = (atPath (lib.splitString "." optionPath) host).enable or false;
+      shouldActivate = isEnabled && isOsSupported && host-has-user-with-class host className;
     in
     lib.optional shouldActivate { inherit host; };
 
@@ -40,7 +31,6 @@ let
     {
       className,
       optionPath,
-      inputsPath,
       getModule,
     }:
     { host, ... }:
@@ -99,7 +89,6 @@ let
         "darwin"
       ],
       optionPath,
-      inputsPath,
       getModule,
       forwardPathFn,
     }:
@@ -125,7 +114,6 @@ let
         inherit
           className
           optionPath
-          inputsPath
           getModule
           ;
       };

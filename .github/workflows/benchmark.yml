@@ -6,6 +6,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 env:
+  WARM: 2
+  RUNS: 3
   NIX_PATH: "nixpkgs=https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
 jobs:
   approved:
@@ -22,8 +24,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v6
-      - run: nix develop -c just -- help
       - run: git fetch origin ${{github.base_ref}} --depth 1
-      - run: nix develop -c just -- bench --head HEAD --base origin/${{github.base_ref}} --warm 1 --runs 1 -- --show-output 2>&1 | tee "$GITHUB_STEP_SUMMARY" /tmp/den-bench.log
+      - run: nix develop -c just -- bench --head HEAD --base origin/${{github.base_ref}} --warm "$WARM" --runs "$RUNS" -- --show-output 2>&1 | tee "$GITHUB_STEP_SUMMARY" /tmp/den-bench.log
       - run: grep "faster than base" "/tmp/den-bench.log"
         if: ${{!contains(github.event.pull_request.labels.*.name, 'bench-skip')}}

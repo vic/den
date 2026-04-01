@@ -2,31 +2,16 @@
   "nodes": {
     "den": {
       "locked": {
-        "lastModified": 1773960860,
-        "narHash": "sha256-DEZ3Vc1hrt47V8L1knDFw8b/K+vClAazlYe0D/MjdMs=",
+        "lastModified": 1774596030,
+        "narHash": "sha256-Gf24DeJaS0wttVoqYOiRPC3DrEKPeaQ5XYOXazzdLWA=",
         "owner": "vic",
         "repo": "den",
-        "rev": "5ab19d88134bfb623e6068987cd79605c7da0d41",
+        "rev": "91d41ed8b4a07e8b175ef2c9f8fc8470f0d75a41",
         "type": "github"
       },
       "original": {
         "owner": "vic",
         "repo": "den",
-        "type": "github"
-      }
-    },
-    "flake-aspects": {
-      "locked": {
-        "lastModified": 1773552804,
-        "narHash": "sha256-a0kjpCZGnD5lt7yW6C3hzPhSf5KjnTyvX6XZ2NuhGs4=",
-        "owner": "vic",
-        "repo": "flake-aspects",
-        "rev": "56fa8d4d4772d58eb7f9d66c28c1cd2762b60423",
-        "type": "github"
-      },
-      "original": {
-        "owner": "vic",
-        "repo": "flake-aspects",
         "type": "github"
       }
     },
@@ -85,7 +70,6 @@
     "root": {
       "inputs": {
         "den": "den",
-        "flake-aspects": "flake-aspects",
         "import-tree": "import-tree",
         "microvm": "microvm",
         "nixpkgs": "nixpkgs"

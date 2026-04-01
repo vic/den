@@ -27,7 +27,10 @@ let
     };
 
   denModule = {
-    imports = [ inputs.den.flakeModule ];
+    imports = [
+      inputs.den.flakeModule
+      inputs.den.flakeOutputs.nixosConfigurations
+    ];
     den.ctx.host.nixos = {
       system.stateVersion = lib.mkDefault "26.05";
       boot.loader.grub.enable = lib.mkForce false;
@@ -38,9 +41,6 @@ let
   };
 
   testModule = {
-    options.flake.nixosConfigurations = lib.mkOption { };
-    options.flake.homeConfigurations = lib.mkOption { };
-    options.flake.packages = lib.mkOption { };
     options.expr = lib.mkOption { };
     options.expected = lib.mkOption { };
   };

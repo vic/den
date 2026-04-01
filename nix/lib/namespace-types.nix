@@ -1,7 +1,7 @@
 { den, lib, ... }:
 let
-  inherit (den.lib) take parametric ctxApply;
-  inherit (den.lib.aspects.types) aspectsType aspectSubmodule;
+  inherit (den.lib) ctxApply;
+  inherit (den.lib.aspects.types) aspectsType;
 
   namespaceType = lib.types.submodule (
     nsArgs:

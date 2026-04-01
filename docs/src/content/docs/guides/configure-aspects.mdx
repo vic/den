@@ -6,7 +6,7 @@ description: Owned configs, includes, provides, and den.default.
 import { Aside } from '@astrojs/starlight/components';
 
 <Aside title="Source" icon="github">
-[`github:vic/flake-aspects`](https://github.com/vic/flake-aspects) ·
+[`lib/aspects`](https://github.com/vic/den/tree/main/lib/aspects) ·
 [`aspects definition`](https://github.com/vic/den/tree/main/modules/aspects/definition.nix) ·
 [`example aspects`](https://github.com/vic/den/tree/main/modules/aspects/provides) ·
 </Aside>
@@ -126,10 +126,10 @@ It is important to note the three kinds of values that Den distinguishes
 as part of an includes list:
 
 1. Static (plain attribute set): `{ nixos.foo = ...; }`
-2. Static (flake-aspects' leaf): `{class, aspect-chain}: { ${class}.foo = ...; }`
+2. Static (aspects leaf): `{class, aspect-chain}: { ${class}.foo = ...; }`
 3. Parametric (any other function): `{ host, user }: { ${host.class}.foo = ...; }`
 
-`(1)` and `(2)` are termed *static aspects* and are the terminal leafs of flake-aspects DAG.
+`(1)` and `(2)` are termed *static aspects* and are the terminal leafs of aspects DAG.
 `(1)` provides configuration unconditionally, and `(2)` gets access to the `class` that is
 being resolved and an `aspect-chain` that lead to the current aspect (most recent last).
 
