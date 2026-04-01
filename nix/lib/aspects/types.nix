@@ -20,6 +20,30 @@ let
       };
   };
 
+  lastDefType = lib.types.mkOptionType {
+    name = "last";
+    description = "last value";
+    merge = loc: defs: if defs == [ ] then { } else (lib.last defs).value;
+  };
+
+  partitionedType =
+    {
+      name,
+      description,
+      partition,
+      merge ? lastDefType.merge,
+      baseType,
+    }:
+    lib.types.mkOptionType {
+      inherit name description;
+      merge =
+        loc: defs:
+        let
+          partitioned = lib.lists.partition partition defs;
+        in
+        baseType.merge loc partitioned.wrong // (merge loc partitioned.right);
+    };
+
   isSubmoduleFn =
     m:
     let
@@ -70,7 +94,12 @@ let
     lib.types.submodule (
       { name, config, ... }:
       {
-        freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;
+        freeformType = partitionedType {
+          name = "Aspect Freeform Type";
+          description = "Aspect freeform type, has a hole in it for __functionArgs";
+          partition = def: def.value ? __functionArgs;
+          baseType = lib.types.lazyAttrsOf lib.types.deferredModule;
+        };
         config._module.args.aspect = config;
         imports = [ (lib.mkAliasOptionModule [ "_" ] [ "provides" ]) ];
 
@@ -111,14 +140,6 @@ let
             description = "Functor to default provider";
             type = functorType;
             default = cnf.defaultFunctor or lib.const;
-          };
-
-          __functionArgs = lib.mkOption {
-            internal = true;
-            visible = false;
-            description = "Argument reflection information for the functor";
-            type = lib.types.lazyAttrsOf lib.types.bool;
-            default = { };
           };
         };
       }
