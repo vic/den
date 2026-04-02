@@ -16,8 +16,6 @@
 These configurations become specific when applied to your particular infra entities (hosts/users),
 while allowing re-usable aspects to be shared between hosts, users, or across other flakes and non-flake projects.
 
-
-
 <table>
 <tr>
 <td>

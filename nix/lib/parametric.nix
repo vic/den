@@ -19,10 +19,7 @@ let
       includes = map (
         include:
         if include ? includes then
-          if include ? __functor then
-            include
-          else
-            parametric.deep functor ctx include
+          if include ? __functor then include else parametric.deep functor ctx include
         else
           include
       ) (provided.includes or [ ]);

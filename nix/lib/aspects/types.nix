@@ -26,8 +26,7 @@ let
     in
     names != [ ] && builtins.all (n: builtins.elem n providerArgNames) names;
 
-  directProviderFn =
-    cnf: lib.types.addCheck (lastFunctionTo (aspectSubmodule cnf)) isProviderFn;
+  directProviderFn = cnf: lib.types.addCheck (lastFunctionTo (aspectSubmodule cnf)) isProviderFn;
 
   curriedProviderFn =
     cnf:
