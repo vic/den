@@ -1,24 +1,6 @@
-lib:
+{ lib, den, ... }:
 let
-  functorType = lib.types.mkOptionType {
-    name = "aspectFunctor";
-    description = "aspect functor function";
-    check = lib.isFunction;
-    merge =
-      _loc: defs:
-      let
-        lastDef = lib.last defs;
-      in
-      {
-        __functionArgs = lib.functionArgs lastDef.value;
-        __functor =
-          _: callerArgs:
-          let
-            result = lastDef.value callerArgs;
-          in
-          if builtins.isFunction result then result else _: result;
-      };
-  };
+  inherit (den.lib) lastFunctionTo;
 
   isSubmoduleFn =
     m:
@@ -45,11 +27,11 @@ let
     names != [ ] && builtins.all (n: builtins.elem n providerArgNames) names;
 
   directProviderFn =
-    cnf: lib.types.addCheck (lib.types.functionTo (aspectSubmodule cnf)) isProviderFn;
+    cnf: lib.types.addCheck (lastFunctionTo (aspectSubmodule cnf)) isProviderFn;
 
   curriedProviderFn =
     cnf:
-    lib.types.addCheck (lib.types.functionTo (providerType cnf)) (
+    lib.types.addCheck (lastFunctionTo (providerType cnf)) (
       f:
       builtins.isFunction f
       ||
@@ -109,7 +91,7 @@ let
             internal = true;
             visible = false;
             description = "Functor to default provider";
-            type = functorType;
+            type = lastFunctionTo (providerType cnf);
             default = cnf.defaultFunctor or lib.const;
           };
         };

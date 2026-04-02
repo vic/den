@@ -31,6 +31,7 @@ let
     parametric = ./parametric.nix;
     statics = ./statics.nix;
     take = ./take.nix;
+    lastFunctionTo = ./last-function-to.nix;
   };
 in
 den-lib

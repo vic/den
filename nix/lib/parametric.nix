@@ -17,7 +17,14 @@ let
     provided
     // {
       includes = map (
-        include: if include ? includes then parametric.deep functor ctx include else include
+        include:
+        if include ? includes then
+          if include ? __functor then
+            include
+          else
+            parametric.deep functor ctx include
+        else
+          include
       ) (provided.includes or [ ]);
     };
 
