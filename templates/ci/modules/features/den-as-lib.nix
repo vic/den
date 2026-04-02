@@ -88,9 +88,10 @@ in
               };
             den.ctx.foo.into.bar = { name }: lib.singleton { shout = lib.toUpper name; };
             den.ctx.foo.provides.bar =
+              { name }:
               { shout }:
               {
-                my.names = [ "foo shouted ${shout}" ];
+                my.names = [ "foo ${name} shouted ${shout}" ];
               };
 
             den.ctx.bar.provides.bar =
@@ -115,7 +116,7 @@ in
 
         expr = ev2.config.names;
         expected = [
-          "foo shouted GOOD"
+          "foo good shouted GOOD"
           "bar GOOD"
           "foo good"
         ];

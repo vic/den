@@ -38,11 +38,11 @@ let
     );
 
   transformAll =
-    source: self: ctxValue: key:
+    source: ctxPrev: self: ctxValue: key:
     [
       {
+        inherit source ctxPrev key;
         ctx = ctxValue;
-        inherit source key;
         ctxDef = self;
       }
     ]
@@ -51,7 +51,7 @@ let
       let
         target = lib.attrByPath path null ctxNs;
         tkey = lib.concatStringsSep "." path;
-        recurse = t: k: lib.concatMap (v: transformAll self t v k) into;
+        recurse = t: k: lib.concatMap (v: transformAll self ctxValue t v k) into;
       in
       if target != null then
         recurse target tkey
@@ -69,7 +69,7 @@ let
 
   noop = _: { };
 
-  crossProvider = p: p.source.provides.${p.key} or noop;
+  crossProvider = p: p.source.provides.${p.key} or (_: noop);
 
   buildIncludes =
     items:
@@ -80,7 +80,7 @@ let
           clean = cleanCtx p.ctxDef;
           isFirst = !(acc.seen ? ${p.key});
           selfFun = p.ctxDef.provides.${p.ctxDef.name} or noop;
-          crossFun = crossProvider p;
+          crossFun = crossProvider p p.ctxPrev;
         in
         {
           seen = acc.seen // {
@@ -99,7 +99,7 @@ let
     } items).result;
 
   ctxApply = self: ctxValue: {
-    includes = buildIncludes (transformAll null self ctxValue self.name);
+    includes = buildIncludes (transformAll null null self ctxValue self.name);
   };
 
 in
