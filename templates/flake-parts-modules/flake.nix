@@ -28,11 +28,5 @@
       treefmt-nix.follows = "treefmt-nix";
     };
 
-    nix-topology.url = "github:oddlama/nix-topology";
-    nix-topology.inputs = {
-      nixpkgs.follows = "nixpkgs";
-      flake-parts.follows = "flake-parts";
-    };
-
   };
 }

@@ -20,6 +20,12 @@
     includes = [ den._.define-user ];
     user.description = "Bird";
 
+    packages =
+      { pkgs, ... }:
+      {
+        inherit (pkgs) cowsay;
+      };
+
     tests =
       { tux, ... }:
       {
@@ -43,7 +49,7 @@
     packages =
       { pkgs, ... }:
       {
-        topology = config.flake.topology.${pkgs.stdenv.targetPlatform.system}.config.output;
+        inherit (pkgs) htop;
       };
   };
 
