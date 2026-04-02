@@ -52,6 +52,7 @@ let
     module = lib.mkOption {
       description = "The NixOS-WSL module";
       type = lib.types.deferredModule;
+      defaultText = lib.literalExpression "inputs.nixos-wsl.nixosModules.default";
       default = inputs.nixos-wsl.nixosModules.default;
     };
   };

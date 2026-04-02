@@ -58,12 +58,14 @@ let
         options = {
           name = lib.mkOption {
             description = "Aspect name";
+            defaultText = lib.literalExpression "name";
             default = name;
             type = lib.types.str;
           };
 
           description = lib.mkOption {
             description = "Aspect description";
+            defaultText = lib.literalExpression "name";
             default = "Aspect ${name}";
             type = lib.types.str;
           };
@@ -71,11 +73,13 @@ let
           includes = lib.mkOption {
             description = "Providers to ask aspects from";
             type = lib.types.listOf (providerType cnf);
+            defaultText = lib.literalExpression "[ ]";
             default = [ ];
           };
 
           provides = lib.mkOption {
             description = "Providers of aspect for other aspects";
+            defaultText = lib.literalExpression "{ }";
             default = { };
             type = lib.types.submodule (
               { config, ... }:
@@ -91,6 +95,7 @@ let
             visible = false;
             description = "Functor to default provider";
             type = lastFunctionTo (providerType cnf);
+            defaultText = lib.literalExpression "lib.const";
             default = cnf.defaultFunctor or lib.const;
           };
         };

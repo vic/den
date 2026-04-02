@@ -24,6 +24,7 @@ let
     {
       options.unfree.packages = lib.mkOption {
         type = lib.types.listOf lib.types.str;
+        defaultText = lib.literalExpression "[ ]";
         default = [ ];
       };
       config.nixpkgs = lib.mkIf (hasUnfree && !globalPkgs) {

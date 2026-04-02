@@ -69,6 +69,7 @@ let
     lib:
     lib.mkOption {
       default = { };
+      defaultText = lib.literalExpression "{ }";
       type = lib.types.lazyAttrsOf (manySubmodule lib);
     };
 
@@ -76,6 +77,7 @@ let
     lib:
     lib.mkOption {
       default = { };
+      defaultText = lib.literalExpression "{ }";
       type = (manySubmodule lib);
     };
 
@@ -83,6 +85,7 @@ let
     lib:
     lib.mkOption {
       default = { };
+      defaultText = lib.literalExpression "{ }";
       type = (manySubmodule lib);
     };
 
