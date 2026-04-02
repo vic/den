@@ -142,3 +142,42 @@ sequenceDiagram
 
 ```
 
+### User Peers Configuration
+
+A user `alice` can provide configurations for other users in the same system,
+either by name or for all of them (exluding alice itself).
+
+```nix
+den.ctx.user.includes = [ den._.mutual-provider ];
+
+den.aspects.alice = {
+  provides.bob = { homeManager.programs.vim.enable = true; };
+  provides.to-users = { user, ... }: {
+    homeManager.programs.tmux.enable = lib.elem user.userName [ "carl" "david" ];
+  };
+};
+```
+
+### Standalone HomeManager - Host Specific Configuration
+
+If you have two standalone homes sharing same user aspect, you can provide host specific
+configuration even if the Host is not a NixOS system managed by you.
+
+```nix
+den.ctx.home.includes = [ den._.mutual-provider ];
+
+den.homes.x86_64-linux."tux@igloo" = {};
+den.homes.x86_64-linux."tux@iceberg" = {};
+
+den.aspects.tux = {
+  homeManager.programs.vim.enable = true; # tux on ALL homes and hosts.
+
+  provides.igloo = {
+    homeManager.programs.helix.enable = true; # ONLY at igloo
+  };
+
+  provides.iceberg = {
+    homeManager.programs.emacs.enable = true; # ONLY at iceberg
+  };
+};
+```

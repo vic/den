@@ -55,7 +55,7 @@ let
               };
             into = lib.genAttrs (lib.genList (i: "t${toString i}") n) (_: { v }: [ { v = "${v}!"; } ]);
             provides = lib.genAttrs (lib.genList (i: "t${toString i}") n) (
-              name:
+              name: _:
               { v }:
               {
                 funny.names = [ "cross-${name}-${v}" ];

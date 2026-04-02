@@ -1,12 +1,10 @@
 <p align="right">
-  <a href="https://dendritic.oeiuwq.com/sponsor"><img src="https://img.shields.io/badge/sponsor-vic-white?logo=githubsponsors&logoColor=white&labelColor=%23FF0000" alt="Sponsor Vic"/>
-  </a>
+  <a href="https://dendritic.oeiuwq.com/sponsor"><img src="https://img.shields.io/badge/sponsor-vic-white?logo=githubsponsors&logoColor=white&labelColor=%23FF0000" alt="Sponsor Vic"/></a>
   <a href="https://deepwiki.com/vic/den"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
   <a href="https://github.com/vic/den/releases"><img src="https://img.shields.io/github/v/release/vic/den?style=plastic&logo=github&color=purple"/></a>
-  <a href="https://dendritic.oeiuwq.com"> <img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/> </a>
-  <a href="LICENSE"> <img src="https://img.shields.io/github/license/vic/den" alt="License"/> </a>
-  <a href="https://github.com/vic/den/actions">
-  <img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/> </a>
+  <a href="https://dendritic.oeiuwq.com"><img src="https://img.shields.io/badge/Dendritic-Nix-informational?logo=nixos&logoColor=white" alt="Dendritic Nix"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/vic/den" alt="License"/></a>
+  <a href="https://github.com/vic/den/actions"><img src="https://github.com/vic/den/actions/workflows/test.yml/badge.svg" alt="CI Status"/></a>
 </p>
 
 > den and [vic](https://bsky.app/profile/oeiuwq.bsky.social)'s [dendritic libs](https://dendritic.oeiuwq.com) made for you with Love++ and AI--. If you like my work, consider [sponsoring](https://dendritic.oeiuwq.com/sponsor)
@@ -17,6 +15,8 @@
 
 These configurations become specific when applied to your particular infra entities (hosts/users),
 while allowing re-usable aspects to be shared between hosts, users, or across other flakes and non-flake projects.
+
+
 
 <table>
 <tr>
@@ -66,13 +66,13 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
 </tr>
 </table>
 
-Den has Zero Dependencies. The only requirement is being included in a module that has `{ config, lib, ... }`
-
-`den.lib` is domain agnostic, it can be used to configure anything Nix-configurable.
+Den has Zero Dependencies. `den.lib` is domain agnostic, it can be used to configure anything Nix-configurable.
 
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
 Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
+
+> [Den is a declarative data transformation pipeline](https://github.com/vic/den/discussions/355). Infra entities are traversed via `den.ctx` transformations and configurations for them are generated when `den.aspects` are applied at each context stage.
 
 <table>
 <tr>

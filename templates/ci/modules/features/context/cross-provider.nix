@@ -17,6 +17,7 @@
             funny.names = [ "parent-${x}" ];
           };
         den.ctx.parent._.child =
+          _:
           { x, y }:
           {
             funny.names = [ "parent-for-child-${x}-${y}" ];
@@ -60,6 +61,7 @@
             funny.names = [ x ];
           };
         den.ctx.src._.dst =
+          _:
           { x, i }:
           {
             funny.names = [ "src-for-${x}-${toString i}" ];

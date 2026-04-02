@@ -42,7 +42,7 @@ let
 
       ctxs = map (output: {
         flake-system.into."flake-${output}" = systemOutput output;
-        flake-system.provides."flake-${output}" = systemOutputFwd;
+        flake-system.provides."flake-${output}" = _: systemOutputFwd;
       }) outputs;
     in
     ctxs;
