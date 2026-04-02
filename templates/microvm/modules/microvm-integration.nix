@@ -26,6 +26,7 @@ let
       options.microvm.guests = lib.mkOption {
         type = lib.types.listOf lib.types.raw;
         default = [ ];
+        defaultText = lib.literalExpression "[ ]";
         description = ''
           Guest MicroVMs.
           Value is a list of Den hosts: [ den.hosts.x86_64-linux.foo-microvm ]

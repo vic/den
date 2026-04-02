@@ -90,6 +90,7 @@ let
           __functionArgs = guardArgs // intoPathArgs // adaptArgv;
           __functor = _: args: {
             options.den.fwd.${adapterKey} = lib.mkOption {
+              defaultText = lib.literalExpression "{ }";
               default = { };
               type = lib.types.submoduleWith {
                 specialArgs = adaptArgsFn args;

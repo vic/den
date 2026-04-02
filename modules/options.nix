@@ -16,6 +16,7 @@ let
   };
   schemaOption = lib.mkOption {
     description = "freeform deferred modules per entity kind";
+    defaultText = lib.literalExpression "{ }";
     default = { };
     type = lib.types.submodule {
       freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;

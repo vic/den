@@ -6,6 +6,7 @@ in
   options.den.aspects = lib.mkOption {
     description = "Den Aspects";
     default = { };
+    defaultText = lib.literalExpression "{ }";
     type = aspectsType;
   };
 }

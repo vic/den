@@ -38,10 +38,12 @@ let
       options.${optionPath} = {
         enable = lib.mkOption {
           type = lib.types.bool;
+          defaultText = lib.literalExpression "host-has-user-with-class host className";
           default = host-has-user-with-class host className;
         };
         module = lib.mkOption {
           type = lib.types.deferredModule;
+          defaultText = lib.literalExpression "getModule { inherit host inputs; }";
           default = getModule { inherit host inputs; };
         };
       };
