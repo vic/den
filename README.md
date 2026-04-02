@@ -16,6 +16,8 @@
 These configurations become specific when applied to your particular infra entities (hosts/users),
 while allowing re-usable aspects to be shared between hosts, users, or across other flakes and non-flake projects.
 
+
+
 <table>
 <tr>
 <td>
@@ -64,13 +66,13 @@ nixosConfigurations.my-laptop = lib.nixosConfiguration {
 </tr>
 </table>
 
-Den has Zero Dependencies. The only requirement is being included in a module that has `{ config, lib, ... }`
-
-`den.lib` is domain agnostic, it can be used to configure anything Nix-configurable.
+Den has Zero Dependencies. `den.lib` is domain agnostic, it can be used to configure anything Nix-configurable.
 
 On top of `den.lib`, Den also provides a [framework](https://den.oeiuwq.com/explanation/context-pipeline/) for the NixOS/nix-Darwin/Home-Manager Nix domains.
 
 Den embraces your Nix choices and does not impose itself. All parts of Den are optional and replaceable. Works with your current setup, with/without flakes, flake-parts or any other Nix module system.
+
+> [Den is a declarative data transformation pipeline](https://github.com/vic/den/discussions/355). Infra entities are traversed via `den.ctx` transformations and configurations for them are generated when `den.aspects` are applied at each context stage.
 
 <table>
 <tr>
