@@ -58,6 +58,7 @@ let
   # aspect configuring a guest vm at the host level (Declarative in MicroVM parlance)
   # See: https://microvm-nix.github.io/microvm.nix/declarative.html
   ctx.microvm-host.provides.microvm-guest =
+    { host }:
     { host, vm }:
     {
       includes =

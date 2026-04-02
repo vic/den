@@ -3,7 +3,7 @@ let
   ctx.flake-system.into.flake-os =
     { system }: map (host: { inherit host; }) (builtins.attrValues den.hosts.${system} or { });
 
-  ctx.flake-system.provides.flake-os = osFwd;
+  ctx.flake-system.provides.flake-os = _: osFwd;
 
   osFwd =
     { host }:

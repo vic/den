@@ -12,10 +12,13 @@ let
         adaptArgs = { config, ... }: config.allModuleArgs;
       }
       // forwardArgs
+      // lib.optionalAttrs (!forwardArgs ? intoPath) {
+        intoPath = x: [ (forwardArgs.fromClass x) ];
+      }
     );
 
   ctx.flake-parts = { };
-  ctx.flake-parts-system.provides.flake-parts-system = perSystemFwd;
+  ctx.flake-parts-system.provides.flake-parts-system = _: perSystemFwd;
   perSystemModule = den.lib.aspects.resolve "flake-parts" (den.ctx.flake-parts { });
 in
 {

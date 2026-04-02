@@ -52,6 +52,7 @@
 
         den.ctx.greet.into.other = lib.singleton;
         den.ctx.greet.provides.other =
+          _:
           { who }:
           {
             funny.names = [ "other-${who}" ];
@@ -130,6 +131,7 @@
           };
 
         den.ctx.greet.provides.num =
+          _:
           { number }:
           {
             funny.names = [ ("num:" + lib.toString number) ];

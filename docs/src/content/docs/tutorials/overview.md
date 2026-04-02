@@ -19,6 +19,7 @@ nix flake init -t github:vic/den#<template>
 | [**noflake**](/tutorials/noflake/) | Stable Nix, no flakes | ✗ | ✗ | ✗ |
 | [**nvf-standalone**](/tutorials/nvf-standalone/) | Den based NVF without NixOS | ✓ | ✗ | ✗ |
 | [**microvm**](/tutorials/microvm/) | MicroVM host and guests | ✓ | ✗ | ✗ |
+| [**flake-parts-modules**](/tutorials/flake-parts-modules/) | flake-parts perSystem submodules | ✓ | ✓ | ✗ |
 | [**bogus**](/tutorials/bogus/) | Bug reproduction | ✓ | ✓ | ✓ |
 | [**ci**](/tutorials/ci/) | Den's own test suite | ✓ | ✓ | ✓ |
 
@@ -56,6 +57,8 @@ Den uses [import-tree](https://github.com/vic/import-tree) to recursively load a
 - **example** — Namespaces, angle brackets, cross-platform (NixOS + Darwin), providers
 - **noflake** — Using Den with npins instead of flakes
 - **microvm** — Demostrates Den extensibility showcasing MicroVM virtualization.
+- **nvf-standalone** — Demostrates Den outside the NixOS/nix-Darwin framework.
+- **flake-parts-modules** — Integrate Den aspects with third-party flake-parts perSystem submodules.
 - **bogus** — Creating minimal reproductions for bug reports with nix-unit
 - **ci** — Comprehensive tests covering every Den feature (your best learning resource)
 
