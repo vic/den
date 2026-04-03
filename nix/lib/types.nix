@@ -170,7 +170,7 @@ let
         userByName = hostByName.users.${userName} or null;
 
         homeManagerConfiguration =
-          if hostByName != null then
+          if nameWithHost && hostByName != null then
             { pkgs, modules }:
             inputs.home-manager.lib.homeManagerConfiguration {
               inherit pkgs modules;
