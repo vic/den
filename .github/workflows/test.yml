@@ -111,6 +111,8 @@ jobs:
           nix flake update den
           nix run .#igloo -- build --offline
         if: matrix.template == 'minimal'
+      - run: (cd templates/flake-parts-modules && nix develop .# --override-input den github:$GITHUB_REPOSITORY/$GITHUB_SHA --command cowsay)
+        if: matrix.template == 'flake-parts-modules'
   flake-file-template:
     needs: [approved]
     strategy:
