@@ -23,6 +23,8 @@ let
     ctxApply = ./ctx-apply.nix;
     ctxTypes = ./ctx-types.nix;
     __findFile = ./den-brackets.nix;
+    recursiveFunctor = ./recursive-functor.nix;
+    fwTypes = ./types.nix;
     forward = ./forward.nix;
     home-env = ./home-env.nix;
     nh = ./nh.nix;

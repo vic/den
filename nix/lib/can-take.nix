@@ -15,5 +15,6 @@ in
 {
   __functor = self: self.atLeast;
   atLeast = params: func: (canTake params func).satisfied;
+  upTo = params: func: (canTake params func).satisfied;
   exactly = params: func: (canTake params func).exactly;
 }

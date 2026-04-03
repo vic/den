@@ -1,6 +1,6 @@
 { lib, den, ... }:
 let
-  inherit (den.lib) take;
+  inherit (den.lib) take recursiveFunctor;
   inherit (den.lib.statics) owned statics isCtxStatic;
 
   parametric.applyIncludes =
@@ -48,7 +48,11 @@ let
         };
     };
 
-  parametric.fixedTo = parametric.deep parametric.atLeast;
+  parametric.fixedTo = parametric.deep parametric.atLeast // {
+    atLeast = recursiveFunctor (lib.flip take.atLeast);
+    exactly = recursiveFunctor (lib.flip take.exactly);
+    upTo = recursiveFunctor (lib.flip take.upTo);
+  };
 
   parametric.withOwn =
     functor: aspect:
