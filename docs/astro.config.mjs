@@ -65,6 +65,7 @@ export default defineConfig({
 						{ label: 'Example', slug: 'tutorials/example' },
 						{ label: 'Bug Reproduction', slug: 'tutorials/bogus' },
 						{ label: 'CI Tests', slug: 'tutorials/ci' },
+						{ label: 'Flake Parts Modules', slug: 'tutorials/flake-parts-modules' },
 					],
 				},
 				{
