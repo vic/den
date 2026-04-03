@@ -6,7 +6,7 @@
   ...
 }:
 {
-  systems = builtins.attrNames den.hosts;
+  systems = lib.systems.flakeExposed;
 
   # Some third-party flake-parts modules for demo purposes.
   # Read their documentation at https://flake.parts for usage.
