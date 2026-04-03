@@ -18,7 +18,7 @@ let
     );
 
   ctx.flake-parts = { };
-  ctx.flake-parts-system.provides.flake-parts-system = _: perSystemFwd;
+  ctx.flake-parts-system.provides.flake-parts-system = perSystemFwd;
   perSystemModule = den.lib.aspects.resolve "flake-parts" (den.ctx.flake-parts { });
 in
 {
