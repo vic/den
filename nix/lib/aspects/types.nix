@@ -70,6 +70,27 @@ let
             type = lib.types.str;
           };
 
+          meta = lib.mkOption {
+            description = ''
+              Aspect meta data.
+
+              Useful for attaching things that need to be communicated between
+              aspects or tools inspecting aspects.
+
+              For example, you can use it to filter out some aspects based on
+              meta-data, or define icons/colors to use for graph generators.
+            '';
+            example = lib.literalExpression ''
+              { 
+                needs-unfree = [ "steam" ];
+                graph.icon = "gaming";
+              }
+            '';
+            defaultText = lib.literalExpression "{ }";
+            default = { };
+            type = lib.types.deferredModule;
+          };
+
           includes = lib.mkOption {
             description = "Providers to ask aspects from";
             type = lib.types.listOf (providerType cnf);
