@@ -4,6 +4,7 @@ let
     { lib, ... }:
     {
       options.wsl.defaultUser = lib.mkOption { type = lib.types.str; };
+      options.wsl.enable = lib.mkOption { type = lib.types.bool; };
     };
 in
 {
@@ -20,8 +21,15 @@ in
 
         den.aspects.tux.includes = [ den.provides.primary-user ];
 
-        expr = igloo.wsl.defaultUser;
-        expected = "tux";
+        expr = {
+          user = igloo.wsl.defaultUser;
+          enabled = igloo.wsl.enable;
+        };
+
+        expected = {
+          user = "tux";
+          enabled = true;
+        };
       }
     );
 

@@ -45,6 +45,7 @@ let
       intoPath = _: [ "wsl" ];
       fromAspect = _: lib.head aspect-chain;
       guard = { options, ... }: options ? wsl;
+      adapterModule = removeAttrs host.wsl [ "module" ];
     };
 
   hostConf.options.wsl = {
