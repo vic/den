@@ -31,7 +31,10 @@ let
     { host }:
     {
       inherit description;
-      ${host.class}.imports = [ host.wsl.module ];
+      ${host.class} = {
+        imports = [ host.wsl.module ];
+        wsl.enable = true;
+      };
       includes = [ (fwd host) ];
     };
 
