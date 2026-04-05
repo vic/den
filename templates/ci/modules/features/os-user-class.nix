@@ -84,5 +84,31 @@
       }
     );
 
+    test-user-class-from-parametric-include = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.aspects.tux = {
+          user.description = "owned-description";
+          includes = [
+            (
+              { host, ... }:
+              lib.optionalAttrs (host.class == "nixos") {
+                user.extraGroups = [ "wheel" ];
+              }
+            )
+          ];
+        };
+
+        expr = igloo.users.users.tux.extraGroups;
+        expected = [ "wheel" ];
+      }
+    );
   };
 }

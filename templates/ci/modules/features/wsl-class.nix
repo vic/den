@@ -33,5 +33,33 @@ in
       }
     );
 
+    test-wsl-from-parametric-include = denTest (
+      {
+        den,
+        igloo,
+        lib,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo = {
+          wsl.module = mockWslModule;
+          users.tux = { };
+        };
+
+        den.aspects.igloo = {
+          includes = [
+            (
+              { host, ... }:
+              lib.optionalAttrs (host.class == "nixos") {
+                wsl.enable = true;
+              }
+            )
+          ];
+        };
+
+        expr = igloo.wsl.enable;
+        expected = true;
+      }
+    );
   };
 }
