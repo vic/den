@@ -31,7 +31,7 @@ let
     { host }:
     {
       inherit description;
-      ${host.class} = { 
+      ${host.class} = {
         imports = [ host.wsl.module ];
         wsl.enable = true;
       };
