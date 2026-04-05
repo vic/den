@@ -31,7 +31,10 @@ let
     { host }:
     {
       inherit description;
-      ${host.class}.imports = [ host.wsl.module ];
+      ${host.class} = { 
+        imports = [ host.wsl.module ];
+        wsl.enable = true;
+      };
       includes = [ (fwd host) ];
     };
 
@@ -45,7 +48,6 @@ let
       intoPath = _: [ "wsl" ];
       fromAspect = _: lib.head aspect-chain;
       guard = { options, ... }: options ? wsl;
-      adapterModule = removeAttrs host.wsl [ "module" ];
     };
 
   hostConf.options.wsl = {
