@@ -1,30 +1,18 @@
 { lib, den, ... }:
 let
-  inherit (den.lib) lastFunctionTo;
+  inherit (den.lib) lastFunctionTo canTake;
 
-  isSubmoduleFn =
-    m:
-    let
-      args = lib.functionArgs m;
-    in
-    builtins.any (k: args ? ${k}) [
-      "lib"
-      "config"
-      "options"
-      "aspect"
-    ];
+  isSubmoduleFn = canTake.upTo {
+    lib = true;
+    config = true;
+    options = true;
+  };
 
-  providerArgNames = [
-    "aspect-chain"
-    "class"
-  ];
-
-  isProviderFn =
-    f:
-    let
-      names = builtins.attrNames (lib.functionArgs f);
-    in
-    names != [ ] && builtins.all (n: builtins.elem n providerArgNames) names;
+  isProviderFn = canTake.upTo {
+    aspect = true;
+    aspect-chain = true;
+    class = true;
+  };
 
   directProviderFn = cnf: lib.types.addCheck (lastFunctionTo (aspectSubmodule cnf)) isProviderFn;
 
