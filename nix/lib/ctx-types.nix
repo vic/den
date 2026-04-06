@@ -37,7 +37,7 @@ let
       v;
 
   ctxSubmodule = lib.types.submodule {
-    imports = den.lib.aspects.types.aspectSubmodule.getSubModules;
+    imports = den.lib.aspects.types.aspectType.getSubModules;
     options.into = lib.mkOption {
       description = "Context transformations to other context types";
       type = intoCtxType;
