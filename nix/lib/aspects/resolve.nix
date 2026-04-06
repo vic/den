@@ -1,16 +1,22 @@
-{ lib, ... }:
+{ lib, den, ... }:
 let
 
-  resolve =
-    class: aspect-chain: aspect:
-    let
-      provided = if lib.isFunction aspect then aspect { inherit class aspect-chain; } else aspect;
+  inherit (den.lib) canTake take;
 
-      next-chain = aspect-chain ++ [ provided ];
+  resolve =
+    class: prev-chain: provided:
+    let
+      aspect = if canTake.upTo args provided then take.upTo provided args else provided;
+
+      aspect-chain = prev-chain ++ [ provided ] ++ (lib.optional (provided != aspect) aspect);
+
+      args = {
+        inherit aspect class aspect-chain;
+      };
 
       imports =
-        (lib.optional (provided ? ${class}) provided.${class})
-        ++ (map (resolve class next-chain) (provided.includes or [ ]));
+        (lib.optional (aspect ? ${class}) aspect.${class})
+        ++ (map (resolve class aspect-chain) (aspect.includes or [ ]));
 
     in
     {
@@ -18,4 +24,4 @@ let
     };
 
 in
-class: aspect: resolve class [ aspect ] aspect
+class: aspect: resolve class [ ] aspect
