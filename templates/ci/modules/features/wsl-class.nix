@@ -42,6 +42,7 @@ in
       }:
       {
         den.hosts.x86_64-linux.igloo = {
+          wsl.enable = true;
           wsl.module = mockWslModule;
           users.tux = { };
         };
@@ -51,14 +52,14 @@ in
             (
               { host, ... }:
               lib.optionalAttrs (host.class == "nixos") {
-                wsl.enable = true;
+                wsl.defaultUser = "tux";
               }
             )
           ];
         };
 
-        expr = igloo.wsl.enable;
-        expected = true;
+        expr = igloo.wsl.defaultUser;
+        expected = "tux";
       }
     );
   };
