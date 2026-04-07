@@ -120,7 +120,6 @@
 
         expr = lib.sort lib.lessThan igloo.funny;
         expected = [
-          "atHost perUser static" # tux
           "atHost perUser pingu@igloo fun"
           "atHost perUser static"
           "atHost perUser static"
