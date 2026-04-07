@@ -1,12 +1,9 @@
 { denTest, ... }:
 {
   flake.tests.parametric = {
+
     test-parametric-forwards-context = denTest (
-      {
-        den,
-        igloo,
-        ...
-      }:
+      { den, igloo, ... }:
       let
         foo = den.lib.parametric {
           includes = [
@@ -29,11 +26,7 @@
     );
 
     test-parametric-owned-config = denTest (
-      {
-        den,
-        igloo,
-        ...
-      }:
+      { den, igloo, ... }:
       let
         foo = den.lib.parametric {
           nixos.networking.hostName = "from-parametric-owned";
@@ -50,11 +43,7 @@
     );
 
     test-parametric-fixedTo = denTest (
-      {
-        den,
-        igloo,
-        ...
-      }:
+      { den, igloo, ... }:
       let
         foo =
           { host, ... }:
@@ -79,20 +68,12 @@
     );
 
     test-parametric-expands = denTest (
-      {
-        den,
-        igloo,
-        ...
-      }:
+      { den, igloo, ... }:
       let
         foo = den.lib.parametric.expands { planet = "Earth"; } {
           includes = [
             (
-              {
-                host,
-                planet,
-                ...
-              }:
+              { host, planet, ... }:
               {
                 nixos.users.users.tux.description = "${host.name}/${planet}";
               }
@@ -110,11 +91,7 @@
     );
 
     test-never-matches-aspect-skipped = denTest (
-      {
-        den,
-        igloo,
-        ...
-      }:
+      { den, igloo, ... }:
       let
         never-matches =
           { never-exists, ... }:
@@ -135,5 +112,6 @@
         expected = "igloo";
       }
     );
+
   };
 }
