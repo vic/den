@@ -3,6 +3,10 @@ title: "Template: Example"
 description: Feature showcase with namespaces, angle brackets, cross-platform aspects, and providers.
 ---
 
+<Aside title="Source" icon="github">
+[`templates/example`](https://github.com/vic/den/tree/main/templates/example)
+</Aside>
+
 The example template demonstrates Den's advanced features: namespaces, angle brackets, cross-platform hosts, mutual providers, and custom aspect libraries.
 
 ## Initialize

@@ -3,6 +3,10 @@ title: "Template: Bug Reproduction"
 description: Create minimal reproductions for Den bug reports using nix-unit.
 ---
 
+<Aside title="Source" icon="github">
+[`templates/bogus`](https://github.com/vic/den/tree/main/templates/bogus)
+</Aside>
+
 The bogus template helps you create minimal bug reproductions. Use it when reporting issues or contributing fixes.
 
 ## Initialize
