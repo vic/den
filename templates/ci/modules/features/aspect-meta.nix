@@ -97,7 +97,6 @@
 
         den.aspects.foo =
           { host }:
-          { class, aspect-chain }:
           { config, lib, ... }:
           {
             nixos.environment.sessionVariables = {
