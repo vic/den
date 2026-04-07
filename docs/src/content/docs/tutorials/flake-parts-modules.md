@@ -3,6 +3,10 @@ title: "Template: Flake Parts Modules"
 description: Den Forwarding classes for third-party flake-parts perSystem submodules.
 ---
 
+<Aside title="Source" icon="github">
+[`templates/flake-parts-modules`](https://github.com/vic/den/tree/main/templates/flake-parts-modules)
+</Aside>
+
 The `flake-parts-modules` template demonstrates how to use Den aspects
 that propagate custom classes into third-party flake-parts `perSystem` modules.
 

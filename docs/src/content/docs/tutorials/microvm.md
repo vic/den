@@ -3,6 +3,10 @@ title: "Template: MicroVM"
 description: Feature showcase MicroVM integration with custom context pipelines and custom classes.
 ---
 
+<Aside title="Source" icon="github">
+[`templates/microvm`](https://github.com/vic/den/tree/main/templates/microvm)
+</Aside>
+
 [templates/microvm](https://github.com/vic/den/tree/main/templates/microvm) demonstrates Den's extensibility: custom `den.ctx` and `den.schema` extensions for integrating other Nix libraries like [MicroVM.nix](https://github.com/microvm-nix/microvm.nix). 
 
 This template shows two patterns for building MicroVMs with Den.

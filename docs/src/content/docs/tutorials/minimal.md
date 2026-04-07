@@ -3,6 +3,10 @@ title: "Template: Minimal"
 description: The smallest possible Den setup — one host, one user, no extra dependencies.
 ---
 
+<Aside title="Source" icon="github">
+[`templates/minimal`](https://github.com/vic/den/tree/main/templates/minimal)
+</Aside>
+
 The minimal template demonstrates Den's core with zero extra dependencies beyond nixpkgs.
 
 ## Initialize
