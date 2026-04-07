@@ -9,7 +9,6 @@ let
   };
 
   isProviderFn = canTake.upTo {
-    aspect = true;
     aspect-chain = true;
     class = true;
   };
@@ -33,7 +32,7 @@ let
         loc: defs:
         (aspectType cnf).merge loc [
           {
-            file = (lib.head defs).file;
+            file = (lib.last defs).file;
             value = {
               __functor = _: eth.merge loc defs;
             };
@@ -48,9 +47,31 @@ let
     let
       sub = aspectSubmodule cnf;
     in
-    sub
-    // {
-      merge = loc: defs: sub.merge loc defs;
+    sub // { merge = mergeWithAspectMeta sub; };
+
+  mergeWithAspectMeta =
+    sub: loc: defs:
+    sub.merge loc (
+      defs
+      ++ [
+        {
+          file = (lib.last defs).file;
+          value = aspectMeta loc defs;
+        }
+      ]
+    );
+
+  aspectMeta =
+    loc: defs:
+    { config, ... }:
+    let
+      names = map (x: if builtins.isString x then x else "<anon>") config.meta.loc;
+      nameFromLoc = lib.concatStringsSep "." names;
+    in
+    {
+      meta.name = lib.mkForce nameFromLoc;
+      meta.file = lib.mkForce (lib.last defs).file;
+      meta.loc = lib.mkForce loc;
     };
 
   aspectSubmodule =
@@ -59,7 +80,6 @@ let
       { name, config, ... }:
       {
         freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;
-        config._module.args.aspect = config;
         imports = [ (lib.mkAliasOptionModule [ "_" ] [ "provides" ]) ];
 
         options = {
@@ -75,6 +95,16 @@ let
             defaultText = lib.literalExpression "name";
             default = "Aspect ${name}";
             type = lib.types.str;
+          };
+
+          meta = lib.mkOption {
+            description = "Aspect attached meta data";
+            type = lib.types.submodule {
+              freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
+              self = config;
+            };
+            defaultText = lib.literalExpression "{ }";
+            default = { };
           };
 
           includes = lib.mkOption {

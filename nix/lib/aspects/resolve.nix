@@ -2,26 +2,56 @@
 let
 
   inherit (den.lib) canTake take;
+  inherit (den.lib.aspects) adapters;
 
-  resolve =
-    class: prev-chain: provided:
+  apply =
+    provided: args:
     let
-      aspect = if canTake.upTo args provided then take.upTo provided args else provided;
-
-      aspect-chain = prev-chain ++ [ provided ] ++ (lib.optional (provided != aspect) aspect);
-
-      args = {
-        inherit aspect class aspect-chain;
-      };
-
-      imports =
-        (lib.optional (aspect ? ${class}) aspect.${class})
-        ++ (map (resolve class aspect-chain) (aspect.includes or [ ]));
-
+      res = if canTake.upTo args provided then take.upTo provided args else provided;
+      mod =
+        den.lib.aspects.types.aspectType.merge
+          [ ]
+          [
+            {
+              file = "<curried>";
+              value = res;
+            }
+          ];
     in
-    {
-      inherit imports;
-    };
+    if lib.isFunction res then mod else res;
+
+  withAdapter =
+    adapter: class:
+    let
+      go =
+        prevChain: provided:
+        let
+          aspect = apply provided { inherit class aspect-chain; };
+
+          aspect-chain = prevChain ++ [ provided ] ++ (lib.optional (provided != aspect) aspect);
+
+          classModule = lib.optional (aspect ? ${class}) (
+            lib.setDefaultModuleLocation "${class}@${aspect.name}" aspect.${class}
+          );
+
+          recurse = go aspect-chain;
+        in
+        adapter {
+          inherit
+            aspect
+            class
+            classModule
+            recurse
+            aspect-chain
+            ;
+        };
+    in
+    go [ ];
+
+  resolve = withAdapter adapters.module;
 
 in
-class: aspect: resolve class [ ] aspect
+{
+  inherit withAdapter;
+  __functor = _: resolve;
+}

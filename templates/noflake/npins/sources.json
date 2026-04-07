@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "75660e94a8b8d3971aed86fe21a56d7c7e6de090",
-      "url": "https://github.com/vic/den/archive/75660e94a8b8d3971aed86fe21a56d7c7e6de090.tar.gz",
-      "hash": "sha256-e44JWGnngL+P33T4QmJX7S8yGdFEGrCmrgZJmzkaTiQ="
+      "revision": "53c30ea9acbd357077defec263066506771e9630",
+      "url": "https://github.com/vic/den/archive/53c30ea9acbd357077defec263066506771e9630.tar.gz",
+      "hash": "sha256-9GuRhcEA8YoYa1XYeJxBP0V5H+Gn4pH41cgQHe3hL5M="
     },
     "hjem": {
       "type": "Git",
