@@ -3,6 +3,9 @@ title: "Template: CI Tests"
 description: Den's own test suite — the definitive reference for every feature.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/ci`](https://github.com/vic/den/tree/main/templates/ci)
 </Aside>
