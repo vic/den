@@ -3,11 +3,12 @@ title: Output
 description: How Den builds flake outputs from host and home declarations.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Steps } from '@astrojs/starlight/components';
 
 <Aside title="Source" icon="github">
-[`modules/config.nix`](https://github.com/vic/den/blob/main/modules/config.nix) --
-[`modules/output.nix`](https://github.com/vic/den/blob/main/modules/output.nix)
+[`modules/outputs/*.nix`](https://github.com/vic/den/blob/main/modules/outputs) --
+[`modules/outputs.nix`](https://github.com/vic/den/blob/main/modules/outputs.nix) --
+[`per system tests`](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-flake-level.nix)
 </Aside>
 
 ## Build pipeline
@@ -55,11 +56,10 @@ home.instantiate {
 
 The result lands at `flake.homeConfigurations.<name>` by default.
 
-## `output.nix` -- flake-parts compatibility
+## `outputs.nix` -- flake-parts compatibility
 
 When `inputs.flake-parts` is absent, Den defines its own `options.flake`
-option (adapted from flake-parts, MIT licensed) so that output generation
-works identically with or without flake-parts.
+option so that output generation works identically with or without flake-parts.
 
 This means Den can produce `nixosConfigurations`, `darwinConfigurations`,
 `homeConfigurations`, and any custom output attribute regardless of
@@ -75,6 +75,8 @@ den.hosts.x86_64-linux.myhost = {
 };
 ```
 
+Use `intoAttr = [ ]` to skip placing the configuration.
+
 ## Custom instantiation
 
 Override `instantiate` to use a different builder or add `specialArgs`:
@@ -84,3 +86,49 @@ den.hosts.x86_64-linux.myhost = {
   instantiate = inputs.nixos-unstable.lib.nixosSystem;
 };
 ```
+
+## Flake outputs like `packages`, `checks`, etc.
+
+Den aspects can directly contribute to `packages` and similar flake outputs.
+
+The following example are for `packages` but same applies for `checks`, `devShells`,
+`legacyPackages` and other per system outputs.
+
+<Steps>
+
+1. Define `flake.packages` output.
+
+     This is only needed if you don't use flake-parts and will have more than one package,
+     because the Nix module system needs to know how to merge both output definitions:
+
+     ```nix
+     # modules/outputs.nix
+     { inputs, ... }:
+     {
+       imports = [ inputs.den.flakeOutputs.packages ];
+     }
+     ```
+
+2. Allow aspects to produce `packages`.
+
+     ```nix
+     # ANY Host or User aspect can produce outputs:
+     den.ctx.flake-system.into.host = { system }: 
+       map (host: { inherit host; }) 
+       (lib.attrValues den.hosts.${system});
+
+     # ONLY foo aspect can produce packages:
+     den.ctx.flake-packages.includes = [ den.aspects.foo ];
+     ```
+
+3. Use the `packages` class on your aspects:
+
+     ```nix
+     den.aspects.foo = {
+        packages = { pkgs, ... }: { inherit (pkgs) hello; };
+     };
+     ```
+
+</Steps>
+
+See [`forward-flake-level.nix`](https://github.com/vic/den/blob/main/templates/ci/modules/features/forward-flake-level.nix) for all examples.

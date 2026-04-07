@@ -31,7 +31,10 @@ let
     { host }:
     {
       inherit description;
-      ${host.class}.imports = [ host.wsl.module ];
+      ${host.class} = {
+        imports = [ host.wsl.module ];
+        wsl.enable = true;
+      };
       includes = [ (fwd host) ];
     };
 
@@ -52,6 +55,7 @@ let
     module = lib.mkOption {
       description = "The NixOS-WSL module";
       type = lib.types.deferredModule;
+      defaultText = lib.literalExpression "inputs.nixos-wsl.nixosModules.default";
       default = inputs.nixos-wsl.nixosModules.default;
     };
   };

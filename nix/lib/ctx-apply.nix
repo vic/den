@@ -3,20 +3,8 @@ ctxNs:
 let
   inherit (den.lib) parametric;
 
-  ctxKeys = [
-    "name"
-    "description"
-    "into"
-    "provides"
-    "__functor"
-    "__functionArgs"
-    "_module"
-    "_"
-  ];
+  noop = _: { };
 
-  cleanCtx = self: builtins.removeAttrs self ctxKeys;
-
-  # Flatten nested into result to [ { path = [str]; into = [ctx_value]; } ].
   flattenInto =
     attrset: prefix:
     lib.concatLists (
@@ -37,69 +25,93 @@ let
       ) attrset
     );
 
-  transformAll =
-    source: self: ctxValue: key:
-    [
-      {
-        ctx = ctxValue;
-        inherit source key;
-        ctxDef = self;
-      }
-    ]
-    ++ lib.concatMap (
-      { path, into }:
-      let
-        target = lib.attrByPath path null ctxNs;
-        tkey = lib.concatStringsSep "." path;
-        recurse = t: k: lib.concatMap (v: transformAll self t v k) into;
-      in
-      if target != null then
-        recurse target tkey
-      else if builtins.length path == 1 && self.provides ? ${lib.head path} then
+  resolveAspect = path: lib.attrByPath path null ctxNs;
+
+  getCrossProvider = p: (p.prev.provides.${p.key} or (_: noop)) p.prevCtx;
+
+  traverse =
+    args@{
+      prev,
+      prevCtx,
+      self,
+      ctx,
+      key,
+    }:
+    let
+      intoList = flattenInto ((self.into or noop) ctx) [ ];
+      expandOne =
+        { path, into }:
         let
-          name = lib.head path;
+          aspect = resolveAspect path;
+          aspectKey = lib.concatStringsSep "." path;
+          pathHead = lib.head path;
+          hasProvider = self.provides ? ${pathHead};
         in
-        recurse {
-          inherit name;
-          into = noop;
-        } name
-      else
-        [ ]
-    ) (flattenInto ((self.into or noop) ctxValue) [ ]);
-
-  noop = _: { };
-
-  crossProvider = p: p.source.provides.${p.key} or noop;
+        if aspect != null then
+          lib.concatMap (
+            c:
+            traverse {
+              prev = self;
+              prevCtx = ctx;
+              self = aspect;
+              ctx = c;
+              key = aspectKey;
+            }
+          ) into
+        else if builtins.length path == 1 && hasProvider then
+          lib.concatMap (
+            c:
+            traverse {
+              prev = self;
+              prevCtx = ctx;
+              self = {
+                name = pathHead;
+                into = noop;
+              };
+              ctx = c;
+              key = pathHead;
+            }
+          ) into
+        else
+          [ ];
+    in
+    [ args ] ++ lib.concatMap expandOne intoList;
 
   buildIncludes =
+    item:
+    let
+      isFirst = !(item.seen ? ${item.key});
+      selfProvider = item.self.provides.${item.self.name} or noop;
+      crossProvider = getCrossProvider item;
+    in
+    [
+      (if isFirst then parametric.fixedTo item.ctx item.self else parametric.atLeast item.self item.ctx)
+      (selfProvider item.ctx)
+      (crossProvider item.ctx)
+    ];
+
+  assembleIncludes =
     items:
     let
-      step =
-        acc: p:
-        let
-          clean = cleanCtx p.ctxDef;
-          isFirst = !(acc.seen ? ${p.key});
-          selfFun = p.ctxDef.provides.${p.ctxDef.name} or noop;
-          crossFun = crossProvider p;
-        in
-        {
-          seen = acc.seen // {
-            ${p.key} = true;
-          };
-          result = acc.result ++ [
-            (if isFirst then parametric.fixedTo p.ctx clean else parametric.atLeast clean p.ctx)
-            (selfFun p.ctx)
-            (crossFun p.ctx)
-          ];
+      step = acc: item: {
+        seen = acc.seen // {
+          ${item.key} = true;
         };
+        result = acc.result ++ (buildIncludes (item // { inherit (acc) seen; }));
+      };
     in
     (lib.foldl' step {
       seen = { };
       result = [ ];
     } items).result;
 
-  ctxApply = self: ctxValue: {
-    includes = buildIncludes (transformAll null self ctxValue self.name);
+  ctxApply = self: ctx: {
+    includes = assembleIncludes (traverse {
+      prev = null;
+      prevCtx = null;
+      key = self.name;
+      inherit self ctx;
+    });
   };
 
 in

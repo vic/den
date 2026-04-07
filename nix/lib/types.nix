@@ -9,6 +9,7 @@ let
   hostsOption = lib.mkOption {
     description = "den hosts definition";
     default = { };
+    defaultText = lib.literalExpression "{ }";
     type = lib.types.attrsOf systemType;
   };
 
@@ -39,6 +40,7 @@ let
           users = lib.mkOption {
             description = "user accounts";
             default = { };
+            defaultText = lib.literalExpression "{ }";
             type = lib.types.attrsOf (userType config);
           };
           instantiate = lib.mkOption {
@@ -57,6 +59,7 @@ let
             '';
             example = lib.literalExpression "inputs.nixpkgs.lib.nixosSystem";
             type = lib.types.raw;
+            defaultText = lib.literalExpression "inputs.nixpkgs.lib.nixosSystem";
             default =
               {
                 nixos = inputs.nixpkgs.lib.nixosSystem;
@@ -77,6 +80,7 @@ let
             '';
             example = lib.literalExpression ''[  "nixosConfigurations" hostName ]'';
             type = lib.types.listOf lib.types.str;
+            defaultText = lib.literalExpression ''[  "nixosConfigurations" hostName ]'';
             default =
               {
                 nixos = [
@@ -99,6 +103,7 @@ let
             visible = false;
             readOnly = true;
             type = lib.types.deferredModule;
+            defaultText = ''den.lib.aspects.resolve "nixos" (den.ctx.host { inherit host; })'';
             default = mainModule config den.ctx.host "host";
           };
         };
@@ -120,10 +125,14 @@ let
           classes = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             description = "home management nix classes";
+            defaultText = lib.literalExpression ''[ "user" ]'';
             default = [ "user" ];
           };
           aspect = strOpt "main aspect name" config.name;
-          host = lib.mkOption { default = host; };
+          host = lib.mkOption {
+            default = host;
+            defaultText = lib.literalExpression "host";
+          };
         };
       }
     );
@@ -161,7 +170,7 @@ let
         userByName = hostByName.users.${userName} or null;
 
         homeManagerConfiguration =
-          if hostByName != null then
+          if nameWithHost && hostByName != null then
             { pkgs, modules }:
             inputs.home-manager.lib.homeManagerConfiguration {
               inherit pkgs modules;
@@ -182,8 +191,14 @@ let
           name = strOpt "home configuration name" name;
           userName = strOpt "user account name" userName;
           hostName = strOpt "host name" hostName;
-          user = lib.mkOption { default = userByName; };
-          host = lib.mkOption { default = hostByName; };
+          user = lib.mkOption {
+            default = userByName;
+            defaultText = lib.literalExpression "user";
+          };
+          host = lib.mkOption {
+            default = hostByName;
+            defaultText = lib.literalExpression "host";
+          };
           system = strOpt "platform system" system;
           class = strOpt "home management nix class" "homeManager";
           aspect = strOpt "main aspect name" userName;
@@ -194,6 +209,7 @@ let
             '';
             example = lib.literalExpression ''inputs.nixpkgs.legacyPackages.''${home.system}'';
             type = lib.types.raw;
+            defaultText = lib.literalExpression ''inputs.nixpkgs.legacyPackages.''${home.system}'';
             default = inputs.nixpkgs.legacyPackages.${config.system};
           };
           instantiate = lib.mkOption {
@@ -210,6 +226,7 @@ let
             '';
             example = lib.literalExpression "inputs.home-manager.lib.homeManagerConfiguration";
             type = lib.types.raw;
+            defaultText = lib.literalExpression "inputs.home-manager.lib.homeManagerConfiguration";
             default =
               {
                 homeManager = homeManagerConfiguration;
@@ -226,6 +243,7 @@ let
             '';
             example = lib.literalExpression ''[  "homeConfigurations" userName ]'';
             type = lib.types.listOf lib.types.str;
+            defaultText = lib.literalExpression ''[  "homeConfigurations" userName ]'';
             default =
               {
                 homeManager = [
@@ -240,6 +258,7 @@ let
             visible = false;
             readOnly = true;
             type = lib.types.deferredModule;
+            defaultText = lib.literalExpression "mainModule";
             default = mainModule config den.ctx.home "home";
           };
         };

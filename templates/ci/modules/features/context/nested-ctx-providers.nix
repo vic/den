@@ -20,6 +20,7 @@
           };
 
         den.ctx.root.provides.${"ns.inner"} =
+          _:
           { z }:
           {
             funny.names = [ "root-for-inner-${z}" ];
@@ -54,6 +55,7 @@
         };
 
         den.ctx.root.provides.${"a.leaf"} =
+          _:
           { v }:
           {
             funny.names = [ "cross-a-${v}" ];

@@ -1,11 +1,19 @@
 { den, lib, ... }:
 let
+  asIs = _: lib.id;
+  upTo = f: builtins.intersectAttrs (lib.functionArgs f);
+
   take.unused = _unused: used: used;
-  take.exactly = take (_fn: ctx: ctx) den.lib.canTake.exactly;
-  take.atLeast = take (_fn: ctx: ctx) den.lib.canTake.atLeast;
-  take.upTo = take (fn: fn |> lib.functionsArgs |> builtins.intersectAttrs) den.lib.canTake.upTo;
+
+  take.exactly = take den.lib.canTake.exactly asIs;
+  take.atLeast = take den.lib.canTake.atLeast asIs;
+  take.upTo = take den.lib.canTake.upTo upTo;
+
   take.__functor =
-    _: takes: adapter: fn: ctx:
-    if takes ctx fn then fn (adapter fn ctx) else { };
+    _: canTake: argAdapter: fn: args:
+    let
+      ctx = argAdapter fn args;
+    in
+    if canTake ctx fn then fn ctx else { };
 in
 take

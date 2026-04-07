@@ -9,12 +9,15 @@ let
     inherit ((evalDen module).config) expr expected;
   };
 
-  # fake-parts
+  # emulate fake-parts only for self and nixpkgs.
   withSystem =
     system:
     let
-      inputs' = builtins.mapAttrs (_: builtins.mapAttrs (_: value: value.${system})) inputs;
-      self'.packages.hello = inputs.nixpkgs.legacyPackages.${system}.hello;
+      pkgs = inputs.nixpkgs.legacyPackages.${system};
+      inputs'.nixpkgs.packages = pkgs;
+      inputs'.nixpkgs.legacyPackages = pkgs;
+      self'.packages = pkgs;
+      self'.legacyPackages = pkgs;
     in
     cb: cb { inherit inputs' self'; };
 

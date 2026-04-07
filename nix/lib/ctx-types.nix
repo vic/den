@@ -2,33 +2,48 @@
 ctxApply:
 let
 
-  intoType =
-    let
-      intoAttrsType = lib.types.lazyAttrsOf lib.types.raw;
-      intoFnType = lib.types.functionTo (lib.types.lazyAttrsOf lib.types.raw);
-    in
-    lib.types.either intoFnType intoAttrsType;
+  fanoutType = lib.types.listOf lib.types.raw;
+  targetType = lib.types.either fanoutType (lib.types.lazyAttrsOf targetType);
+  fnType = lib.types.functionTo (lib.types.lazyAttrsOf targetType);
+  attrsType = lib.types.lazyAttrsOf (lib.types.functionTo targetType);
+  eitherType = lib.types.either fnType attrsType;
 
-  applyIntoNode =
-    ctxValue: v:
+  intoCtxType = lib.types.mkOptionType {
+    name = "into";
+    description = "context transformations";
+    check = eitherType.check;
+    merge =
+      loc: defs:
+      (fnType).merge loc (
+        map (
+          d:
+          d
+          // {
+            value = normalize d.value;
+          }
+        ) defs
+      );
+  };
+
+  normalize = def: if lib.isFunction def then def else ctx: builtins.mapAttrs (_: apply ctx) def;
+
+  apply =
+    ctx: v:
     if lib.isFunction v then
-      (den.lib.take.atLeast v) ctxValue
+      (den.lib.take.atLeast v) ctx
     else if builtins.isAttrs v then
-      lib.mapAttrs (_: applyIntoNode ctxValue) v
+      lib.mapAttrs (_: apply ctx) v
     else
       v;
 
-  normalizeInto =
-    value:
-    if lib.isFunction value then value else ctxValue: lib.mapAttrs (_: applyIntoNode ctxValue) value;
-
   ctxSubmodule = lib.types.submodule {
-    imports = den.lib.aspects.types.aspectSubmodule.getSubModules;
+    imports = den.lib.aspects.types.aspectType.getSubModules;
     options.into = lib.mkOption {
       description = "Context transformations to other context types";
-      type = intoType;
+      type = intoCtxType;
+      defaultText = lib.literalExpression "_: { }";
       default = _: { };
-      apply = normalizeInto;
+      apply = normalize;
     };
     config.__functor = lib.mkForce ctxApply;
   };

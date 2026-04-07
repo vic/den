@@ -48,7 +48,9 @@ let
       user,
       host,
     }:
-    lib.mkMerge (map (c: mkAspect c host.system) user.classes);
+    {
+      includes = map (c: mkAspect c host.system) user.classes;
+    };
 
   hmAspect = { home }: mkAspect home.class home.system;
 

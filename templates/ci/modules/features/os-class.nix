@@ -30,5 +30,30 @@
       }
     );
 
+    test-os-class-from-parametric-include = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.aspects.igloo = {
+          includes = [
+            (
+              { host, ... }:
+              lib.optionalAttrs (host.class == "nixos") {
+                os.networking.hostName = "from-parametric";
+              }
+            )
+          ];
+        };
+
+        expr = igloo.networking.hostName;
+        expected = "from-parametric";
+      }
+    );
   };
 }

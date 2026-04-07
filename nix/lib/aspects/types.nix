@@ -1,69 +1,57 @@
-lib:
+{ lib, den, ... }:
 let
-  functorType = lib.types.mkOptionType {
-    name = "aspectFunctor";
-    description = "aspect functor function";
-    check = lib.isFunction;
-    merge =
-      _loc: defs:
-      let
-        lastDef = lib.last defs;
-      in
-      {
-        __functionArgs = lib.functionArgs lastDef.value;
-        __functor =
-          _: callerArgs:
-          let
-            result = lastDef.value callerArgs;
-          in
-          if builtins.isFunction result then result else _: result;
-      };
+  inherit (den.lib) lastFunctionTo canTake;
+
+  isSubmoduleFn = canTake.upTo {
+    lib = true;
+    config = true;
+    options = true;
   };
 
-  isSubmoduleFn =
-    m:
-    let
-      args = lib.functionArgs m;
-    in
-    builtins.any (k: args ? ${k}) [
-      "lib"
-      "config"
-      "options"
-      "aspect"
-    ];
+  isProviderFn = canTake.upTo {
+    aspect = true;
+    aspect-chain = true;
+    class = true;
+  };
 
-  providerArgNames = [
-    "aspect-chain"
-    "class"
-  ];
+  isOtherCtxFn = f: builtins.isFunction f && !isSubmoduleFn f && !isProviderFn f;
 
-  isProviderFn =
-    f:
-    let
-      names = builtins.attrNames (lib.functionArgs f);
-    in
-    names != [ ] && builtins.all (n: builtins.elem n providerArgNames) names;
+  # { class, aspect-chain } => provider
+  leafProviderFnType = cnf: lib.types.addCheck (lastFunctionTo (providerType cnf)) isProviderFn;
 
-  directProviderFn =
-    cnf: lib.types.addCheck (lib.types.functionTo (aspectSubmodule cnf)) isProviderFn;
+  # { anything } => provider
+  curriedProviderFnType = cnf: lib.types.addCheck (lastFunctionTo (providerType cnf)) isOtherCtxFn;
 
-  curriedProviderFn =
+  providerFnType =
     cnf:
-    lib.types.addCheck (lib.types.functionTo (providerType cnf)) (
-      f:
-      builtins.isFunction f
-      ||
-        builtins.isAttrs f
-        &&
-          builtins.removeAttrs f [
-            "__functor"
-            "__functionArgs"
-          ] == { }
-    );
+    let
+      eth = lib.types.either (leafProviderFnType cnf) (curriedProviderFnType cnf);
+    in
+    eth
+    // {
+      merge =
+        loc: defs:
+        (aspectType cnf).merge loc [
+          {
+            file = (lib.head defs).file;
+            value = {
+              __functor = _: eth.merge loc defs;
+            };
+          }
+        ];
+    };
 
-  providerFn = cnf: lib.types.either (directProviderFn cnf) (curriedProviderFn cnf);
+  providerType = cnf: lib.types.either (providerFnType cnf) (aspectType cnf);
 
-  providerType = cnf: lib.types.either (providerFn cnf) (aspectSubmodule cnf);
+  aspectType =
+    cnf:
+    let
+      sub = aspectSubmodule cnf;
+    in
+    sub
+    // {
+      merge = loc: defs: sub.merge loc defs;
+    };
 
   aspectSubmodule =
     cnf:
@@ -77,12 +65,14 @@ let
         options = {
           name = lib.mkOption {
             description = "Aspect name";
+            defaultText = lib.literalExpression "name";
             default = name;
             type = lib.types.str;
           };
 
           description = lib.mkOption {
             description = "Aspect description";
+            defaultText = lib.literalExpression "name";
             default = "Aspect ${name}";
             type = lib.types.str;
           };
@@ -90,47 +80,34 @@ let
           includes = lib.mkOption {
             description = "Providers to ask aspects from";
             type = lib.types.listOf (providerType cnf);
+            defaultText = lib.literalExpression "[ ]";
             default = [ ];
           };
 
           provides = lib.mkOption {
             description = "Providers of aspect for other aspects";
+            defaultText = lib.literalExpression "{ }";
             default = { };
-            type = lib.types.submodule (
-              { config, ... }:
-              {
-                freeformType = lib.types.lazyAttrsOf (providerType cnf);
-                config._module.args.aspects = config;
-              }
-            );
+            type = lib.types.submodule {
+              freeformType = lib.types.lazyAttrsOf (providerType cnf);
+            };
           };
 
           __functor = lib.mkOption {
             internal = true;
             visible = false;
             description = "Functor to default provider";
-            type = functorType;
+            type = lastFunctionTo (providerType cnf);
+            defaultText = lib.literalExpression "lib.const";
             default = cnf.defaultFunctor or lib.const;
           };
         };
       }
     );
 
-  aspectsType =
-    cnf:
-    lib.types.submodule (
-      { config, ... }:
-      {
-        freeformType = lib.types.lazyAttrsOf (
-          lib.types.either (lib.types.addCheck (aspectSubmodule cnf) (
-            m: (!builtins.isFunction m) || isSubmoduleFn m
-          )) (providerType cnf)
-        );
-        config._module.args.aspects = config;
-      }
-    );
+  aspectsType = cnf: lib.types.submodule { freeformType = lib.types.lazyAttrsOf (providerType cnf); };
 
 in
 {
-  inherit aspectsType aspectSubmodule providerType;
+  inherit aspectsType aspectType providerType;
 }

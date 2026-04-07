@@ -93,6 +93,47 @@
       }
     );
 
+    test-into-root-and-child-merge = denTest (
+      { den, funnyNames, ... }:
+      {
+        den.ctx.leaf._.leaf =
+          { v }:
+          {
+            funny.names = [ v ];
+          };
+
+        imports = [
+          {
+            den.ctx.root.into = _: {
+              leaf = [ { v = "a"; } ];
+            };
+          }
+
+          {
+            den.ctx.root.into.leaf = _: [ { v = "b"; } ];
+          }
+
+          {
+            den.ctx.root.into.leaf = _: [ { v = "c"; } ];
+          }
+
+          {
+            den.ctx.root.into = _: {
+              leaf = [ { v = "d"; } ];
+            };
+          }
+        ];
+
+        expr = funnyNames (den.ctx.root { });
+        expected = [
+          "a"
+          "b"
+          "c"
+          "d"
+        ];
+      }
+    );
+
     test-into-mixed-flat-and-nested = denTest (
       { den, funnyNames, ... }:
       {

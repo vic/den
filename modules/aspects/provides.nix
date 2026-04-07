@@ -6,6 +6,7 @@
         (lib.mkAliasOptionModule [ "_" ] [ "provides" ])
       ];
       options.provides = lib.mkOption {
+        defaultText = lib.literalExpression "{ }";
         default = { };
         description = "Batteries Included - re-usable high-level aspects";
         type = lib.types.submodule {

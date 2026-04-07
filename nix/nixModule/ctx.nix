@@ -7,6 +7,7 @@ in
 {
   options.den.ctx = lib.mkOption {
     default = { };
+    defaultText = lib.literalExpression "{ }";
     type = lib.types.lazyAttrsOf ctxTreeType;
   };
 }
