@@ -3,6 +3,9 @@ title: "Template: Bug Reproduction"
 description: Create minimal reproductions for Den bug reports using nix-unit.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/bogus`](https://github.com/vic/den/tree/main/templates/bogus)
 </Aside>

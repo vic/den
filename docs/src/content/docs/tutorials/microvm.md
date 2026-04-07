@@ -3,6 +3,9 @@ title: "Template: MicroVM"
 description: Feature showcase MicroVM integration with custom context pipelines and custom classes.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/microvm`](https://github.com/vic/den/tree/main/templates/microvm)
 </Aside>

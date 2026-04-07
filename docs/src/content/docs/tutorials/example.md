@@ -3,6 +3,9 @@ title: "Template: Example"
 description: Feature showcase with namespaces, angle brackets, cross-platform aspects, and providers.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/example`](https://github.com/vic/den/tree/main/templates/example)
 </Aside>

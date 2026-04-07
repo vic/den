@@ -3,6 +3,9 @@ title: "Template: Flake Parts Modules"
 description: Den Forwarding classes for third-party flake-parts perSystem submodules.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/flake-parts-modules`](https://github.com/vic/den/tree/main/templates/flake-parts-modules)
 </Aside>

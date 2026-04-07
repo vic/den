@@ -3,6 +3,9 @@ title: "Template: No-Flake"
 description: Using Den with stable Nix — no flakes needed.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/noflake`](https://github.com/vic/den/tree/main/templates/noflake)
 </Aside>

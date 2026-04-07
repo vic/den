@@ -3,6 +3,9 @@ title: "Template: Minimal"
 description: The smallest possible Den setup — one host, one user, no extra dependencies.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/minimal`](https://github.com/vic/den/tree/main/templates/minimal)
 </Aside>

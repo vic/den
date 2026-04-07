@@ -3,6 +3,9 @@ title: "Template: Default"
 description: Recommended starting point with flake-parts, Home-Manager, and VM testing.
 ---
 
+
+import { Aside } from '@astrojs/starlight/components';
+
 <Aside title="Source" icon="github">
 [`templates/default`](https://github.com/vic/den/tree/main/templates/default)
 </Aside>
