@@ -8,10 +8,10 @@ let
       required = builtins.filter (n: !args.${n}) (builtins.attrNames args);
       intersect = builtins.intersectAttrs args params;
     in
-    {
+    rec {
       satisfied = valid && builtins.all (n: params ? ${n}) required;
       exactly = valid && required == builtins.attrNames params;
-      upTo = valid && intersect != { };
+      upTo = satisfied && intersect != { };
     };
 in
 {
