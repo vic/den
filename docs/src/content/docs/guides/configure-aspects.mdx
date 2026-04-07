@@ -185,3 +185,51 @@ Owned configs from `den.default` are deduplicated across pipeline stages.
 Parametric functions in `den.default.includes` are evaluated at every context
 stage. Use `den.lib.take.exactly` if a function should only run in specific contexts.
 </Aside>
+
+
+## Aspect Meta-Data
+
+Aspects have a `meta` submodule that can be used to attach meta-data
+at the aspect-level.
+
+This is useful for introspection, for example, using some key to filter out aspects
+or communicate information about aspects to other tooling like graph generators.
+
+Since `.meta` is a freeformType you can add any custom attribute or import a module on it.
+
+The following are default `meta.*` attributes defined by Den:
+
+```nix
+aspect.name # "den.aspects.igloo"
+meta.loc   # the location [ "den" "aspects" "igloo" ] from where name is derived.
+meta.file  # the first file where this aspect was defined.
+meta.self  # a reference to the aspect module `config`.
+```
+
+You can acess meta values by referencing an aspect:
+
+```nix
+den.aspects.igloo.meta.name
+```
+
+Or if an aspect needs to access its own meta data as part of its parametric functor,
+it can do something like:
+
+
+```nix
+den.aspects.foo = 
+  { config, lib, ... }: # module args to access `config.meta`
+  {
+    meta.foo = "bar";
+    __functor = self: ctx: 
+      if config.meta.foo == "bar" 
+      then { } # do nothing, skip.
+      {
+        includes = filter (i: someCondition i) self.includes;
+      };
+  }
+
+```
+
+
+
