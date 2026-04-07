@@ -7,9 +7,10 @@ let
       args = lib.functionArgs func;
       required = builtins.filter (n: !args.${n}) (builtins.attrNames args);
       intersect = builtins.intersectAttrs args params;
-    in
-    rec {
       satisfied = valid && builtins.all (n: params ? ${n}) required;
+    in
+    {
+      satisfied = satisfied;
       exactly = valid && required == builtins.attrNames params;
       upTo = satisfied && intersect != { };
     };
