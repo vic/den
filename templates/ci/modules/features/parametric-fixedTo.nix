@@ -110,7 +110,7 @@
               (test-aspect aspects)
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-owned"
               "inner-parametric-atLeast-host-igloo"
@@ -154,7 +154,7 @@
               (test-aspect aspects)
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
 
             # We expect double inclusion of atLeast-host because it is included by both user contexts
             expected = [
@@ -207,7 +207,7 @@
               ({ host }: den.lib.parametric.fixedTo.exactly { inherit host; } (test-aspect aspects))
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-nested-parametric-igloo"
               "inner-parametric-atLeast-host-igloo"
@@ -249,7 +249,7 @@
               ({ host, user }: den.lib.parametric.fixedTo.exactly { inherit host user; } (test-aspect aspects))
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-parametric-exactly-host-user-igloo-gnu"
               "inner-parametric-exactly-host-user-igloo-tux"
@@ -286,7 +286,7 @@
 
             den.ctx.user.includes = [ ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-nested-parametric-igloo"
               "inner-parametric-atLeast-host-igloo"
@@ -328,7 +328,7 @@
               ({ host, user }: den.lib.parametric.fixedTo.atLeast { inherit host user; } (test-aspect aspects))
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-nested-parametric-igloo"
               "inner-nested-parametric-igloo"
@@ -379,7 +379,7 @@
               ({ host }: den.lib.parametric.fixedTo.upTo { inherit host; } (test-aspect aspects))
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-nested-parametric-igloo"
               "inner-parametric-atLeast-host-igloo"
@@ -421,7 +421,7 @@
               ({ host, user }: den.lib.parametric.fixedTo.upTo { inherit host user; } (test-aspect aspects))
             ];
 
-            expr = lib.sort (a: b: a < b) igloo.test;
+            expr = lib.sort lib.lessThan igloo.test;
             expected = [
               "inner-nested-parametric-igloo"
               "inner-nested-parametric-igloo"
