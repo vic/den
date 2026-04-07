@@ -3,10 +3,6 @@ title: "Template: NVF Standalone"
 description: Den based NVF configuration without NixOS
 ---
 
-<Aside title="Source" icon="github">
-[`templates/nvf-standalone`](https://github.com/vic/den/tree/main/templates/nvf-standalone)
-</Aside>
-
 The `nvf-standalone` template demonstrates how to use Den for
 other configurations outside NixOS/nix-Darwin/HM. For demo
 purposes this uses [NVF Standalone](https://nvf.notashelf.dev/#ch-standalone-installation) to configure a runnable `.#my-neovim` app.

@@ -3,13 +3,6 @@ title: "Template: CI Tests"
 description: Den's own test suite — the definitive reference for every feature.
 ---
 
-
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside title="Source" icon="github">
-[`templates/ci`](https://github.com/vic/den/tree/main/templates/ci)
-</Aside>
-
 The CI template is Den's comprehensive test suite. It tests every feature using [nix-unit](https://github.com/nix-community/nix-unit). This is the **best learning resource** for understanding exactly how Den behaves.
 
 ## Structure

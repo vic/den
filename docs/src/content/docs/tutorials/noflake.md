@@ -3,13 +3,6 @@ title: "Template: No-Flake"
 description: Using Den with stable Nix — no flakes needed.
 ---
 
-
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside title="Source" icon="github">
-[`templates/noflake`](https://github.com/vic/den/tree/main/templates/noflake)
-</Aside>
-
 The noflake template shows that Den works perfectly without Nix flakes. It uses [npins](https://github.com/andir/npins) for dependency management and works with stable Nix.
 
 ## Initialize
