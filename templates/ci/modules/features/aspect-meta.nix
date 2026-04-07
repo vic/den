@@ -34,7 +34,7 @@
       { den, funnyNames, ... }:
       {
         den.aspects.foo = {
-          funny.names = [ den.aspects.foo.name ];
+          funny.names = [ den.aspects.foo.meta.name ];
         };
 
         expr = funnyNames den.aspects.foo;
@@ -48,7 +48,7 @@
         den.aspects.foo =
           { config, ... }:
           {
-            funny.names = [ config.name ];
+            funny.names = [ config.meta.name ];
           };
 
         expr = funnyNames den.aspects.foo;
@@ -80,7 +80,7 @@
             KEYS
             ;
         };
-        expected.KEYS = "file:loc:self";
+        expected.KEYS = "file:loc:name:self";
       }
     );
 
@@ -110,7 +110,7 @@
             KEYS
             ;
         };
-        expected.KEYS = "file:foo:loc:self";
+        expected.KEYS = "file:foo:loc:name:self";
       }
     );
 

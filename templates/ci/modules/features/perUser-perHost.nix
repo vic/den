@@ -54,7 +54,7 @@
           ))
         ];
 
-        expr = lib.sort (a: b: a < b) igloo.funny;
+        expr = lib.sort lib.lessThan igloo.funny;
         expected = [
           "atHost perHost igloo fun"
           "atHost perHost static"
@@ -118,14 +118,14 @@
           ))
         ];
 
-        expr = igloo.funny;
+        expr = lib.sort lib.lessThan igloo.funny;
         expected = [
           "atHost perUser pingu@igloo fun"
-          "atHost perUser static" # pingu
+          "atHost perUser static"
+          "atHost perUser static"
           "atHost perUser tux@igloo fun"
-          "atHost perUser static" # tux
-          "atUser perUser tux@igloo fun"
           "atUser perUser static"
+          "atUser perUser tux@igloo fun"
         ];
       }
     );
@@ -170,7 +170,7 @@
           ))
         ];
 
-        expr = lib.sort (a: b: a < b) config.flake.homeConfigurations.tux.config.funny;
+        expr = lib.sort lib.lessThan config.flake.homeConfigurations.tux.config.funny;
         expected = [
           "atHome perHome static"
           "atHome perHome tux fun"
