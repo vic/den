@@ -12,17 +12,13 @@ let
       };
     };
 
-  deepRecurse =
-    functor: ctx: provided:
-    provided
+  mapIncludes =
+    branch: leaf: aspect:
+    aspect
     // {
       includes = map (
-        include:
-        if include ? includes then
-          if include ? __functor then include else parametric.deep functor ctx include
-        else
-          include
-      ) (provided.includes or [ ]);
+        include: if include ? includes && !include ? __functor then branch include else leaf include
+      ) (aspect.includes or [ ]);
     };
 
   parametric.atLeast = parametric.applyIncludes take.atLeast;
@@ -32,8 +28,8 @@ let
   parametric.expands =
     attrs: parametric.withOwn (aspect: ctx: parametric.atLeast aspect (ctx // attrs));
 
-  parametric.deep =
-    functor: attrs: aspect:
+  deepRecurse =
+    include: branch: leaf: aspect:
     aspect
     // {
       __functor =
@@ -41,14 +37,28 @@ let
         { class, aspect-chain }:
         {
           includes = [
-            (owned self)
-            (statics self { inherit class aspect-chain; })
-            (deepRecurse functor attrs (functor self attrs))
+            (include self { inherit class aspect-chain; })
+            (mapIncludes (deepRecurse include branch leaf) leaf (branch aspect))
           ];
         };
     };
 
-  parametric.fixedTo = parametric.deep parametric.atLeast;
+  includeOwnedAndStatics = self: staticCtx: {
+    includes = [
+      (owned self)
+      (statics self staticCtx)
+    ];
+  };
+
+  includeNothing = (_: _: { });
+
+  parametric.deep = functor: deepRecurse includeOwnedAndStatics functor lib.id;
+  parametric.deepParametrics = functor: deepRecurse includeNothing lib.id functor;
+
+  parametric.fixedTo.__functor = _: attrs: parametric.deep (lib.flip parametric.atLeast attrs);
+  parametric.fixedTo.exactly = attrs: parametric.deepParametrics (lib.flip take.exactly attrs);
+  parametric.fixedTo.atLeast = attrs: parametric.deepParametrics (lib.flip take.atLeast attrs);
+  parametric.fixedTo.upTo = attrs: parametric.deepParametrics (lib.flip take.upTo attrs);
 
   parametric.withOwn =
     functor: aspect:
