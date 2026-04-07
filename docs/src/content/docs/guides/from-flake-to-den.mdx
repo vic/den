@@ -122,6 +122,26 @@ Den batteries like `den.provides.define-user` and `den.provides.primary-user` wo
 }
 ```
 
+## Migrating with flake-parts.
+
+If you are using `flake-parts` on your current configuration,
+you will also need the following at the previous step:
+
+```diff lang=nix
+    den = (inputs.nixpkgs.lib.evalModules {
+      modules = [ 
+        (inputs.import-tree ./modules) 
++       inputs.den.flakeOutputs.flake
+      ];
+      specialArgs.inputs = inputs;
+    }).config;
+```
+
+The `flakeOutputs.flake` module defines a flake-parts
+compatible top-level `flake` output to be used by Den.
+
+> See [output reference](/reference/output) for more on this.
+
 ## Once Migration Completed
 
 Once you have moved all your host configurations into `modules/`,
