@@ -200,10 +200,11 @@ Since `.meta` is a freeformType you can add any custom attribute or import a mod
 The following are default `meta.*` attributes defined by Den:
 
 ```nix
-aspect.name # "den.aspects.igloo"
-meta.loc   # the location [ "den" "aspects" "igloo" ] from where name is derived.
-meta.file  # the first file where this aspect was defined.
-meta.self  # a reference to the aspect module `config`.
+aspect.name # "igloo", the submodule name
+aspect.meta.loc   # the location [ "den" "aspects" "igloo" ] from where name is derived.
+aspect.meta.name  # "den.aspects.igloo" derived from loc
+aspect.meta.file  # the last file where this aspect was defined.
+aspect.meta.self  # a reference to the aspect module `config`.
 ```
 
 You can acess meta values by referencing an aspect:

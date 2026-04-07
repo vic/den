@@ -32,7 +32,7 @@ let
         loc: defs:
         (aspectType cnf).merge loc [
           {
-            file = (lib.head defs).file;
+            file = (lib.last defs).file;
             value = {
               __functor = _: eth.merge loc defs;
             };
@@ -55,7 +55,7 @@ let
       defs
       ++ [
         {
-          file = (lib.head defs).file;
+          file = (lib.last defs).file;
           value = aspectMeta loc defs;
         }
       ]
@@ -65,13 +65,13 @@ let
     loc: defs:
     { config, ... }:
     let
-      names = map (x: if builtins.isString x then x else "<anon>") loc;
+      names = map (x: if builtins.isString x then x else "<anon>") config.meta.loc;
       nameFromLoc = lib.concatStringsSep "." names;
     in
     {
-      name = nameFromLoc;
-      meta.file = (lib.last defs).file;
-      meta.loc = loc;
+      meta.name = lib.mkForce nameFromLoc;
+      meta.file = lib.mkForce (lib.last defs).file;
+      meta.loc = lib.mkForce loc;
     };
 
   aspectSubmodule =

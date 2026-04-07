@@ -2,6 +2,7 @@
 let
 
   inherit (den.lib) canTake take;
+  inherit (den.lib.aspects) adapters;
 
   apply =
     provided: args:
@@ -19,22 +20,38 @@ let
     in
     if lib.isFunction res then mod else res;
 
-  resolve =
-    class: prev-chain: provided:
+  withAdapter =
+    adapter: class:
     let
-      aspect = apply provided { inherit class aspect-chain; };
+      go =
+        prevChain: provided:
+        let
+          aspect = apply provided { inherit class aspect-chain; };
 
-      aspect-chain = prev-chain ++ [ provided ] ++ (lib.optional (provided != aspect) aspect);
+          aspect-chain = prevChain ++ [ provided ] ++ (lib.optional (provided != aspect) aspect);
 
-      classModule = lib.optional (aspect ? ${class}) (
-        lib.setDefaultModuleLocation "${class}@${aspect.name}" aspect.${class}
-      );
+          classModule = lib.optional (aspect ? ${class}) (
+            lib.setDefaultModuleLocation "${class}@${aspect.name}" aspect.${class}
+          );
 
-      imports = classModule ++ (map (resolve class aspect-chain) (aspect.includes or [ ]));
+          recurse = go aspect-chain;
+        in
+        adapter {
+          inherit
+            aspect
+            class
+            classModule
+            recurse
+            aspect-chain
+            ;
+        };
     in
-    {
-      inherit imports;
-    };
+    go [ ];
+
+  resolve = withAdapter adapters.module;
 
 in
-class: aspect: resolve class [ ] aspect
+{
+  inherit withAdapter;
+  __functor = _: resolve;
+}
