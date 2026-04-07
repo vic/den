@@ -52,10 +52,10 @@ let
 
   includeNothing = (_: _: { });
 
-  parametric.deepOwned = functor: deepRecurse includeOwnedAndStatics functor lib.id;
+  parametric.deep = functor: deepRecurse includeOwnedAndStatics functor lib.id;
   parametric.deepParametrics = functor: deepRecurse includeNothing lib.id functor;
 
-  parametric.fixedTo.__functor = _: attrs: parametric.deepOwned (lib.flip parametric.atLeast attrs);
+  parametric.fixedTo.__functor = _: attrs: parametric.deep (lib.flip parametric.atLeast attrs);
   parametric.fixedTo.exactly = attrs: parametric.deepParametrics (lib.flip take.exactly attrs);
   parametric.fixedTo.atLeast = attrs: parametric.deepParametrics (lib.flip take.atLeast attrs);
   parametric.fixedTo.upTo = attrs: parametric.deepParametrics (lib.flip take.upTo attrs);
