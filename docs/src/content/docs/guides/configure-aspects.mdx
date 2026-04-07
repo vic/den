@@ -30,7 +30,7 @@ Den **automatically** creates an aspect for each of your host/user/home defintio
 
 ```nix "homeManager" "hjem" "maid" "x86_64-linux"
 den.hosts.x86_64-linux.igloo.users = {
-  tux = { 
+  tux = {
     classes = [ "homeManager" "hjem" ];
   };
   pingu = {
@@ -91,7 +91,7 @@ In addition to per-class modules, an aspect has an `includes` list referencing o
 ## Owned Configs
 
 Attributes named after a Nix class (`nixos`, `darwin`, `homeManager`, or any
-custom class) are referred by this documentation as **owned configs**. 
+custom class) are referred by this documentation as **owned configs**.
 
 They are just a regular Nix module:
 
@@ -134,7 +134,7 @@ as part of an includes list:
 being resolved and an `aspect-chain` that lead to the current aspect (most recent last).
 
 
-`(3)` is a more interesting kind of aspect that is used by Den to pass host/user defitions 
+`(3)` is a more interesting kind of aspect that is used by Den to pass host/user defitions
 into these functions, so they can inspect the host features and provide
 configuration accordingly.
 
@@ -186,7 +186,6 @@ Parametric functions in `den.default.includes` are evaluated at every context
 stage. Use `den.lib.take.exactly` if a function should only run in specific contexts.
 </Aside>
 
-
 ## Aspect Meta-Data
 
 Aspects have a `meta` submodule that can be used to attach meta-data
@@ -207,7 +206,7 @@ aspect.meta.file  # the last file where this aspect was defined.
 aspect.meta.self  # a reference to the aspect module `config`.
 ```
 
-You can acess meta values by referencing an aspect:
+You can access meta values by referencing an aspect:
 
 ```nix
 den.aspects.igloo.meta.name
@@ -216,21 +215,72 @@ den.aspects.igloo.meta.name
 Or if an aspect needs to access its own meta data as part of its parametric functor,
 it can do something like:
 
-
 ```nix
-den.aspects.foo = 
+den.aspects.foo =
   { config, lib, ... }: # module args to access `config.meta`
   {
     meta.foo = "bar";
-    __functor = self: ctx: 
-      if config.meta.foo == "bar" 
+    __functor = self: ctx:
+      if config.meta.foo == "bar"
       then { } # do nothing, skip.
       {
         includes = filter (i: someCondition i) self.includes;
       };
   }
-
 ```
 
+## Aspect Custom Submodule
 
+In case an aspect needs a custom submodule, it can be added this way:
 
+```nix
+den.aspects.tux =
+  { config, ... }: # The function-args style is required for `imports` not to be interpreted as an Aspect class.
+  {
+    imports = [
+      {
+        options = {
+          default-key = lib.mkOption {
+            type = with lib.types; str;
+          };
+          keygrip = lib.mkOption {
+            type = with lib.types; str;
+          };
+        };
+      }
+    ];
+
+  default-key = "Hello World!";
+  keygrip = "Hello World!";
+}
+```
+
+And then, you can refer to this custom submodule from other aspects:
+
+```nix
+{ den, ... }:
+{
+  den.aspects.igloo = {
+    homeManager =
+      { config, ... }:
+      {
+        programs = {
+          gpg = {
+            enable = true;
+            settings.default-key = den.aspects.${config.home.username}.default-key;
+          };
+        };
+
+        services = {
+          gpg-agent = {
+            enable = true;
+            enableSshSupport = true;
+            sshKeys = [
+              den.aspects.${config.home.username}.keygrip
+            ];
+          };
+        };
+      };
+  };
+}
+```
