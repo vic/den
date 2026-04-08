@@ -14,11 +14,15 @@
         # replace <system> if you are reporting a bug in MacOS
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        # do something for testing
-        den.aspects.tux.user.description = "The Penguin";
+        den.aspects.foo = { host }: {
+          nixos = lib.optionalAttrs (host.name == "igloo") {
+            networking.hostName = "cold";
+          };
+        };
 
-        expr = igloo.users.users.tux.description;
-        expected = "The Penguin";
+
+        expr = igloo.networking.hostName;
+        expected = "cold";
       }
     );
 
