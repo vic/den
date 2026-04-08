@@ -1,7 +1,7 @@
-{ denTest, ... }:
+{ denTest, lib, ... }:
 let
   cfg = {
-    den.provides.hostname = _: { };
+    den.provides.hostname = lib.id;
     den.aspects.cli.provides.ed.enable = true;
     den.aspects.tui.provides.vim.enable = true;
     den.aspects.gui.provides.vscode.enable = false;
@@ -31,8 +31,8 @@ in
     test-den-provided = denTest (
       { den, ... }:
       {
-        expr = builtins.isFunction (den.lib.getAttrByGlob [ "den" "provides" "hostname" ] cfg);
-        expected = true;
+        expr = (den.lib.getAttrByGlob [ "den" "provides" "hostname" ] cfg) "blue";
+        expected = "blue";
       }
     );
 
