@@ -78,7 +78,7 @@ in
       }
     );
 
-    test-with-braces-and-star = denTest (
+    test-with-braces-in-star = denTest (
       { den, ... }:
       {
         expr = den.lib.getAttrByGlob [ "den" "aspects" "{*}" ] cfg;
@@ -90,13 +90,25 @@ in
       }
     );
 
-    test-with-multiple-globs = denTest (
+    test-with-braces-and-star = denTest (
+      { den, ... }:
+      {
+        expr = den.lib.getAttrByGlob [ "den" "aspects" "{t,g,c}*i" ] cfg;
+        expected = {
+          provides.ed.enable = true;
+          provides.vim.enable = true;
+          provides.vscode.enable = false;
+        };
+      }
+    );
+
+    test-with-globs-on-multiple-segments = denTest (
       { den, ... }:
       {
         expr = den.lib.getAttrByGlob [
           "den"
           "{ful,aspects}"
-          "{*}"
+          "*"
         ] cfg;
         expected = {
           provides.ed.enable = true;
