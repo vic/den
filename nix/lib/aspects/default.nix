@@ -14,4 +14,5 @@ let
 in
 {
   inherit types adapters resolve;
+  mkAspectsType = cnf': lib.mapAttrs (_: v: v (typesConf // cnf')) rawTypes;
 }
