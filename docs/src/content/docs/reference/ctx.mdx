@@ -51,6 +51,22 @@ den.ctx.host.into.user = { host }:
   map (user: { inherit host user; }) (lib.attrValues host.users);
 ```
 
+### `meta.adapter`
+
+Type: `nullOr (functionTo raw)`
+
+An adapter that controls how aspects are resolved within this context.
+Set on a context node to filter or transform aspects transitively
+during resolution.
+
+```nix
+den.ctx.host.meta.adapter = inherited:
+  den.lib.aspects.adapters.filter (a: a.name != "unwanted") inherited;
+```
+
+The adapter composes with aspect-level `meta.adapter` values — context
+adapters are outermost, aspect adapters are innermost.
+
 ### `includes`
 
 Aspect includes attached to this context type. Used by batteries to inject
