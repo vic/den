@@ -40,6 +40,50 @@ let
     f: adapter: args:
     adapter (args // { recurse = included: args.recurse (f included); });
 
+  # Handles per-aspect adapter accumulation via meta.adapter.
+  # Composes meta.adapter with the inner adapter, removes includes that
+  # would resolve to { }, and tags survivors for downstream propagation.
+  filterIncludes =
+    inner:
+    args@{ aspect, resolveChild, ... }:
+    let
+      metaAdapter = aspect.meta.adapter or null;
+    in
+    if metaAdapter != null && aspect ? includes then
+      let
+        composed = metaAdapter (filterIncludes inner);
+        keeps =
+          i:
+          composed (
+            args
+            // {
+              aspect = resolveChild i;
+              classModule = [ ];
+            }
+          ) != { };
+        tag =
+          i:
+          if builtins.isAttrs i && i.meta.adapter or null == null then
+            i
+            // {
+              meta = (i.meta or { }) // {
+                adapter = metaAdapter;
+              };
+            }
+          else
+            i;
+      in
+      inner (
+        args
+        // {
+          aspect = aspect // {
+            includes = builtins.map tag (lib.filter keeps aspect.includes);
+          };
+        }
+      )
+    else
+      inner args;
+
 in
 {
   inherit
@@ -48,5 +92,6 @@ in
     map
     mapAspect
     mapIncludes
+    filterIncludes
     ;
 }

@@ -80,7 +80,7 @@
             KEYS
             ;
         };
-        expected.KEYS = "file:loc:name:self";
+        expected.KEYS = "adapter:file:loc:name:self";
       }
     );
 
@@ -110,7 +110,7 @@
             KEYS
             ;
         };
-        expected.KEYS = "file:foo:loc:name:self";
+        expected.KEYS = "adapter:file:foo:loc:name:self";
       }
     );
 
