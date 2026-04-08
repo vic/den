@@ -41,12 +41,23 @@ in
       { den, ... }:
       {
         expr = den.lib.getAttrByGlob [ "den" "aspects" "cli" ] mockConfig;
-        expected = {
-          provides = {
-            bat.enable = true;
-            btop.enable = true;
-          };
-        };
+        expected = mockConfig.den.aspects.cli;
+      }
+    );
+
+    test-den-provided = denTest (
+      { den, lib, ... }:
+      {
+        expr = lib.isFunction (den.lib.getAttrByGlob [ "den" "provides" "hostname" ] mockConfig);
+        expected = true;
+      }
+    );
+
+    test-den-ful = denTest (
+      { den, ... }:
+      {
+        expr = den.lib.getAttrByGlob [ "den" "ful" "gui" "provides" "vscode" ] mockConfig;
+        expected = mockConfig.den.ful.gui.provides.vscode;
       }
     );
   };
