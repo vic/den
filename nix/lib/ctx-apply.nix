@@ -105,14 +105,16 @@ let
       result = [ ];
     } items).result;
 
-  ctxApply = self: ctx: {
-    includes = assembleIncludes (traverse {
-      prev = null;
-      prevCtx = null;
-      key = self.name;
-      inherit self ctx;
-    });
-  };
+  ctxApply =
+    self: ctx:
+    parametric.withIdentity self {
+      includes = assembleIncludes (traverse {
+        prev = null;
+        prevCtx = null;
+        key = self.name;
+        inherit self ctx;
+      });
+    };
 
 in
 ctxApply
