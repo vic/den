@@ -27,9 +27,13 @@
         den.aspects.baz.nixos = { };
 
         expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.parent;
+        # baz tombstone visible in trace
         expected.trace = [
           "parent"
-          [ "child" ]
+          [
+            "child"
+            [ "~baz" ]
+          ]
         ];
       }
     );
@@ -53,6 +57,7 @@
           [
             "child"
             [ "kept" ]
+            [ "~excluded" ]
           ]
         ];
       }
@@ -76,6 +81,7 @@
           "a"
           [
             "b"
+            [ "~c" ]
             [ "d" ]
           ]
         ];
@@ -98,8 +104,14 @@
         expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.a;
         expected.trace = [
           "a"
-          [ "b" ]
-          [ "c" ]
+          [
+            "b"
+            [ "~d" ]
+          ]
+          [
+            "c"
+            [ "~d" ]
+          ]
         ];
       }
     );
