@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  den,
   ...
 }:
 _nixPath: name:
@@ -12,9 +13,9 @@ let
       tail = lib.tail path;
     in
     if head == "den" then
-      lib.getAttrFromPath ([ "den" ] ++ tail) config
+      den.lib.getAttrByGlob ([ "den" ] ++ tail) config
     else if builtins.hasAttr head config.den.aspects then
-      lib.getAttrFromPath (
+      den.lib.getAttrByGlob (
         [
           "den"
           "aspects"
@@ -25,7 +26,7 @@ let
       let
         denfulTail = if tail != [ ] && lib.head tail == "provides" then lib.tail tail else tail;
       in
-      lib.getAttrFromPath (
+      den.lib.getAttrByGlob (
         [
           "den"
           "ful"
