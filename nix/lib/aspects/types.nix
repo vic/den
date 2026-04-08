@@ -101,7 +101,12 @@ let
             description = "Aspect attached meta data";
             type = lib.types.submodule {
               freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
-              self = config;
+              config.self = config;
+              options.adapter = lib.mkOption {
+                description = "Adapter to compose into resolution for this aspect's subtree";
+                type = lib.types.nullOr (lastFunctionTo lib.types.raw);
+                default = null;
+              };
             };
             defaultText = lib.literalExpression "{ }";
             default = { };

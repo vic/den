@@ -31,10 +31,17 @@ let
           aspect-chain = prevChain ++ [ provided ] ++ (lib.optional (provided != aspect) aspect);
 
           classModule = lib.optional (aspect ? ${class}) (
-            lib.setDefaultModuleLocation "${class}@${aspect.name}" aspect.${class}
+            lib.setDefaultModuleLocation "${class}@${aspect.name or "<anon>"}" aspect.${class}
           );
 
           recurse = go aspect-chain;
+
+          resolveChild =
+            i:
+            apply i {
+              inherit class;
+              aspect-chain = aspect-chain ++ [ i ];
+            };
         in
         adapter {
           inherit
@@ -43,12 +50,13 @@ let
             classModule
             recurse
             aspect-chain
+            resolveChild
             ;
         };
     in
     go [ ];
 
-  resolve = withAdapter adapters.module;
+  resolve = withAdapter (adapters.filterIncludes adapters.module);
 
 in
 {
