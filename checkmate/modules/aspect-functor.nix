@@ -69,9 +69,17 @@ let
     ];
   };
 
+  identity = {
+    meta = {
+      adapter = null;
+      provider = [ ];
+    };
+    name = "<anon>";
+  };
+
   flake.tests."test functor applied with empty attrs" = {
     expr = (aspect-example { });
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.any = 10; }
       ];
@@ -84,7 +92,7 @@ let
         host = 2;
       }
     );
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.host = 2; } # host
         { nixos.any = 10; }
@@ -98,7 +106,7 @@ let
         home = 2;
       }
     );
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.home = 2; } # home
         { nixos.any = 10; }
@@ -113,7 +121,7 @@ let
         unknown = 1;
       }
     );
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.home = 2; }
         { nixos.any = 10; }
@@ -127,7 +135,7 @@ let
         user = 2;
       }
     );
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.user = 2; } # user
         { nixos.user-only = 2; } # user-only
@@ -143,7 +151,7 @@ let
         host = 1;
       }
     );
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.host = 1; }
         {
@@ -167,7 +175,7 @@ let
         host = 1;
       }
     );
-    expected = {
+    expected = identity // {
       includes = [
         { nixos.host = 1; }
         {
