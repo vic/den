@@ -41,10 +41,9 @@ Use the following example code to get a trace
 ```nix
 let
   inherit (den.lib.aspects) resolve adapters;
-  adapter = adapters.filterIncludes adapters.traceName;
-  aspect = den.ctx.host { host = igloo; };
+  aspect = den.hosts.x86_64-linux.resolved;
 in
-resolve.withAdapter adapter "nixos" aspect
+resolve.withAdapter adapters.trace "nixos" aspect
 ```
 
 ## Trace Context
