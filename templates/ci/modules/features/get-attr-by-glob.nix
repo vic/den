@@ -3,12 +3,11 @@
 
   flake.tests.get-attr-by-glob = {
 
-    test-non-glob-lookup = denTest (
-      { den, __findFile, ... }:
+    test-in-lib = denTest (
+      { den, lib, ... }:
       {
-        _module.args.__findFile = den.lib.__findFile;
-        expr = true;
-        expected = false;
+        expr = lib.isFunction den.lib.getAttrByGlob;
+        expected = true;
       }
     );
 

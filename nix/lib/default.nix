@@ -24,6 +24,7 @@ let
     ctxTypes = ./ctx-types.nix;
     __findFile = ./den-brackets.nix;
     forward = ./forward.nix;
+    getAttrByGlob = ./get-attr-by-glob.nix;
     home-env = ./home-env.nix;
     nh = ./nh.nix;
     nixModule = ../nixModule;
