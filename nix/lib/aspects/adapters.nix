@@ -93,6 +93,8 @@ let
     {
       trace = [ aspect.name ] ++ builtins.map (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
     };
+
+  trace = filterIncludes traceName;
 in
 {
   inherit
@@ -103,6 +105,7 @@ in
     mapAspect
     mapIncludes
     module
+    trace
     traceName
     ;
 }

@@ -14,9 +14,7 @@
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
-        expr =
-          with den.lib.aspects;
-          resolve.withAdapter (adapters.filterIncludes adapters.traceName) "nixos" den.aspects.foo;
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.foo;
         expected.trace = [
           "foo"
           [ "bar" ]
@@ -37,9 +35,7 @@
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
-        expr =
-          with den.lib.aspects;
-          resolve.withAdapter (adapters.filterIncludes adapters.traceName) "nixos" den.aspects.root;
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.root;
         expected.trace = [
           "root"
           [
