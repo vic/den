@@ -15,10 +15,12 @@
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.foo = { host }: {
-          nixos = lib.optionalAttrs (host.name == "igloo") {
+          nixos = lib.optionalAttrs (host.hostName == "igloo") {
             networking.hostName = "cold";
           };
         };
+
+        den.aspects.igloo.includes = [ den.aspects.foo ];
 
 
         expr = igloo.networking.hostName;
