@@ -71,12 +71,90 @@ evaluated once during aspect resolution. Functions receiving context
 arguments (`{ host }`, `{ user }`, etc.) are **parametric** -- evaluated
 per context during `ctxApply`.
 
+### `meta.adapter`
+
+An aspect can declare a subtree adapter that controls how its includes
+are resolved. The adapter composes with the inherited adapter from
+parent aspects or context nodes.
+
+```nix
+den.aspects.monitoring = {
+  meta.adapter = inherited:
+    den.lib.aspects.adapters.filter (a: a.name != "noisy-exporter") inherited;
+
+  includes = [
+    den.aspects.prometheus
+    den.aspects.noisy-exporter  # filtered out
+    den.aspects.grafana
+  ];
+};
+```
+
+The adapter receives the inherited adapter and returns a new one. This
+enables composition — a parent's filter cannot be overridden by children.
+
+Adapters set on context nodes (`den.ctx.host.meta.adapter`) apply
+transitively to all aspects resolved within that context:
+
+```nix
+# Exclude "debug-tools" from all host resolution
+den.ctx.host.meta.adapter = inherited:
+  den.lib.aspects.adapters.filter (a: a.name != "debug-tools") inherited;
+```
+
+### `meta.provider`
+
+Tracks the structural origin of an aspect as a path. Top-level aspects
+have `meta.provider = []`. An aspect provided by `foo` (via
+`foo.provides.bar` or `foo._.bar`) has `meta.provider = ["foo"]`.
+Deeply nested providers accumulate: `foo._.bar._.baz` has
+`meta.provider = ["foo" "bar"]`.
+
+Adapters can use this to distinguish aspects by origin:
+
+```nix
+# Only include aspects provided by "monitoring"
+meta.adapter = inherited:
+  den.lib.aspects.adapters.filter
+    (a: lib.take 1 (a.meta.provider or []) == ["monitoring"])
+    inherited;
+```
+
 ## `den.provides` (aliased as `den._`)
 
 This is the place for Den built-in batteries, reusable aspects that serve
 as basic utilities and examples.
 
 See [Batteries Reference](/reference/batteries/).
+
+## Cross-context forwarding
+
+Entities (hosts, users, homes) expose `.resolved` — the aspect produced
+by their context pipeline. Forwards can use this to pull configuration
+from one entity into another without manually wiring context calls.
+
+When `den._.forward` is called without `fromAspect`, it defaults to
+`item.resolved`, resolving the source entity through its own context
+pipeline:
+
+```nix
+# Collect SSH host keys from all other hosts
+den.aspects.iceberg.includes = [
+  ({ host }:
+    den._.forward {
+      each = lib.filter (h: h != host) (lib.attrValues den.hosts.${host.system});
+      fromClass = _: "ssh-host-key";
+      intoClass = _: host.class; # "nixos" or "darwin"
+      intoPath = _: [ ];
+    }
+  )
+];
+```
+
+Each host in `each` is resolved via its `.resolved` attribute, and the
+`ssh-host-key` class content is forwarded into the target's OS config.
+`host.class` is the OS class name (`"nixos"`, `"darwin"`), not the
+context type.
 
 ## Class resolution
 

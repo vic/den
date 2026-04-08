@@ -103,8 +103,8 @@ let
             visible = false;
             readOnly = true;
             type = lib.types.deferredModule;
-            defaultText = ''den.lib.aspects.resolve "nixos" (den.ctx.host { inherit host; })'';
-            default = mainModule config den.ctx.host "host";
+            defaultText = "den.lib.aspects.resolve config.class config.resolved";
+            default = den.lib.aspects.resolve config.class config.resolved;
           };
         };
       }
@@ -258,19 +258,12 @@ let
             visible = false;
             readOnly = true;
             type = lib.types.deferredModule;
-            defaultText = lib.literalExpression "mainModule";
-            default = mainModule config den.ctx.home "home";
+            defaultText = "den.lib.aspects.resolve config.class config.resolved";
+            default = den.lib.aspects.resolve config.class config.resolved;
           };
         };
       }
     );
-
-  mainModule =
-    from: intent: name:
-    let
-      asp = intent { ${name} = from; };
-    in
-    den.lib.aspects.resolve (from.class) asp;
 in
 {
   inherit hostsOption homesOption;

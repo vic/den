@@ -18,7 +18,8 @@ let
       intoPathFn = if lib.isFunction intoPath then intoPath else _: intoPath;
       staticIntoPath = if lib.isFunction intoPath then [ ] else intoPath;
 
-      asp = fwd.fromAspect item;
+      # Entities have .resolved (their context pipeline result); raw aspects don't.
+      asp = if fwd ? fromAspect then fwd.fromAspect item else item.resolved or item;
       sourceModule = mapModule (den.lib.aspects.resolve fromClass asp);
 
       forward =

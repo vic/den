@@ -146,4 +146,31 @@ _module.args.__findFile = den.lib.__findFile;
 
 ## `den.lib.aspects`
 
-Den aspects API. Provides aspect type definitions, `resolve`, `resolve.withAdapter` and basic `adapters`
+Den aspects API. Provides aspect type definitions, `resolve`,
+`resolve.withAdapter`, and composable `adapters`.
+
+### `den.lib.aspects.resolve class aspect`
+
+Resolves an aspect for a given class (e.g., `"nixos"`), returning a
+module with `imports`. Uses `adapters.default` which honors
+`meta.adapter` on aspects.
+
+### `den.lib.aspects.resolve.withAdapter adapter class aspect`
+
+Resolves with a custom adapter instead of the default.
+
+### `den.lib.aspects.adapters`
+
+Composable adapters for `resolve.withAdapter`. Each adapter receives
+`{ aspect, class, classModule, recurse, aspect-chain, resolveChild }`
+and returns the resolved result.
+
+| Adapter | Description |
+|---------|-------------|
+| `module` | Collects class modules and recurses on includes |
+| `default` | `filterIncludes module` — the default pipeline |
+| `filter pred adapter` | Returns `{}` if `pred aspect` is false |
+| `map f adapter` | Transforms the adapter's result with `f` |
+| `mapAspect f adapter` | Transforms the aspect before passing to adapter |
+| `mapIncludes f adapter` | Transforms each include before recursion |
+| `filterIncludes adapter` | Honors `meta.adapter`, filters empty includes, tags survivors for propagation |
