@@ -1,99 +1,91 @@
 { denTest, lib, ... }:
 {
-  flake.tests.resolve-adapters =
-    let
-      traceName =
-        { aspect, recurse, ... }:
-        {
-          trace = [ aspect.name ] ++ map (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
-        };
-    in
-    {
+  flake.tests.resolve-adapters = {
 
-      test-basic-trace-includes = denTest (
-        { den, lib, ... }:
-        {
+    test-basic-trace-includes = denTest (
+      { den, lib, ... }:
+      {
 
-          den.aspects.foo.includes = [ den.aspects.bar ];
-          den.aspects.bar.includes = [ den.aspects.baz ];
-          den.aspects.baz.nixos = { };
+        den.aspects.foo.includes = [ den.aspects.bar ];
+        den.aspects.bar.includes = [ den.aspects.baz ];
+        den.aspects.baz.nixos = { };
 
-          expr = den.lib.aspects.resolve.withAdapter traceName "nixos" den.aspects.foo;
-          expected.trace = [
-            "foo"
-            [
-              "bar"
-              [ "baz" ]
-            ]
-          ];
-        }
-      );
+        expr = with den.lib.aspects; resolve.withAdapter adapters.traceName "nixos" den.aspects.foo;
+        expected.trace = [
+          "foo"
+          [
+            "bar"
+            [ "baz" ]
+          ]
+        ];
+      }
+    );
 
-      test-filter-compose-with-trace-includes = denTest (
-        { den, lib, ... }:
-        {
+    test-filter-compose-with-trace-includes = denTest (
+      { den, lib, ... }:
+      {
 
-          den.aspects.foo.includes = [ den.aspects.bar ];
-          den.aspects.bar.includes = [ den.aspects.baz ];
-          den.aspects.baz.nixos = { };
+        den.aspects.foo.includes = [ den.aspects.bar ];
+        den.aspects.bar.includes = [ den.aspects.baz ];
+        den.aspects.baz.nixos = { };
 
-          expr =
-            let
-              inherit (den.lib.aspects) resolve adapters;
-              notBar = adapters.filter (aspect: aspect.name != "bar");
-              composed = notBar traceName;
-            in
-            resolve.withAdapter composed "nixos" den.aspects.foo;
-          expected.trace = [
-            "foo"
-            [ ]
-          ];
-        }
-      );
+        expr =
+          let
+            inherit (den.lib.aspects) resolve adapters;
+            notBar = adapters.filter (aspect: aspect.name != "bar");
+            composed = notBar adapters.traceName;
+          in
+          resolve.withAdapter composed "nixos" den.aspects.foo;
+        expected.trace = [
+          "foo"
+          [ ]
+        ];
+      }
+    );
 
-      test-host-conditional-aspect-inclusion = denTest (
-        {
-          den,
-          lib,
-          iceberg,
-          ...
-        }:
-        {
-          den.hosts.x86_64-linux.igloo = { };
-          den.hosts.x86_64-linux.iceberg = { };
+    test-host-conditional-aspect-inclusion = denTest (
+      {
+        den,
+        lib,
+        iceberg,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo = { };
+        den.hosts.x86_64-linux.iceberg = { };
 
-          den.aspects.foo.meta.key = "foo";
-          den.aspects.foo.nixos.environment.sessionVariables.message = "foo";
+        den.aspects.foo.meta.key = "foo";
+        den.aspects.foo.nixos.environment.sessionVariables.message = "foo";
 
-          den.aspects.bar.nixos.environment.sessionVariables.message = "bar";
+        den.aspects.bar.nixos.environment.sessionVariables.message = "bar";
 
-          # host igloo includes foo
-          den.aspects.igloo.includes = [ den.aspects.foo ];
+        # host igloo includes foo
+        den.aspects.igloo.includes = [ den.aspects.foo ];
 
-          # host iceberg feature detects if foo is available at host igloo
-          den.aspects.iceberg.includes =
-            let
-              inherit (den.lib.aspects) resolve;
-              inherit (den.hosts.x86_64-linux) igloo;
+        # host iceberg feature detects if foo is available at host igloo
+        den.aspects.iceberg.includes =
+          let
+            inherit (den.lib.aspects) resolve;
+            inherit (den.hosts.x86_64-linux) igloo;
 
-              iglooAspect = den.ctx.host { host = igloo; };
-              detectFoo = resolve.withAdapter (hasAspectWithKey "foo") "nixos" iglooAspect;
+            iglooAspect = den.ctx.host { host = igloo; };
+            detectFoo = resolve.withAdapter (hasAspectWithKey "foo") "nixos" iglooAspect;
 
-              hasAspectWithKey =
-                key:
-                { aspect, recurse, ... }:
-                {
-                  found =
-                    aspect.meta.key or null == key || lib.any (i: (recurse i).found or false) (aspect.includes or [ ]);
-                };
+            hasAspectWithKey =
+              key:
+              { aspect, recurse, ... }:
+              {
+                found =
+                  aspect.meta.key or null == key || lib.any (i: (recurse i).found or false) (aspect.includes or [ ]);
+              };
 
-            in
-            lib.optional detectFoo.found den.aspects.bar;
+          in
+          lib.optional detectFoo.found den.aspects.bar;
 
-          expr = iceberg.environment.sessionVariables.message;
-          expected = "bar";
-        }
-      );
+        expr = iceberg.environment.sessionVariables.message;
+        expected = "bar";
+      }
+    );
 
-    };
+  };
 }

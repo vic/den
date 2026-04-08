@@ -87,6 +87,12 @@ let
     else
       inner args;
 
+  # Utility for debugging. Traces aspect.name as nested lists per includes.
+  traceName =
+    { aspect, recurse, ... }:
+    {
+      trace = [ aspect.name ] ++ builtins.map (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
+    };
 in
 {
   inherit
@@ -97,5 +103,6 @@ in
     mapAspect
     mapIncludes
     module
+    traceName
     ;
 }
