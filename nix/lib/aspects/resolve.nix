@@ -56,7 +56,7 @@ let
     in
     go [ ];
 
-  resolve = withAdapter (adapters.filterIncludes adapters.module);
+  resolve = withAdapter adapters.default;
 
 in
 {

@@ -9,7 +9,10 @@
 { lib, ... }:
 let
 
-  # Default adapter imports all classModules on a single module and recurses on includes unconditonally.
+  # Default adapter used by `resolve`.
+  default = filterIncludes module;
+
+  # Produces a single module importing all classModules from aspect and its includes.
   module =
     {
       classModule,
@@ -87,11 +90,12 @@ let
 in
 {
   inherit
-    module
+    default
     filter
+    filterIncludes
     map
     mapAspect
     mapIncludes
-    filterIncludes
+    module
     ;
 }
