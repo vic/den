@@ -107,6 +107,13 @@ let
                 type = lib.types.nullOr (lastFunctionTo lib.types.raw);
                 default = null;
               };
+              options.provider = lib.mkOption {
+                internal = true;
+                visible = false;
+                description = "Provider path tracking aspect provenance";
+                type = lib.types.listOf lib.types.str;
+                default = cnf.providerPrefix or [ ];
+              };
             };
             defaultText = lib.literalExpression "{ }";
             default = { };
@@ -124,7 +131,14 @@ let
             defaultText = lib.literalExpression "{ }";
             default = { };
             type = lib.types.submodule {
-              freeformType = lib.types.lazyAttrsOf (providerType cnf);
+              freeformType = lib.types.lazyAttrsOf (
+                providerType (
+                  cnf
+                  // {
+                    providerPrefix = (cnf.providerPrefix or [ ]) ++ [ config.name ];
+                  }
+                )
+              );
             };
           };
 

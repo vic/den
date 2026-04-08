@@ -1,10 +1,10 @@
 { den, lib, ... }:
 let
   inherit (den.lib) ctxApply;
-  inherit (den.lib.aspects.types) aspectsType;
+  inherit (den.lib.aspects) mkAspectsType;
 
   namespaceType = lib.types.submodule (
-    nsArgs:
+    nsArgs@{ name, ... }:
     let
       nsCtxApply = ctxApply nsArgs.config.ctx;
       inherit (den.lib.ctxTypes nsCtxApply) ctxTreeType;
@@ -24,7 +24,7 @@ let
           freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;
         };
       };
-      freeformType = aspectsType;
+      freeformType = (mkAspectsType { providerPrefix = [ name ]; }).aspectsType;
     }
   );
 in
