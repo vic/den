@@ -66,6 +66,18 @@ in
       }
     );
 
+    test-with-star = denTest (
+      { den, ... }:
+      {
+        expr = den.lib.getAttrByGlob [ "den" "aspects" "*" ] cfg;
+        expected = {
+          provides.ed.enable = true;
+          provides.vim.enable = true;
+          provides.vscode.enable = false;
+        };
+      }
+    );
+
     test-with-braces-and-star = denTest (
       { den, ... }:
       {
