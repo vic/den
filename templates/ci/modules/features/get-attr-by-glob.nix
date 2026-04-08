@@ -102,6 +102,21 @@ in
       }
     );
 
+    test-double-star = denTest (
+      { den, ... }:
+      {
+        expr = den.lib.getAttrByGlob [
+          "**"
+          "{g,t}ui"
+        ] cfg;
+        expected = {
+          provides.vim.enable = true;
+          provides.vscode.enable = false;
+          provides.emacs.enable = true;
+        };
+      }
+    );
+
     test-with-globs-on-multiple-segments = denTest (
       { den, ... }:
       {
