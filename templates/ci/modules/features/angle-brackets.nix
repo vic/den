@@ -95,6 +95,24 @@
       }
     );
 
+    test-deep-nested-namespace-access = denTest (
+      {
+        den,
+        __findFile,
+        ns,
+        ...
+      }:
+      {
+        _module.args.__findFile = den.lib.__findFile;
+
+        imports = [ (inputs.den.namespace "ns" true) ];
+
+        ns.moo._.boo.silly = true;
+
+        expr = <ns/moo/boo> ? silly;
+        expected = true;
+      }
+    );
   };
 
 }

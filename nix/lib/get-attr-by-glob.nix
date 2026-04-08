@@ -130,6 +130,5 @@ let
 
   # Replaced lib.recursiveUpdate with our custom smartMerge
   extractAndMergePaths = attrs: pathList: builtins.foldl' smartMerge { } (walk attrs pathList);
-
 in
 extractAndMergePaths attrs path
