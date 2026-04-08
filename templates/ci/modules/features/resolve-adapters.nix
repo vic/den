@@ -10,7 +10,7 @@
         den.aspects.bar.includes = [ den.aspects.baz ];
         den.aspects.baz.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.traceName "nixos" den.aspects.foo;
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.foo;
         expected.trace = [
           "foo"
           [
@@ -32,8 +32,7 @@
         expr =
           let
             inherit (den.lib.aspects) resolve adapters;
-            notBar = adapters.filter (aspect: aspect.name != "bar");
-            composed = notBar adapters.traceName;
+            composed = adapters.filter (aspect: aspect.name != "bar") adapters.trace;
           in
           resolve.withAdapter composed "nixos" den.aspects.foo;
         expected.trace = [
