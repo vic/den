@@ -33,6 +33,20 @@ nix-repl> den.hosts.x86_64-linux.igloo
 nix-repl> den.ctx
 ```
 
+## Trace Aspect Includes
+
+Use the following example code to get a trace
+(list of nested `aspect.name`) of included aspects.
+
+```nix
+let
+  inherit (den.lib.aspects) resolve adapters;
+  adapter = adapters.filterIncludes adapters.traceName;
+  aspect = den.ctx.host { host = igloo; };
+in
+resolve.withAdapter adapter "nixos" aspect
+```
+
 ## Trace Context
 
 Print context values during evaluation:
