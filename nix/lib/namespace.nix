@@ -8,7 +8,14 @@ let
     name
   ]) (builtins.filter builtins.isAttrs from);
 
-  sourceModules = map (denful: { config.den.ful.${name} = denful; }) denfuls;
+  # Strip _ aliases from external denful to prevent duplication on re-import.
+  # The _ → provides alias in aspectSubmodule means evaluated configs contain
+  # both _ and provides with identical content. Re-importing both causes
+  # listOf options (like includes) to merge duplicates.
+  stripAliases = lib.mapAttrs (
+    _: v: if builtins.isAttrs v then builtins.removeAttrs v [ "_" ] else v
+  );
+  sourceModules = map (denful: { config.den.ful.${name} = stripAliases denful; }) denfuls;
 
   aliasModule = lib.mkAliasOptionModule [ name ] [ "den" "ful" name ];
 
