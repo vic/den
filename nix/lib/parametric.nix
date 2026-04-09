@@ -20,6 +20,37 @@ let
     }
     // extra;
 
+  # When takeFn succeeds and returns a result with sub-includes,
+  # also try to resolve those sub-includes with takeFn. This handles
+  # provider sub-aspect functions nested inside include results:
+  # e.g. wrapped_fn returns { includes = [foo._.sub]; } where foo._.sub
+  # needs parametric context applied before reaching the static pipeline.
+  applyDeep =
+    takeFn: ctx: fn:
+    let
+      r = takeFn fn ctx;
+      # Bare provider results carry only includes (+ name from carryAttrs).
+      # Results from withOwn/withIdentity have meta; deferred deepRecurse
+      # wrappers have __functor. Re-resolving either would double-apply
+      # context and duplicate modules.
+      isBareResult = builtins.isAttrs r && r ? includes && !(r ? meta) && !(r ? __functor);
+    in
+    if r == { } then
+      r
+    else if isBareResult then
+      r
+      // {
+        includes = map (
+          sub:
+          let
+            sr = takeFn sub ctx;
+          in
+          if sr != { } then sr else sub
+        ) r.includes;
+      }
+    else
+      r;
+
   parametric.applyIncludes =
     takeFn: aspect:
     aspect
@@ -27,7 +58,7 @@ let
       __functor =
         self: ctx:
         withIdentity self {
-          includes = builtins.filter (x: x != { }) (map (fn: takeFn fn ctx) (self.includes or [ ]));
+          includes = builtins.filter (x: x != { }) (map (applyDeep takeFn ctx) (self.includes or [ ]));
         };
     };
 
