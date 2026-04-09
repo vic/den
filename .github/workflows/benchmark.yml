@@ -10,14 +10,14 @@ env:
   RUNS: 3
   NIX_PATH: "nixpkgs=https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
 jobs:
-  approved:
-    name: approved
+  allow-bench:
+    name: allow-bench
     runs-on: ubuntu-latest
-    if: ${{contains(github.event.pull_request.labels.*.name, 'bench-approved')}}
+    if: ${{contains(github.event.pull_request.labels.*.name, 'allow-bench')}}
     steps:
       - run: true
   benchmark:
-    needs: [approved]
+    needs: [allow-bench]
     runs-on: ubuntu-latest
     steps:
       - uses: wimpysworld/nothing-but-nix@v10
