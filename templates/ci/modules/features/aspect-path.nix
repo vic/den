@@ -124,6 +124,34 @@
       }
     );
 
+    # excludeAspect: excluding a parent also excludes its providers
+    test-excludeAspect-cascades-to-providers = denTest (
+      { den, ... }:
+      {
+        den.aspects.monitoring = {
+          nixos = { };
+          provides.node-exporter.nixos = { };
+          provides.alerting.nixos = { };
+        };
+        den.aspects.server.includes = with den.aspects; [
+          monitoring
+          monitoring._.node-exporter
+          monitoring._.alerting
+        ];
+        den.aspects.server.meta.adapter =
+          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.monitoring inherited;
+
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.server;
+        # monitoring and all its providers excluded
+        expected.trace = [
+          "server"
+          [ "~monitoring" ]
+          [ "~node-exporter" ]
+          [ "~alerting" ]
+        ];
+      }
+    );
+
     # substituteAspect: replaced include becomes tombstone + replacement
     test-substituteAspect-replaces = denTest (
       { den, ... }:

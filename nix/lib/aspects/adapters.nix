@@ -44,8 +44,20 @@ let
   # Use instead of reference equality — resolved aspects are fresh attrsets.
   aspectPath = a: (a.meta.provider or [ ]) ++ [ (a.name or "<anon>") ];
 
-  # Exclude by aspect reference.
-  excludeAspect = ref: filter (a: aspectPath a != aspectPath ref);
+  # Exclude by aspect reference. Also excludes aspects provided by the
+  # reference (e.g., excluding monitoring also excludes monitoring._.node-exporter).
+  excludeAspect =
+    ref:
+    let
+      refPath = aspectPath ref;
+    in
+    filter (
+      a:
+      let
+        ap = aspectPath a;
+      in
+      ap != refPath && lib.take (builtins.length refPath) ap != refPath
+    );
 
   # Substitute an aspect reference with a replacement.
   substituteAspect =
