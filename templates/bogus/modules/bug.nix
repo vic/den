@@ -51,6 +51,10 @@
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
+        den.aspects.igloo.includes = [
+          den.aspects.foo
+        ];
+
         expr = igloo.networking.networkmanager.enable;
         expected = true;
       }
