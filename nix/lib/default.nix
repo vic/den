@@ -32,7 +32,7 @@ let
     statics = ./statics.nix;
     take = ./take.nix;
     lastFunctionTo = ./last-function-to.nix;
-    withSubAspects = ./with-sub-aspects.nix;
+    withSubAspectsOf = ./with-sub-aspects-of.nix;
   };
 in
 den-lib
