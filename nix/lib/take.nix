@@ -8,8 +8,7 @@ let
   carryAttrs =
     fn: result:
     if builtins.isAttrs result then
-      result
-      // lib.optionalAttrs ((fn.name or null) != null && !(result ? name)) { inherit (fn) name; }
+      result // lib.optionalAttrs ((fn.name or null) != null && !(result ? name)) { inherit (fn) name; }
     else
       result;
 
