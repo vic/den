@@ -1,0 +1,29 @@
+name: bogus
+on:
+  push:
+    branches: ["!main"]
+    paths: ["templates/bogus/**/*.nix"]
+  pull_request:
+    types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
+    paths: ["templates/bogus/**/*.nix"]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  bogus:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        rev: ["${{github.sha}}", "main", "latest"]
+    name: Bogus (den ${{matrix.rev}})
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - run: nix flake init -t "github:${GITHUB_REPOSITORY}/${GITHUB_SHA}#bogus"
+      - run: sed -i 's#vic/den/main#vic/den/${{matrix.rev}}#' flake.nix
+      - run: nix flake update den
+      - run: nix flake metadata
+      - run: nix flake check
