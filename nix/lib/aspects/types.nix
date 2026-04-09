@@ -154,7 +154,17 @@ let
       }
     );
 
-  aspectsType = cnf: lib.types.submodule { freeformType = lib.types.lazyAttrsOf (providerType cnf); };
+  # Wrap non-module functions into { includes = [fn] } so they don't get
+  # treated as module functions by aspectType's submodule merge.
+  coercedProviderType = cnf:
+    let pt = providerType cnf;
+    in lib.types.coercedTo
+      (lib.types.addCheck lib.types.raw (v: builtins.isFunction v && !isSubmoduleFn v))
+      (fn: { includes = [ fn ]; })
+      pt;
+
+  aspectsType = cnf:
+    lib.types.submodule { freeformType = lib.types.lazyAttrsOf (coercedProviderType cnf); };
 
 in
 {

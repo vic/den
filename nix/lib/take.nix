@@ -3,6 +3,16 @@ let
   asIs = _: lib.id;
   upTo = f: builtins.intersectAttrs (lib.functionArgs f);
 
+  # Carry name from the function to its result when the result doesn't
+  # already have one. This preserves aspect identity through take calls.
+  carryAttrs =
+    fn: result:
+    if builtins.isAttrs result then
+      result
+      // lib.optionalAttrs ((fn.name or null) != null && !(result ? name)) { inherit (fn) name; }
+    else
+      result;
+
   take.unused = _unused: used: used;
 
   take.exactly = take den.lib.canTake.exactly asIs;
@@ -14,6 +24,6 @@ let
     let
       ctx = argAdapter fn args;
     in
-    if canTake ctx fn then fn ctx else { };
+    if canTake ctx fn then carryAttrs fn (fn ctx) else { };
 in
 take
