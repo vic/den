@@ -66,6 +66,12 @@ let
   # Empty aspect marking an excluded include. ~prefix prevents accidental
   # name collisions with live aspects. Harmless to module, visible to trace.
   # Consumers should check meta.excluded before accessing other aspect fields.
+  # Tombstone fields:
+  #   meta.excluded     — true
+  #   meta.originalName — display name before ~prefix
+  #   meta.provider     — who defines this aspect (structural origin, from provides chain)
+  #   meta.excludedBy   — who excluded it (the aspect whose meta.adapter caused exclusion)
+  #   meta.replacedBy   — name of the replacement (for substitutions only)
   tombstone =
     resolved: extra:
     let
@@ -115,10 +121,13 @@ let
             probed = probeTransform metaAdapter args resolved;
           in
           if result == { } then
-            [ (tombstone resolved { }) ]
+            [ (tombstone resolved { excludedBy = aspect.name or "<anon>"; }) ]
           else if aspectPath probed != aspectPath resolved then
             [
-              (tombstone resolved { replacedBy = probed.name or "<anon>"; })
+              (tombstone resolved {
+                excludedBy = aspect.name or "<anon>";
+                replacedBy = probed.name or "<anon>";
+              })
               probed
             ]
           else
