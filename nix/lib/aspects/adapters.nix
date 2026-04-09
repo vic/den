@@ -121,11 +121,11 @@ let
             probed = probeTransform metaAdapter args resolved;
           in
           if result == { } then
-            [ (tombstone resolved { excludedFrom = aspect.name or "<anon>"; }) ]
+            [ (tombstone resolved { excludedFrom = aspect.meta.originalName or aspect.name or "<anon>"; }) ]
           else if aspectPath probed != aspectPath resolved then
             [
               (tombstone resolved {
-                excludedFrom = aspect.name or "<anon>";
+                excludedFrom = aspect.meta.originalName or aspect.name or "<anon>";
                 replacedBy = probed.name or "<anon>";
               })
               probed
@@ -167,6 +167,40 @@ let
     }
   );
 
+  # Structured trace producing flat entry lists with metadata per aspect.
+  # Each entry has: name, class, parent, provider, excluded, excludedFrom,
+  # replacedBy, isProvider. Suitable for visualization and analysis.
+  # Only emits entries for aspects with class modules, tombstones, or
+  # children with entries — so multi-class traces differ by content.
+  structuredTrace = filterIncludes (
+    { aspect, recurse, class, classModule, aspect-chain, ... }:
+    let
+      meaningful =
+        name: name != "<anon>" && name != "<function body>" && !(lib.hasPrefix "[definition " name);
+      name = aspect.meta.originalName or aspect.name or "<anon>";
+      hasClass = classModule != [ ];
+      isTombstone = aspect.meta.excluded or false;
+      chainName = a: a.meta.originalName or a.name or "<anon>";
+      parentNames = builtins.filter (n: n != name && meaningful n) (
+        builtins.map chainName aspect-chain
+      );
+      entry = {
+        inherit name class;
+        parent = if parentNames == [ ] then null else lib.last parentNames;
+        provider = aspect.meta.provider or [ ];
+        excluded = aspect.meta.excluded or false;
+        excludedFrom = aspect.meta.excludedFrom or null;
+        replacedBy = aspect.meta.replacedBy or null;
+        isProvider = (aspect.meta.provider or [ ]) != [ ];
+      };
+      childTraces = lib.concatMap (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
+    in
+    if hasClass || isTombstone || childTraces != [ ] then
+      { trace = [ entry ] ++ childTraces; }
+    else
+      { trace = [ ]; }
+  );
+
 in
 {
   inherit
@@ -179,6 +213,7 @@ in
     mapAspect
     mapIncludes
     module
+    structuredTrace
     substituteAspect
     tombstone
     trace

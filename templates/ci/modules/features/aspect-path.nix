@@ -223,6 +223,28 @@
       }
     );
 
+    # structuredTrace: produces entry objects with metadata
+    test-structuredTrace-entries = denTest (
+      { den, lib, ... }:
+      {
+        den.aspects.foo.includes = [ den.aspects.bar ];
+        den.aspects.foo.meta.adapter =
+          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.bar inherited;
+        den.aspects.bar.nixos = { };
+
+        expr =
+          let
+            result = den.lib.aspects.resolve.withAdapter den.lib.aspects.adapters.structuredTrace "nixos" den.aspects.foo;
+            entries = builtins.filter (e: e.name != "<anon>" && !(lib.hasPrefix "[definition " e.name)) result.trace;
+          in
+          map (e: { inherit (e) name excluded; }) entries;
+        expected = [
+          { name = "foo"; excluded = false; }
+          { name = "bar"; excluded = true; }
+        ];
+      }
+    );
+
     # perHost parametric aspects should appear in trace by name
     test-perHost-visible-in-trace = denTest (
       { den, ... }:
