@@ -14,12 +14,12 @@
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
-        expr =
-          with den.lib.aspects;
-          resolve.withAdapter (adapters.filterIncludes adapters.traceName) "nixos" den.aspects.foo;
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.foo;
+        # baz tombstone visible in trace
         expected.trace = [
           "foo"
           [ "bar" ]
+          [ "~baz" ]
         ];
       }
     );
@@ -37,9 +37,8 @@
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
-        expr =
-          with den.lib.aspects;
-          resolve.withAdapter (adapters.filterIncludes adapters.traceName) "nixos" den.aspects.root;
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.root;
+        # foo's adapter only affects its subtree; root's baz is unaffected
         expected.trace = [
           "root"
           [
@@ -66,11 +65,15 @@
         expr =
           let
             inherit (den.lib.aspects) resolve adapters;
-            outerAdapter = adapters.filter (a: a.name != "baz") adapters.traceName;
+            outerTrace = adapters.filter (a: a.name != "baz") adapters.trace;
           in
-          resolve.withAdapter (adapters.filterIncludes outerAdapter) "nixos" den.aspects.foo;
+          resolve.withAdapter outerTrace "nixos" den.aspects.foo;
+        # bar tombstoned by meta.adapter, baz killed by outer filter (no tombstone
+        # since the outer filter is not wrapped in filterIncludes)
         expected.trace = [
           "foo"
+          [ "~bar" ]
+          [ ]
         ];
       }
     );

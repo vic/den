@@ -1,16 +1,12 @@
-# Adapters for resolve.withAdapter. Default one is module.
+# Adapters for resolve.withAdapter. Default adapter is module.
 #
-# These adapters determine the return value of resolve. The adapters
-# are called by resolve for each resolved aspect, and the adapter can choose
-# to recurse or to replace which aspects will be used.
+# Adapters determine the return value of resolve. They are called for each
+# resolved aspect and can recurse into includes, filter, or transform them.
 #
-# Only basic adapters are provided here, see the arguments given by resolve.nix to them.
-# Some adapters compose by taking other adapters as parameters.
+# See resolve.nix for the arguments passed to adapters:
+#   { aspect, class, classModule, recurse, aspect-chain, resolveChild }
 { lib, ... }:
 let
-
-  # Default adapter used by `resolve`.
-  default = filterIncludes module;
 
   # Produces a single module importing all classModules from aspect and its includes.
   module =
@@ -21,31 +17,68 @@ let
       ...
     }:
     {
-      imports = classModule ++ (lib.concatMap (i: (recurse i).imports or [ ]) (aspect.includes or [ ]));
+      imports = classModule ++ lib.concatMap (i: (recurse i).imports or [ ]) (aspect.includes or [ ]);
     };
 
+  # Conditionally apply adapter. Returns { } when pred fails (signals exclusion).
   filter =
     pred: adapter: args:
     if pred args.aspect then adapter args else { };
 
-  # transforms the result of other adapters using f.
+  # Post-process adapter result.
   map =
     f: adapter: args:
     f (adapter args);
 
-  # transform each aspect into another by applying f to it.
+  # Transform the aspect before passing to inner adapter.
   mapAspect =
     f: adapter: args:
     adapter (args // { aspect = f args.aspect; });
 
-  # transforms aspect includes by applying f to it.
+  # Transform includes before recursion.
   mapIncludes =
     f: adapter: args:
-    adapter (args // { recurse = included: args.recurse (f included); });
+    adapter (args // { recurse = i: args.recurse (f i); });
 
-  # Handles per-aspect adapter accumulation via meta.adapter.
-  # Composes meta.adapter with the inner adapter, removes includes that
-  # would resolve to { }, and tags survivors for downstream propagation.
+  # Derive an aspect's identity path from name and provider.
+  # Use instead of reference equality — resolved aspects are fresh attrsets.
+  aspectPath = a: (a.meta.provider or [ ]) ++ [ (a.name or "<anon>") ];
+
+  # Exclude by aspect reference.
+  excludeAspect = ref: filter (a: aspectPath a != aspectPath ref);
+
+  # Substitute an aspect reference with a replacement.
+  substituteAspect =
+    ref: replacement: mapAspect (a: if aspectPath a == aspectPath ref then replacement else a);
+
+  # Empty aspect marking an excluded include. ~prefix prevents accidental
+  # name collisions with live aspects. Harmless to module, visible to trace.
+  # Consumers should check meta.excluded before accessing other aspect fields.
+  tombstone =
+    resolved: extra:
+    let
+      n = resolved.name or "<anon>";
+    in
+    {
+      name = "~${n}";
+      meta =
+        (resolved.meta or { })
+        // {
+          excluded = true;
+          originalName = n;
+        }
+        // extra;
+    };
+
+  # Extract what a metaAdapter transforms an aspect to (for substitution detection).
+  # Assumes metaAdapter eventually calls its inner adapter exactly once.
+  probeTransform =
+    metaAdapter: args: resolved:
+    (metaAdapter (_: { _probed = _.aspect; }) (args // { aspect = resolved; }))._probed or resolved;
+
+  # Handles per-aspect meta.adapter composition. Probes each include to
+  # determine: keep, exclude (tombstone), or substitute (tombstone + replacement).
+  # Tags survivors with the adapter for downstream propagation.
   filterIncludes =
     inner:
     args@{ aspect, resolveChild, ... }:
@@ -55,18 +88,33 @@ let
     if metaAdapter != null && aspect ? includes then
       let
         composed = metaAdapter (filterIncludes inner);
-        keeps =
+
+        processInclude =
           i:
-          composed (
-            args
-            // {
-              aspect = resolveChild i;
-              classModule = [ ];
-            }
-          ) != { };
+          let
+            resolved = resolveChild i;
+            result = composed (
+              args
+              // {
+                aspect = resolved;
+                classModule = [ ];
+              }
+            );
+            probed = probeTransform metaAdapter args resolved;
+          in
+          if result == { } then
+            [ (tombstone resolved { }) ]
+          else if aspectPath probed != aspectPath resolved then
+            [
+              (tombstone resolved { replacedBy = probed.name or "<anon>"; })
+              probed
+            ]
+          else
+            [ i ];
+
         tag =
           i:
-          if builtins.isAttrs i && i.meta.adapter or null == null then
+          if builtins.isAttrs i && i.meta.adapter or null == null && !(i.meta.excluded or false) then
             i
             // {
               meta = (i.meta or { }) // {
@@ -80,29 +128,38 @@ let
         args
         // {
           aspect = aspect // {
-            includes = builtins.map tag (lib.filter keeps aspect.includes);
+            includes = builtins.map tag (lib.concatMap processInclude aspect.includes);
           };
         }
       )
     else
       inner args;
 
-  # Utility for debugging. Traces aspect.name as nested lists per includes.
-  traceName =
+  default = filterIncludes module;
+
+  # Traces aspect.name as nested lists per includes. Composed with filterIncludes
+  # so tombstones and substitutions are visible.
+  trace = filterIncludes (
     { aspect, recurse, ... }:
     {
       trace = [ aspect.name ] ++ builtins.map (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
-    };
+    }
+  );
+
 in
 {
   inherit
+    aspectPath
     default
+    excludeAspect
     filter
     filterIncludes
     map
     mapAspect
     mapIncludes
     module
-    traceName
+    substituteAspect
+    tombstone
+    trace
     ;
 }
