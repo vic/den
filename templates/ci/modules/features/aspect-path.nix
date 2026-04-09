@@ -195,5 +195,33 @@
       }
     );
 
+    # perHost parametric aspects should appear in trace by name
+    test-perHost-visible-in-trace = denTest (
+      { den, ... }:
+      {
+        den.aspects.role.includes = with den.aspects; [
+          leaf
+          param
+        ];
+        den.aspects.leaf.nixos = { };
+        den.aspects.param = den.lib.perHost (
+          { host }:
+          {
+            nixos = { };
+          }
+        );
+
+        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.role;
+        expected.trace = [
+          "role"
+          [ "leaf" ]
+          [
+            "param"
+            [ "[definition 1-entry 1]" ]
+          ]
+        ];
+      }
+    );
+
   };
 }
