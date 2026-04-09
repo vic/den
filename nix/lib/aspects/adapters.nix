@@ -70,7 +70,7 @@ let
   #   meta.excluded     — true
   #   meta.originalName — display name before ~prefix
   #   meta.provider     — who defines this aspect (structural origin, from provides chain)
-  #   meta.excludedBy   — who excluded it (the aspect whose meta.adapter caused exclusion)
+  #   meta.excludedFrom — the parent aspect whose meta.adapter caused the exclusion
   #   meta.replacedBy   — name of the replacement (for substitutions only)
   tombstone =
     resolved: extra:
@@ -121,11 +121,11 @@ let
             probed = probeTransform metaAdapter args resolved;
           in
           if result == { } then
-            [ (tombstone resolved { excludedBy = aspect.name or "<anon>"; }) ]
+            [ (tombstone resolved { excludedFrom = aspect.name or "<anon>"; }) ]
           else if aspectPath probed != aspectPath resolved then
             [
               (tombstone resolved {
-                excludedBy = aspect.name or "<anon>";
+                excludedFrom = aspect.name or "<anon>";
                 replacedBy = probed.name or "<anon>";
               })
               probed
