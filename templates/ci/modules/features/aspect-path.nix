@@ -28,7 +28,7 @@
 
     # excludeAspect: excluded include becomes a tombstone (visible in trace)
     test-excludeAspect-tombstone-in-trace = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.foo.includes = [
           den.aspects.bar
@@ -39,7 +39,7 @@
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.foo;
+        expr = trace "nixos" den.aspects.foo;
         # baz appears as tombstone (~baz, no children)
         expected.trace = [
           "foo"
@@ -71,7 +71,7 @@
 
     # excludeAspect: propagates through subtree
     test-excludeAspect-propagates-to-subtree = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.root.includes = [ den.aspects.role ];
         den.aspects.root.meta.adapter =
@@ -83,7 +83,7 @@
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.root;
+        expr = trace "nixos" den.aspects.root;
         # baz tombstone appears in role's subtree
         expected.trace = [
           "root"
@@ -98,7 +98,7 @@
 
     # excludeAspect: by provider path
     test-excludeAspect-by-provider = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.monitoring = {
           nixos = { };
@@ -113,7 +113,7 @@
         den.aspects.server.meta.adapter =
           inherited: den.lib.aspects.adapters.excludeAspect den.aspects.monitoring._.node-exporter inherited;
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.server;
+        expr = trace "nixos" den.aspects.server;
         # node-exporter tombstone visible, alerting kept
         expected.trace = [
           "server"
@@ -126,7 +126,7 @@
 
     # excludeAspect: excluding a parent also excludes its providers
     test-excludeAspect-cascades-to-providers = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.monitoring = {
           nixos = { };
@@ -141,7 +141,7 @@
         den.aspects.server.meta.adapter =
           inherited: den.lib.aspects.adapters.excludeAspect den.aspects.monitoring inherited;
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.server;
+        expr = trace "nixos" den.aspects.server;
         # monitoring and all its providers excluded
         expected.trace = [
           "server"
@@ -154,7 +154,7 @@
 
     # substituteAspect: replaced include becomes tombstone + replacement
     test-substituteAspect-replaces = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.foo.includes = [
           den.aspects.bar
@@ -166,7 +166,7 @@
         den.aspects.baz.nixos = { };
         den.aspects.qux.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.foo;
+        expr = trace "nixos" den.aspects.foo;
         # bar tombstone + qux replacement, baz unchanged
         expected.trace = [
           "foo"
@@ -196,7 +196,7 @@
 
     # substituteAspect: propagates through subtree
     test-substituteAspect-propagates = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.root.includes = [ den.aspects.role ];
         den.aspects.root.meta.adapter =
@@ -209,7 +209,7 @@
         den.aspects.baz.nixos = { };
         den.aspects.qux.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.root;
+        expr = trace "nixos" den.aspects.root;
         # baz tombstone + qux in role's subtree
         expected.trace = [
           "root"
@@ -225,7 +225,7 @@
 
     # perHost parametric aspects should appear in trace by name
     test-perHost-visible-in-trace = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.role.includes = with den.aspects; [
           leaf
@@ -239,7 +239,7 @@
           }
         );
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.role;
+        expr = trace "nixos" den.aspects.role;
         expected.trace = [
           "role"
           [ "leaf" ]

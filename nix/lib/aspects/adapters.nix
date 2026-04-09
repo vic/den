@@ -160,12 +160,19 @@ let
 
   # Traces aspect.name as nested lists per includes. Composed with filterIncludes
   # so tombstones and substitutions are visible.
-  trace = filterIncludes (
-    { aspect, recurse, ... }:
-    {
-      trace = [ aspect.name ] ++ builtins.map (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
-    }
-  );
+  #
+  # trace.on takes a function to extract any value from aspect.
+  trace = {
+    __functor = _: trace.on (a: a.name or "<anon>");
+    on =
+      f:
+      filterIncludes (
+        { aspect, recurse, ... }:
+        {
+          trace = [ (f aspect) ] ++ builtins.map (i: (recurse i).trace or [ ]) (aspect.includes or [ ]);
+        }
+      );
+  };
 
 in
 {

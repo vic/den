@@ -8,8 +8,7 @@
       { den, ... }:
       {
         den.aspects.foo.includes = [ den.aspects.bar ];
-        den.aspects.foo.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: (a.name or null) != "bar") inherited;
+        den.aspects.foo.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "bar");
         den.aspects.bar.nixos = { };
 
         expr = (den.lib.aspects.resolve "nixos" den.aspects.foo) ? imports;
@@ -18,15 +17,14 @@
     );
 
     test-tags-includes-with-adapter = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.parent.includes = [ den.aspects.child ];
-        den.aspects.parent.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: (a.name or null) != "baz") inherited;
+        den.aspects.parent.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "baz");
         den.aspects.child.includes = [ den.aspects.baz ];
         den.aspects.baz.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.parent;
+        expr = trace "nixos" den.aspects.parent;
         # baz tombstone visible in trace
         expected.trace = [
           "parent"
@@ -39,11 +37,12 @@
     );
 
     test-child-inherits-parent-adapter = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.parent.includes = [ den.aspects.child ];
-        den.aspects.parent.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: (a.name or null) != "excluded") inherited;
+        den.aspects.parent.meta.adapter = den.lib.aspects.adapters.filter (
+          a: (a.name or null) != "excluded"
+        );
         den.aspects.child.includes = [
           den.aspects.kept
           den.aspects.excluded
@@ -51,7 +50,7 @@
         den.aspects.kept.nixos = { };
         den.aspects.excluded.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.parent;
+        expr = trace "nixos" den.aspects.parent;
         expected.trace = [
           "parent"
           [
@@ -64,11 +63,10 @@
     );
 
     test-deep-chain-a-excludes-c-through-b = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.a.includes = [ den.aspects.b ];
-        den.aspects.a.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: (a.name or null) != "c") inherited;
+        den.aspects.a.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "c");
         den.aspects.b.includes = [
           den.aspects.c
           den.aspects.d
@@ -76,7 +74,7 @@
         den.aspects.c.nixos = { };
         den.aspects.d.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.a;
+        expr = trace "nixos" den.aspects.a;
         expected.trace = [
           "a"
           [
@@ -89,19 +87,18 @@
     );
 
     test-diamond-a-excludes-d-through-both-paths = denTest (
-      { den, ... }:
+      { den, trace, ... }:
       {
         den.aspects.a.includes = [
           den.aspects.b
           den.aspects.c
         ];
-        den.aspects.a.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: (a.name or null) != "d") inherited;
+        den.aspects.a.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "d");
         den.aspects.b.includes = [ den.aspects.d ];
         den.aspects.c.includes = [ den.aspects.d ];
         den.aspects.d.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.a;
+        expr = trace "nixos" den.aspects.a;
         expected.trace = [
           "a"
           [
@@ -123,8 +120,7 @@
       {
         den.hosts.x86_64-linux.igloo = { };
 
-        den.ctx.host.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: a.name != "foo") inherited;
+        den.ctx.host.meta.adapter = den.lib.aspects.adapters.filter (a: a.name != "foo");
 
         expr = (den.ctx.host { host = den.hosts.x86_64-linux.igloo; }).meta.adapter != null;
         expected = true;
@@ -150,8 +146,7 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        den.ctx.host.meta.adapter =
-          inherited: den.lib.aspects.adapters.filter (a: (a.name or null) != "blocked") inherited;
+        den.ctx.host.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "blocked");
 
         den.aspects.igloo.includes = [ den.aspects.parent ];
         den.aspects.parent.includes = [

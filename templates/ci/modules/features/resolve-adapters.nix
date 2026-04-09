@@ -3,14 +3,19 @@
   flake.tests.resolve-adapters = {
 
     test-basic-trace-includes = denTest (
-      { den, lib, ... }:
+      {
+        den,
+        lib,
+        trace,
+        ...
+      }:
       {
 
         den.aspects.foo.includes = [ den.aspects.bar ];
         den.aspects.bar.includes = [ den.aspects.baz ];
         den.aspects.baz.nixos = { };
 
-        expr = with den.lib.aspects; resolve.withAdapter adapters.trace "nixos" den.aspects.foo;
+        expr = trace "nixos" den.aspects.foo;
         expected.trace = [
           "foo"
           [
@@ -22,7 +27,12 @@
     );
 
     test-filter-compose-with-trace-includes = denTest (
-      { den, lib, ... }:
+      {
+        den,
+        lib,
+        trace,
+        ...
+      }:
       {
 
         den.aspects.foo.includes = [ den.aspects.bar ];
@@ -31,10 +41,9 @@
 
         expr =
           let
-            inherit (den.lib.aspects) resolve adapters;
-            composed = adapters.filter (aspect: aspect.name != "bar") adapters.trace;
+            outer = den.lib.aspects.adapters.filter (aspect: aspect.name != "bar");
           in
-          resolve.withAdapter composed "nixos" den.aspects.foo;
+          trace.over outer "nixos" den.aspects.foo;
         expected.trace = [
           "foo"
           [ ]
