@@ -10,7 +10,32 @@ import { Aside } from '@astrojs/starlight/components';
 [`templates/bogus`](https://github.com/vic/den/tree/main/templates/bogus)
 </Aside>
 
-The bogus template helps you create minimal bug reproductions. Use it when reporting issues or contributing fixes.
+This template helps you create minimal Den reproductions.
+
+Use it for:
+
+- Showcasing focused demos of how you are trying to use Den.
+- Reducing a problem to its minimum outside of your infra.
+- Sharing code that exposes an unknown bug.
+- Contributing bug fixes to Den core.
+
+All PRs modifying this template are run by Den CI on the following
+Den versions: `PR_HEAD`, `main`, `latest`.
+
+Feel free to send any PR even if you don't know if it is an
+actual bug or if you don't know the solution.
+
+Just having an small, focused example can help Den maintainers a lot.
+We can together determine if there's something we need to fix in Den.
+
+If you wish to contribute a fix, you are more than welcome,
+just mention you'd like to work on this at the PR.
+
+<Aside title="AI Policy">
+We accept AI assisted contributions as long as they are clear and focused and don't introduce unrelated accidental complexity.
+
+**All PR changes must be the absolute minimum required for showing/fixing bugs**
+</Aside>
 
 ## Initialize
 
@@ -43,12 +68,12 @@ Edit `modules/bug.nix` with a minimal test case:
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # set up the scenario
-        den.aspects.igloo.nixos.something = true;
+        den.aspects.igloo.nixos.environment.sessionVariables.FOO = ["foo" "bar"];
 
         # what you get
-        expr = igloo.something;
+        expr = igloo.environment.sessionVariables.FOO;
         # what you expect
-        expected = true;
+        expected = "foo:bar";
       }
     );
   };
@@ -71,34 +96,37 @@ Available test helpers (from `test-base.nix`):
 | `tuxHm` | `igloo.home-manager.users.tux` |
 | `pinguHm` | `igloo.home-manager.users.pingu` |
 | `funnyNames` | Resolves an aspect for class `"funny"` and collects `.names` |
-| `show` | `builtins.trace` helper for debugging |
+| `trace` | traces included aspect names |
+
+If you want to see some examples, take a look at other bogus reports that are now part of Den repository at:
+
+```console
+ls den/templates/ci/modules/features/deadbugs/*.nix
+```
 
 ## Run Tests
 
 ```console
+# From the bogus root
 nix flake check
 ```
 
-## Testing Against Different Den Versions
 
-Edit `.github/workflows/test.yml` to test against multiple Den versions:
-
-```yaml
-strategy:
-  matrix:
-    rev: ["main", "v1.0.0", "abc1234"]
+```console
+# From the Den root
+just bogus
 ```
-
-This helps identify regressions — include `"main"` and any release tag or commit.
 
 ## Contributing a Fix
 
-If you're submitting a fix to Den, test against your local checkout:
+Edit Den `/nix` or `/modules` code and run:
 
 ```console
-cd <den-working-copy>
-nix flake check --override-input den . ./templates/bogus
+just bogus
 ```
+
+When your changes to Den have fixed the bug, be sure to 
+move `bug.nix` into the `templates/ci/modules/feautres/deadbugs/` directory, following naming conventions for both the file and test-suite name.
 
 ## What It Provides
 
@@ -111,6 +139,5 @@ nix flake check --override-input den . ./templates/bogus
 
 ## Next Steps
 
-- Share your reproduction repo on [GitHub Discussions](https://github.com/vic/den/discussions)
 - Read [Debug Configurations](/guides/debug/) for debugging techniques
 - See the [CI Tests template](/tutorials/ci/) for Den's own comprehensive test suite
