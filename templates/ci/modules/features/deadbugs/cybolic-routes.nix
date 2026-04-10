@@ -19,7 +19,7 @@
           let
             inherit (den.lib) parametric;
             # eg, `<user>._.<host>` and `<host>._.<user>`
-            mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
+            mutual = from: to: from.aspect._.${to.aspect.name} or { };
 
             routes =
               { host, user, ... }@ctx:

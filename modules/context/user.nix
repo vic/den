@@ -28,7 +28,7 @@ let
   ctx.user.into.default = lib.singleton;
   ctx.user.provides.user = take.exactly from-user;
 
-  from-user = { host, user }: fixedTo { inherit host user; } den.aspects.${user.aspect};
+  from-user = { host, user }: fixedTo { inherit host user; } user.aspect;
 
 in
 {

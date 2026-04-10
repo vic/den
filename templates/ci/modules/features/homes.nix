@@ -87,7 +87,7 @@
             inherit (den.homes.x86_64-linux."tux@igloo")
               userName
               hostName
-              aspect
+              name
               host
               user
               ;
@@ -96,7 +96,7 @@
           keyboard = config.flake.homeConfigurations."tux@igloo".config.home.keyboard;
         };
         expected = {
-          homeSchema.aspect = "tux";
+          homeSchema.name = "tux";
           homeSchema.userName = "tux";
           homeSchema.hostName = "igloo";
           homeSchema.host = null;
@@ -132,14 +132,14 @@
             inherit (den.homes.x86_64-linux."tux@igloo")
               userName
               hostName
-              aspect
+              name
               ;
           };
           configuredUserName = config.flake.homeConfigurations."tux@igloo".config.home.username;
           hasOsConfig = config.flake.homeConfigurations."tux@igloo".config.home.keyboard.model;
         };
         expected = {
-          homeSchema.aspect = "tux"; # re-uses same aspect as hosted HM.
+          homeSchema.name = "tux"; # re-uses same aspect as hosted HM.
           homeSchema.userName = "tux";
           homeSchema.hostName = "igloo";
           configuredUserName = "tux";
