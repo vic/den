@@ -20,7 +20,7 @@ configurations to a User.
 
 ## Default, *unidirectional* OS configuration
 
-Den framework is built around **context pipeline** transformations. 
+Den framework is built around **context pipeline** transformations.
 In order to create a full OS configuration, everything starts with a host definition:
 
 ```nix "igloo" "tux"
@@ -28,7 +28,7 @@ den.hostx.x86_64-linux.igloo.users.tux = {}
 ```
 
 We need to build the `nixos` Nix module that will later be used by `lib.nixosSystem`.
-To do so, Den invokes the `den.ctx.host` pipeline like this: 
+To do so, Den invokes the `den.ctx.host` pipeline like this:
 
 > `Tip: Zoom diagrams using your mouse wheel or drag to move.`
 
@@ -64,7 +64,7 @@ This is the normal `den.ctx.host` pipeline. All OS contributions come from the h
 
 ## `den.provides.mutual-provider`
 
-The [`den.provides.mutual-provider`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix) battery allows you to define mutual congigurations by letting you to define named aspects under `.provides.` to create explicit relationship between users and hosts.
+The [`den.provides.mutual-provider`](https://github.com/vic/den/blob/main/modules/aspects/provides/mutual-provider.nix) battery allows you to define mutual configurations by letting you to define named aspects under `.provides.` to create explicit relationship between users and hosts.
 
 ```nix
 # mutual-provider is activated at a `{host,user}` context
