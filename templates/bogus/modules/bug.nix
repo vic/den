@@ -8,13 +8,10 @@
 
         imports =
           let
-            a = {
-              den.schema.host.options.enable = lib.mkEnableOption "sub";
-            };
 
             b = {
               den.aspects.role = { host, ... }: {
-                includes = lib.optionals host.enable [
+                includes = [
                   den.aspects.role._.sub
                 ];
               };
@@ -30,15 +27,11 @@
             #   };
             # };
 
-            d = {
-              den.hosts.x86_64-linux.igloo.enable = true;
-            };
-
             e = {
               den.aspects.igloo.includes = [ den.aspects.role ];
             };
           in
-          [ a b c d e ];
+          [ b c e ];
 
         expr = igloo.networking.networkmanager.enable;
         expected = true;
