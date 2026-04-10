@@ -285,3 +285,33 @@ And then, you can refer to `tux` aspect from other aspects:
   };
 }
 ```
+
+## Aspect Fixed-Point
+
+Aspects are fixed-point, meaning that they can reference themselves, as such:
+
+```nix
+{
+  den.aspects.igloo =
+    {config,...}: # Here, `config` represents the aspect `igloo` itself.
+    {
+      meta = {
+        default-key = "Hello World!";
+      };
+
+      homeManager = {
+        programs = {
+          gpg = {
+            enable = true;
+            settings.default-key = config.meta.default-key;
+          };
+
+          git = {
+            enable = true;
+            settings.signing.key = config.meta.default-key;
+          }
+        };
+      };
+  };
+}
+```
