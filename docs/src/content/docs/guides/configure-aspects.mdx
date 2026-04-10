@@ -234,6 +234,7 @@ den.aspects.foo =
 In case an aspect needs a custom submodule, it can be added this way:
 
 ```nix
+# User aspect `tux`
 den.aspects.tux =
   { config, ... }: # The function-args style is required for `imports` not to be interpreted as an Aspect class.
   {
@@ -255,7 +256,7 @@ den.aspects.tux =
 }
 ```
 
-And then, you can refer to this custom submodule from other aspects:
+And then, you can refer to `tux` aspect from other aspects:
 
 ```nix
 { den, ... }:
@@ -267,7 +268,7 @@ And then, you can refer to this custom submodule from other aspects:
         programs = {
           gpg = {
             enable = true;
-            settings.default-key = den.aspects.${config.home.username}.default-key;
+            settings.default-key = den.aspects.tux.default-key; # Access the `tux` aspect statically
           };
         };
 
@@ -276,7 +277,7 @@ And then, you can refer to this custom submodule from other aspects:
             enable = true;
             enableSshSupport = true;
             sshKeys = [
-              den.aspects.${config.home.username}.keygrip
+              den.aspects.${config.home.username}.keygrip # Access the current user aspect dynamically
             ];
           };
         };
