@@ -34,6 +34,26 @@ let
       # wrappers have __functor. Re-resolving either would double-apply
       # context and duplicate modules.
       isBareResult = builtins.isAttrs r && r ? includes && !(r ? meta) && !(r ? __functor);
+      # Full aspect objects have meta set by aspectMeta.
+      isFullAspect = sub: builtins.isAttrs sub && sub ? meta;
+      # Extract only owned class-module keys from a full aspect,
+      # stripping all aspect infrastructure / metadata keys.
+      # If the result is non-empty the sub has static owned class configs
+      # (e.g. nixos = { ... }) that withOwn would skip in a parametric ctx.
+      # Keys declared as options in aspectSubmodule (types.nix).
+      # Everything else in a merged aspect attrset is freeform class config.
+      classConfig =
+        sub:
+        builtins.removeAttrs sub [
+          "includes"
+          "__functor"
+          "__functionArgs"
+          "name"
+          "description"
+          "meta"
+          "provides"
+          "_"
+        ];
     in
     if r == { } then
       r
@@ -43,9 +63,25 @@ let
         includes = map (
           sub:
           let
+            cc = classConfig sub;
             sr = takeFn sub ctx;
+            subIncludes = builtins.filter (x: x != { }) (
+              map (applyDeep takeFn ctx) (sub.includes or [ ])
+            );
           in
-          if sr != { } then sr else sub
+          if isFullAspect sub && cc != { } then
+            # Static sub-aspect: withOwn skips owned class configs in parametric
+            # contexts (it only returns the functor branch).  Extract and include
+            # the class configs explicitly, then recurse into sub.includes so any
+            # nested parametric includes also receive the context.
+            { includes = [ cc ] ++ subIncludes; }
+          else if sr != { } then
+            # Parametric sub-aspect (bare fn coerced to { includes = [fn] }):
+            # takeFn fires the functor which captures the context and propagates
+            # it into the sub's includes, so sr already contains everything needed.
+            sr
+          else
+            sub
         ) r.includes;
       }
     else
