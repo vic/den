@@ -9,12 +9,12 @@
         imports =
           let
             a = {
-              den.schema.host.options.role._.sub.enable = lib.mkEnableOption "sub";
+              den.schema.host.options.enable = lib.mkEnableOption "sub";
             };
 
             b = {
               den.aspects.role = { host, ... }: {
-                includes = lib.optionals host.role._.sub.enable [
+                includes = lib.optionals host.enable [
                   den.aspects.role._.sub
                 ];
               };
@@ -31,7 +31,7 @@
             # };
 
             d = {
-              den.hosts.x86_64-linux.igloo.role._.sub.enable = true;
+              den.hosts.x86_64-linux.igloo.enable = true;
             };
 
             e = {
