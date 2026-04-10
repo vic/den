@@ -3,7 +3,22 @@ title: Contributing
 description: Report bugs and contribute pull-requests
 ---
 
-All contributions welcome. PRs are checked by CI.
+### All Contributions Are Welcome
+
+Please don't hesitate to create a PR. It doesn't have to be perfect. It doesn't
+have to be genius. But we do have one request: it does have to be *yours*.
+
+That doesn't mean you can't or shouldn't use LLMs while coding. LLMs have been
+involved in many aspects of building this project by most maintainers.
+
+What it does mean is that you are willing to take a sense of ownership of the
+PR. If you don't understand what your code does, now is the time to work with
+the community to grow your understanding. If that doesn't sound like something
+you can undertake right now, then feel free to create an issue or a discussion
+so we can understand how to make den better for you.
+
+PRs are checked by CI, which will give you helpful automated tips for ensuring
+your contribution meets the minimum standards for contributing to the codebase.
 
 ### AI-assisted Contributions Policy
 
