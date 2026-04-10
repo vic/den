@@ -22,8 +22,7 @@ let
   };
 
   homeCtx = {
-    home.provides.home =
-      { home }: den.lib.parametric.fixedTo { inherit home; } den.aspects.${home.aspect};
+    home.provides.home = { home }: den.lib.parametric.fixedTo { inherit home; } home.aspect;
     home.into.default = lib.singleton;
   };
 

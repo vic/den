@@ -34,10 +34,9 @@ let
       };
   '';
 
-  find-mutual = from: to: den.aspects.${from.aspect}._.${to.aspect} or { };
-  user-to-hosts = user: den.aspects.${user.aspect}._.to-hosts or { };
-  host-to-users = host: den.aspects.${host.aspect}._.to-users or { };
-  user-to-users = user: den.aspects.${user.aspect}._.to-users or { };
+  find-mutual = from: to: from.aspect._.${to.aspect.name} or { };
+  to-hosts = from: from.aspect._.to-hosts or { };
+  to-users = from: from.aspect._.to-users or { };
 
   mutual-user-user = host: user: {
     includes = map (
@@ -45,7 +44,7 @@ let
       parametric.fixedTo { inherit host user; } {
         includes = [
           (find-mutual from user)
-          (user-to-users from)
+          (to-users from)
         ];
       }
     ) (builtins.filter (u: u != user) (builtins.attrValues host.users));
@@ -58,8 +57,8 @@ let
       includes = [
         (find-mutual host user)
         (find-mutual user host)
-        (host-to-users host)
-        (user-to-hosts user)
+        (to-users host)
+        (to-hosts user)
         (mutual-user-user host user)
       ];
     };
@@ -67,7 +66,7 @@ let
   mutual-standalone-home =
     { home }:
     parametric.fixedTo { inherit home; } (
-      if home.hostName == null then { } else den.aspects.${home.aspect}._.${home.hostName} or { }
+      if home.hostName == null then { } else home.aspect._.${home.hostName} or { }
     );
 
 in

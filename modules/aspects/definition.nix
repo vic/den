@@ -11,7 +11,7 @@ let
   allUsers = lib.concatMap (h: builtins.attrValues h.users) allHosts;
 
   deps = map (from: {
-    ${from.aspect} = parametric (lib.genAttrs (from.classes or [ from.class ]) (_: { }));
+    ${from.name} = parametric (lib.genAttrs (from.classes or [ from.class ]) (_: { }));
   }) (allHosts ++ allHomes ++ allUsers);
 in
 {
