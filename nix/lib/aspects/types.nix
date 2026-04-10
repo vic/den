@@ -80,7 +80,10 @@ let
       { name, config, ... }:
       {
         freeformType = lib.types.lazyAttrsOf lib.types.deferredModule;
-        imports = [ (lib.mkAliasOptionModule [ "_" ] [ "provides" ]) ];
+        imports = [
+          (lib.mkAliasOptionModule [ "_" ] [ "provides" ])
+          (if den.schema ? aspect then den.schema.aspect else { })
+        ];
 
         options = {
           name = lib.mkOption {

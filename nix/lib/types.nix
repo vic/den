@@ -29,6 +29,11 @@ let
         imports = [ den.schema.host ];
         config._module.args.host = config;
         options = {
+          strict = lib.mkOption {
+            description = "";
+            default = false;
+            type = lib.types.bool;
+          };
           name = strOpt "host configuration name" name;
           hostName = strOpt "Network hostname" config.name;
           system = strOpt "platform system" system;
@@ -207,9 +212,9 @@ let
             description = ''
               nixpkgs instance used to build the home configuration.
             '';
-            example = lib.literalExpression ''inputs.nixpkgs.legacyPackages.''${home.system}'';
+            example = lib.literalExpression "inputs.nixpkgs.legacyPackages.\${home.system}";
             type = lib.types.raw;
-            defaultText = lib.literalExpression ''inputs.nixpkgs.legacyPackages.''${home.system}'';
+            defaultText = lib.literalExpression "inputs.nixpkgs.legacyPackages.\${home.system}";
             default = inputs.nixpkgs.legacyPackages.${config.system};
           };
           instantiate = lib.mkOption {
