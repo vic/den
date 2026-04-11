@@ -1,0 +1,63 @@
+{ den, lib, ... }:
+let
+  inherit (den.lib)
+    parametric
+    ;
+
+  description = ''
+    This is a private aspect always included in den.default.
+
+    It adds a module option that gathers all packages defined
+    in den._.insecure usages and declares a
+    nixpkgs.config.permittedInsecurePackages for each class.
+
+  '';
+
+  insecureModule =
+    { config, ... }@args:
+    let
+      # nixpkgs.config must not be set when useGlobalPkgs is true.
+      globalPkgs = args.osConfig.home-manager.useGlobalPkgs or false;
+      hasInsecure = config.permittedInsecurePackages.packages != [ ];
+    in
+    {
+      options.permittedInsecurePackages.packages = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        defaultText = lib.literalExpression "[ ]";
+        default = [ ];
+      };
+      config.nixpkgs = lib.mkIf (hasInsecure && !globalPkgs) {
+        config.permittedInsecurePackages = config.permittedInsecurePackages.packages;
+      };
+    };
+
+  osAspect =
+    { host }:
+    {
+      ${host.class}.imports = [ insecureModule ];
+    };
+
+  userAspect =
+    { host, user }:
+    lib.optionalAttrs (lib.elem "homeManager" user.classes) {
+      homeManager.imports = [ insecureModule ];
+    };
+
+  homeAspect =
+    { home }:
+    {
+      ${home.class}.imports = [ insecureModule ];
+    };
+
+  aspect = parametric.exactly {
+    inherit description;
+    includes = [
+      osAspect
+      userAspect
+      homeAspect
+    ];
+  };
+in
+{
+  den.default.includes = [ aspect ];
+}
