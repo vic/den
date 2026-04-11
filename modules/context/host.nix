@@ -20,7 +20,7 @@ let
 
   ctx.host.into.user = { host }: map (user: { inherit host user; }) (lib.attrValues host.users);
   ctx.host.into.default = lib.singleton;
-  ctx.host.provides.host = { host }: fixedTo { inherit host; } den.aspects.${host.aspect};
+  ctx.host.provides.host = { host }: fixedTo { inherit host; } host.aspect;
 
 in
 {

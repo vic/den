@@ -40,7 +40,12 @@ let
           class = strOpt "os-configuration nix class for host" (
             if lib.hasSuffix "darwin" config.system then "darwin" else "nixos"
           );
-          aspect = strOpt "main aspect name of <class>" config.name;
+          aspect = lib.mkOption {
+            description = "Aspect that configures this host.";
+            type = lib.types.raw; # no merging
+            defaultText = "den.aspects.<name>";
+            default = den.aspects.${config.name};
+          };
           description = strOpt "host description" "${config.class}.${config.hostName}@${config.system}";
           users = lib.mkOption {
             description = "user accounts";
@@ -133,7 +138,12 @@ let
             defaultText = lib.literalExpression ''[ "user" ]'';
             default = [ "user" ];
           };
-          aspect = strOpt "main aspect name" config.name;
+          aspect = lib.mkOption {
+            description = "Aspect that configures this user.";
+            type = lib.types.raw; # no merging
+            defaultText = "den.aspects.<name>";
+            default = den.aspects.${config.name};
+          };
           host = lib.mkOption {
             default = host;
             defaultText = lib.literalExpression "host";
@@ -193,7 +203,7 @@ let
         config._module.args.host = hostByName;
         config._module.args.user = userByName;
         options = {
-          name = strOpt "home configuration name" name;
+          name = strOpt "home configuration name" userName;
           userName = strOpt "user account name" userName;
           hostName = strOpt "host name" hostName;
           user = lib.mkOption {
@@ -206,7 +216,12 @@ let
           };
           system = strOpt "platform system" system;
           class = strOpt "home management nix class" "homeManager";
-          aspect = strOpt "main aspect name" userName;
+          aspect = lib.mkOption {
+            description = "Aspect that configures this home.";
+            type = lib.types.raw; # no merging
+            defaultText = "den.aspects.<name>";
+            default = den.aspects.${config.name};
+          };
           description = strOpt "home description" "home.${config.name}@${config.system}";
           pkgs = lib.mkOption {
             description = ''
@@ -253,7 +268,7 @@ let
               {
                 homeManager = [
                   "homeConfigurations"
-                  config.name
+                  name
                 ];
               }
               .${config.class};

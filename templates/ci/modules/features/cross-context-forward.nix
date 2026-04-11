@@ -187,7 +187,7 @@
             lib.optionalAttrs (primaryUser != null) (
               den._.forward {
                 each = lib.singleton host;
-                fromAspect = h: den.lib.parametric.fixedTo { host = h; } den.aspects.${h.aspect};
+                fromAspect = h: den.lib.parametric.fixedTo { host = h; } h.aspect;
                 fromClass = _: "homeManager";
                 intoClass = _: host.class;
                 intoPath = _: [

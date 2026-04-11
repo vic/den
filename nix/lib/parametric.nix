@@ -1,6 +1,6 @@
 { lib, den, ... }:
 let
-  inherit (den.lib) take;
+  inherit (den.lib) take canTake;
   inherit (den.lib.statics) owned statics isCtxStatic;
 
   # Preserve aspect identity through functor evaluation.
@@ -40,13 +40,13 @@ let
     else if isBareResult then
       r
       // {
-        includes = map (
-          sub:
-          let
-            sr = takeFn sub ctx;
-          in
-          if sr != { } then sr else sub
-        ) r.includes;
+        # Only recurse into subs whose functor actually consumes this ctx.
+        # A static aspect's default functor takes a bare `ctx` (functionArgs
+        # = {}), so canTake.upTo is false and we leave it alone — its owned
+        # class configs must be picked up later by the static resolve pass.
+        # A user-provided provider fn (e.g. { host, ... }: { nixos = ...; })
+        # has host in functionArgs; canTake.upTo fires and we materialize it.
+        includes = map (sub: if canTake.upTo ctx sub then take.upTo sub ctx else sub) r.includes;
       }
     else
       r;
