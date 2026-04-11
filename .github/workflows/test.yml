@@ -31,21 +31,8 @@ jobs:
       - uses: wimpysworld/nothing-but-nix@v10
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - run: nix flake init -t github:$GITHUB_REPOSITORY/$GITHUB_SHA#ci
-      - run: sed -i "s@\"github:vic/den\"@\"github:vic/den/$GITHUB_SHA\"@" flake.nix
-        if: matrix.os == 'ubuntu-latest'
-      - run: sed -i '' "s@\"github:vic/den\"@\"github:vic/den/$GITHUB_SHA\"@" flake.nix
-        if: matrix.os == 'macos-latest'
-      - run: |
-          cat <<-EOF > modules/ci-runtime.nix
-          { lib, ... }:
-          {
-            _module.args.CI = true;
-          }
-          EOF
-      - run: nix flake update den
-      - run: nix flake metadata
-      - run: nix flake check -L
+      - uses: actions/checkout@v6
+      - run: nix-shell --run 'just ci'
   flake-check:
     needs: [non-draft]
     name: nix flake check
