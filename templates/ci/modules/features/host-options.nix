@@ -31,7 +31,7 @@
       { den, config, ... }:
       {
         den.hosts.x86_64-linux.igloo = {
-          aspect = "my-custom-aspect";
+          aspect = den.aspects.my-custom-aspect;
           users.tux = { };
         };
         den.default.homeManager.home.stateVersion = "25.11";
@@ -47,7 +47,7 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
-        expr = den.hosts.x86_64-linux.igloo.aspect;
+        expr = den.hosts.x86_64-linux.igloo.name;
         expected = "igloo";
       }
     );
