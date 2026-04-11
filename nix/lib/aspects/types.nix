@@ -156,13 +156,24 @@ let
 
   # Wrap non-module functions into { includes = [fn] } so they don't get
   # treated as module functions by aspectType's submodule merge.
+  #
+  # Only coerce functions that destructure a context attrset
+  # (`{ host, ... }: ...`, `{ user, ... }: ...`, etc.) — those have a
+  # non-empty `functionArgs`. Bare-arg "factory" functions like
+  # `facter = reportPath: { nixos = ...; }` have empty `functionArgs`
+  # and must NOT be coerced — coercing them turns `den.aspects.facter`
+  # into a full aspect whose default functor ignores the user's
+  # argument, so `(facter ./facter.json)` no longer materializes the
+  # config. Such functions stay typed as `providerFnType`, whose merge
+  # wraps the underlying function via `__functor = _: eth.merge loc
+  # defs` so `(aspect arg)` correctly invokes the user function.
   coercedProviderType =
     cnf:
     let
       pt = providerType cnf;
     in
     lib.types.coercedTo (lib.types.addCheck lib.types.raw (
-      v: builtins.isFunction v && !isSubmoduleFn v
+      v: builtins.isFunction v && !isSubmoduleFn v && lib.functionArgs v != { }
     )) (fn: { includes = [ fn ]; }) pt;
 
   aspectsType =
