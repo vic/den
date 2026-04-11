@@ -104,7 +104,7 @@
           configuredUserName = "tux";
           keyboard.model = "standalone";
           keyboard.layout = "enthium";
-          keyboard.variant = "tux@igloo";
+          keyboard.variant = "tux";
           keyboard.options = [ ];
         };
       }
