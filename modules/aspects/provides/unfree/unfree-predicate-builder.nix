@@ -9,7 +9,7 @@ let
     This is a private aspect always included in den.default.
 
     It adds a module option that gathers all packages defined
-    in den._.unfree usages and declares a 
+    in den._.unfree usages and declares a
     nixpkgs.config.allowUnfreePredicate for each class.
 
   '';
@@ -19,7 +19,7 @@ let
     let
       # nixpkgs.config must not be set when useGlobalPkgs is true.
       globalPkgs = args.osConfig.home-manager.useGlobalPkgs or false;
-      hasUnfree = lib.length config.unfree.packages > 0;
+      hasUnfree = config.unfree.packages != [ ];
     in
     {
       options.unfree.packages = lib.mkOption {
