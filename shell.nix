@@ -8,7 +8,7 @@ let
     };
 in
 {
-  pkgs ? nixpkgs,
+  pkgs ? import nixpkgs { },
   lib ? pkgs.lib,
   ...
 }:
