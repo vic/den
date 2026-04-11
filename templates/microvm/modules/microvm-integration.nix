@@ -100,7 +100,7 @@ let
               "vms"
               vm.name
             ];
-            fromAspect = _: den.aspects.${vm.aspect};
+            fromAspect = _: vm.aspect;
           };
 
         in
