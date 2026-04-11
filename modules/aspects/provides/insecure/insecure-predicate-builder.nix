@@ -2,52 +2,51 @@
 let
   inherit (den.lib)
     parametric
-    take
     ;
 
   description = ''
     This is a private aspect always included in den.default.
 
     It adds a module option that gathers all packages defined
-    in den._.unfree usages and declares a
-    nixpkgs.config.allowUnfreePredicate for each class.
+    in den._.insecure usages and declares a
+    nixpkgs.config.permittedInsecurePackages for each class.
 
   '';
 
-  unfreeModule =
+  insecureModule =
     { config, ... }@args:
     let
       # nixpkgs.config must not be set when useGlobalPkgs is true.
       globalPkgs = args.osConfig.home-manager.useGlobalPkgs or false;
-      hasUnfree = config.unfree.packages != [ ];
+      hasInsecure = config.permittedInsecurePackages.packages != [ ];
     in
     {
-      options.unfree.packages = lib.mkOption {
+      options.permittedInsecurePackages.packages = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         defaultText = lib.literalExpression "[ ]";
         default = [ ];
       };
-      config.nixpkgs = lib.mkIf (hasUnfree && !globalPkgs) {
-        config.allowUnfreePredicate = (pkg: builtins.elem (lib.getName pkg) config.unfree.packages);
+      config.nixpkgs = lib.mkIf (hasInsecure && !globalPkgs) {
+        config.permittedInsecurePackages = config.permittedInsecurePackages.packages;
       };
     };
 
   osAspect =
     { host }:
     {
-      ${host.class}.imports = [ unfreeModule ];
+      ${host.class}.imports = [ insecureModule ];
     };
 
   userAspect =
     { host, user }:
     lib.optionalAttrs (lib.elem "homeManager" user.classes) {
-      homeManager.imports = [ unfreeModule ];
+      homeManager.imports = [ insecureModule ];
     };
 
   homeAspect =
     { home }:
     {
-      ${home.class}.imports = [ unfreeModule ];
+      ${home.class}.imports = [ insecureModule ];
     };
 
   aspect = parametric.exactly {

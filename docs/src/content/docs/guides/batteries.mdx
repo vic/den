@@ -132,6 +132,19 @@ den.aspects.laptop.includes = [
 Works for any class (`nixos`, `darwin`, `homeManager`). The unfree predicate
 builder is automatically included via `den.default`.
 
+### `den.provides.insecure`
+
+Enables specific insecure packages by name:
+
+```nix
+den.aspects.laptop.includes = [
+  (den.provides.insecure [ "foo-1.2.3" ])
+];
+```
+
+Works for any class (`nixos`, `darwin`, `homeManager`). The insecure predicate
+builder is automatically included via `den.default`.
+
 ### `den.provides.tty-autologin`
 
 Enables automatic TTY1 login on NixOS:
