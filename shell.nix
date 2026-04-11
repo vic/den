@@ -4,7 +4,7 @@ let
     with lock.nodes.nixpkgs.locked;
     builtins.fetchTarball {
       url = url;
-      hash = narHash;
+      sha256 = narHash;
     };
 in
 {
