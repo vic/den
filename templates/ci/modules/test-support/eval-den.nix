@@ -2,6 +2,6 @@
 {
   imports = [
     inputs.den.flakeModules.denTest
-    inputs.den.flakeOutputs.flake
+    inputs.den.flakeOutputs.tests
   ];
 }
