@@ -1,5 +1,14 @@
+let
+  lock = builtins.fromJSON (builtins.readFile ./templates/ci/flake.lock);
+  nixpkgs =
+    with lock.nodes.nixpkgs.locked;
+    builtins.fetchTarball {
+      url = url;
+      hash = narHash;
+    };
+in
 {
-  pkgs ? import <nixpkgs> { },
+  pkgs ? nixpkgs,
   lib ? pkgs.lib,
   ...
 }:
