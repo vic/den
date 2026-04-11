@@ -158,6 +158,37 @@ let
 
   default = filterIncludes module;
 
+  # Slash-joined key for an aspectPath. Canonical format for path
+  # lookup sets.
+  pathKey = path: lib.concatStringsSep "/" path;
+
+  # Convert a list of aspectPaths into an attrset-as-set keyed by pathKey.
+  toPathSet =
+    paths:
+    builtins.listToAttrs (
+      builtins.map (p: {
+        name = pathKey p;
+        value = true;
+      }) paths
+    );
+
+  # Shared walker used by collectPaths (through filterIncludes, so it
+  # sees tombstones) and by oneOfAspects (raw, to avoid re-entering
+  # its own meta.adapter). The excluded-guard is a no-op in the raw
+  # use since tombstones only appear after filterIncludes runs.
+  collectPathsInner =
+    { aspect, recurse, ... }:
+    {
+      paths =
+        (lib.optional (!(aspect.meta.excluded or false)) (aspectPath aspect))
+        ++ lib.concatMap (i: (recurse i).paths or [ ]) (aspect.includes or [ ]);
+    };
+
+  # Terminal adapter that walks via filterIncludes and collects the
+  # aspectPath of every non-tombstone aspect. Result shape:
+  # { paths = [ [providerSeg..., name], ... ]; }. Depth-first, not deduped.
+  collectPaths = filterIncludes collectPathsInner;
+
   # Traces aspect.name as nested lists per includes. Composed with filterIncludes
   # so tombstones and substitutions are visible.
   #
@@ -178,6 +209,7 @@ in
 {
   inherit
     aspectPath
+    collectPaths
     default
     excludeAspect
     filter
@@ -186,7 +218,9 @@ in
     mapAspect
     mapIncludes
     module
+    pathKey
     substituteAspect
+    toPathSet
     tombstone
     trace
     ;
