@@ -3,7 +3,7 @@ let
   nixpkgs =
     with lock.nodes.nixpkgs.locked;
     builtins.fetchTarball {
-      url = "https://github.com/${owner}/${repo}/archive/refs/${rev}.zip";
+      url = "https://github.com/${owner}/${repo}/archive/${rev}.zip";
       sha256 = narHash;
     };
 in
