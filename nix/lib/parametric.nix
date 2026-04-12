@@ -59,8 +59,22 @@ let
         # class configs must be picked up later by the static resolve pass.
         # A user-provided provider fn (e.g. { host, ... }: { nixos = ...; })
         # has host in functionArgs; canTake.upTo fires and we materialize it.
+        #
+        # Named aspects (coerced from parametric fns by coercedProviderType)
+        # also have functionArgs = {} on their default functor, so
+        # canTake.upTo fails for them too. But their includes may contain
+        # unapplied parametric functions that need context. For these, recurse
+        # into the aspect's includes directly — applying context to each fn
+        # include without invoking the aspect's own functor (which would drop
+        # owned class configs on static aspects per #423).
         includes = map (
-          sub: if canTake.upTo ctx sub then carryMeta sub (take.upTo sub ctx) else sub
+          sub:
+          if canTake.upTo ctx sub then
+            carryMeta sub (take.upTo sub ctx)
+          else if builtins.isAttrs sub && sub ? __functor && sub ? includes then
+            sub // { includes = map (applyDeep takeFn ctx) (sub.includes or [ ]); }
+          else
+            sub
         ) rRaw.includes;
       }
     else
