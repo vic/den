@@ -18,6 +18,7 @@ let
         ;
     };
   den-lib = builtins.mapAttrs (_: load) {
+    fx = ./fx.nix;
     aspects = ./aspects;
     canTake = ./can-take.nix;
     ctxApply = ./ctx-apply.nix;
