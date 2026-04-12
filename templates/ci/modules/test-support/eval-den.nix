@@ -6,6 +6,13 @@
   ];
   flake = {
     inherit denTest;
-    den = (denTest ({ den, ... }: { expr = den; expected = den; })).expr;
+    den =
+      (denTest (
+        { den, ... }:
+        {
+          expr = den;
+          expected = den;
+        }
+      )).expr;
   };
 }
