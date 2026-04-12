@@ -46,6 +46,9 @@ fmt:
 unit:
   nix flake check --override-input target . github:vic/checkmate
 
+repl:
+  nix repl --override-input den . ./templates/ci
+
 [arg("tmpdir",long="tmpdir"), arg("head",long="head",short="h"), arg("base",long="base",short="b"), arg("warm",long="warm",short="w"), arg("runs",long="runs",short="r")]
 bench tmpdir="/tmp" head="HEAD" base="refs/remotes/origin/main" warm="2" runs="5" *args: 
   rm -rf "{{tmpdir}}/den-head" "{{tmpdir}}/den-base"

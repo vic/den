@@ -3,7 +3,17 @@ title: Debug Configurations
 description: Tools and techniques for debugging Den configurations.
 ---
 
-## REPL Inspection
+## Den CI REPL
+
+The following loads `denTest` and `den.lib` at REPL for exploration.
+
+```console
+just repl
+```
+
+This will **not** load your project definitions, for that use:
+
+## Your Flake REPL Inspection
 
 Load your flake and explore interactively:
 
@@ -112,3 +122,4 @@ Darwin hosts have `class = "darwin"`, not `"nixos"`.
 
 **Module not found**: Ensure the file is under `modules/` and not
 prefixed with `_` (excluded by import-tree).
+
