@@ -20,6 +20,17 @@ let
     }
     // extra;
 
+  # Copy fn's meta onto a materialized functor result. Preserves
+  # meta.provider so provider sub-aspects keep their full aspectPath
+  # (e.g. ["foo","sub"]) after the user fn is invoked and returns a
+  # raw attrset that would otherwise drop it.
+  carryMeta =
+    fn: result:
+    if builtins.isAttrs result && fn ? meta && !(result ? meta) then
+      result // { inherit (fn) meta; }
+    else
+      result;
+
   # When takeFn succeeds and returns a result with sub-includes,
   # also try to resolve those sub-includes with takeFn. This handles
   # provider sub-aspect functions nested inside include results:
@@ -28,15 +39,17 @@ let
   applyDeep =
     takeFn: ctx: fn:
     let
-      r = takeFn fn ctx;
+      rRaw = takeFn fn ctx;
+      r = carryMeta fn rRaw;
       # Bare provider results carry only includes (+ name from carryAttrs).
       # Results from withOwn/withIdentity have meta; deferred deepRecurse
       # wrappers have __functor. Re-resolving either would double-apply
       # context and duplicate modules.
-      isBareResult = builtins.isAttrs r && r ? includes && !(r ? meta) && !(r ? __functor);
+      # Checked against rRaw (pre-carryMeta) so the recursion branch still fires.
+      isBareResult = builtins.isAttrs rRaw && rRaw ? includes && !(rRaw ? meta) && !(rRaw ? __functor);
     in
-    if r == { } then
-      r
+    if rRaw == { } then
+      rRaw
     else if isBareResult then
       r
       // {
@@ -46,7 +59,9 @@ let
         # class configs must be picked up later by the static resolve pass.
         # A user-provided provider fn (e.g. { host, ... }: { nixos = ...; })
         # has host in functionArgs; canTake.upTo fires and we materialize it.
-        includes = map (sub: if canTake.upTo ctx sub then take.upTo sub ctx else sub) r.includes;
+        includes = map (
+          sub: if canTake.upTo ctx sub then carryMeta sub (take.upTo sub ctx) else sub
+        ) rRaw.includes;
       }
     else
       r;
