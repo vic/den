@@ -5,7 +5,7 @@
 #
 # See resolve.nix for the arguments passed to adapters:
 #   { aspect, class, classModule, recurse, aspect-chain, resolveChild }
-{ lib, ... }:
+{ den, lib, ... }:
 let
 
   # Produces a single module importing all classModules from aspect and its includes.
@@ -189,6 +189,29 @@ let
   # { paths = [ [providerSeg..., name], ... ]; }. Depth-first, not deduped.
   collectPaths = filterIncludes collectPathsInner;
 
+  # meta.adapter that keeps the first candidate structurally present
+  # in the parent subtree and tombstones the rest via excludeAspect.
+  #
+  #   meta.adapter = oneOfAspects [ <agenix-rekey> <sops-nix> ];
+  #
+  # No-op when no candidates are present. Presence is determined
+  # from the raw tree (bypassing filterIncludes) so we don't re-enter
+  # our own meta.adapter.
+  oneOfAspects =
+    candidates: inherited:
+    args@{ class, aspect-chain, ... }:
+    let
+      # filterIncludes rebinds args.aspect to each child but keeps
+      # aspect-chain, whose tail is still the parent that owns us.
+      parent = lib.last aspect-chain;
+      subtree = den.lib.aspects.resolve.withAdapter collectPathsInner class parent;
+      present-keys = toPathSet (subtree.paths or [ ]);
+      keyOf = c: pathKey (aspectPath c);
+      present = builtins.filter (c: present-keys ? ${keyOf c}) candidates;
+      losers = if present == [ ] then [ ] else builtins.tail present;
+    in
+    (lib.foldl' (inner: loser: excludeAspect loser inner) inherited losers) args;
+
   # Traces aspect.name as nested lists per includes. Composed with filterIncludes
   # so tombstones and substitutions are visible.
   #
@@ -218,6 +241,7 @@ in
     mapAspect
     mapIncludes
     module
+    oneOfAspects
     pathKey
     substituteAspect
     toPathSet
