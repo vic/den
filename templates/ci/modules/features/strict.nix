@@ -96,7 +96,128 @@
       }
     );
 
-    flakeModule.strict = {
+    flakeModule = {
+      test-aspect-nixos = denTest (
+        { inputs, igloo, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo = { };
+          den.aspects.igloo.nixos.networking.hostName = "igloo";
+
+          expr = igloo.networking.hostName;
+          expected = "igloo";
+        }
+      );
+
+      test-aspect-darwin = denTest (
+        { inputs, apple, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.aarch64-darwin.apple = { };
+          den.aspects.apple.darwin.networking.hostName = "apple";
+
+          expr = apple.networking.hostName;
+          expected = "apple";
+        }
+      );
+
+      test-aspect-os = denTest (
+        {
+          inputs,
+          igloo,
+          apple,
+          ...
+        }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo = { };
+          den.aspects.igloo.os.networking.hostName = "igloo";
+
+          den.hosts.aarch64-darwin.apple = { };
+          den.aspects.apple.os.networking.hostName = "apple";
+
+          expr = {
+            apple = apple.networking.hostName;
+            igloo = igloo.networking.hostName;
+          };
+          expected = {
+            apple = "apple";
+            igloo = "igloo";
+          };
+        }
+      );
+
+      test-aspect-homeManager = denTest (
+        { inputs, tuxHm, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.schema.user.classes = [ "homeManager" ];
+
+          den.hosts.x86_64-linux.igloo.users.tux = { };
+          den.aspects.tux.homeManager.programs.vim.enable = true;
+
+          expr = tuxHm.programs.vim.enable;
+          expected = true;
+        }
+      );
+
+      test-aspect-user = denTest (
+        { inputs, tux, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo.users.tux = { };
+
+          den.aspects.tux.user.extraGroups = [ "test" ];
+
+          expr = tux.extraGroups;
+          expected = [ "test" ];
+        }
+      );
+
+      test-aspect-wsl = denTest (
+        { inputs, igloo, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo = {
+            wsl.enable = true;
+            users.tux = { };
+          };
+
+          den.aspects.igloo.wsl.defaultUser = "igloo";
+
+          expr =
+            if inputs ? nixos-wsl then
+              igloo.wsl.defaultUser
+            else
+              lib.warn "nixos-wsl not found in inputs, skipping test `strict-mode.flakeModule.test-aspect-wsl" "igloo";
+          expected = "igloo";
+        }
+      );
+
       test-host = denTest (
         { inputs, den, ... }:
         {

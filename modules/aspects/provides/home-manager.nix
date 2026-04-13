@@ -26,8 +26,14 @@ let
     home.into.default = lib.singleton;
   };
 
+  aspectSchema.options.homeManager = lib.mkOption {
+    type = lib.types.deferredModule;
+    default = { };
+  };
+
 in
 {
   den.ctx = result.ctx // homeCtx;
   den.schema.host.imports = [ result.hostConf ];
+  den.schema.aspect.imports = [ aspectSchema ];
 }

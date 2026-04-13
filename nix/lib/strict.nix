@@ -14,7 +14,13 @@
               lib.head
             ];
 
-            kind = if (lib.head path) == "flake" then "flake" else lib.elemAt path 1;
+            kind =
+              if (lib.elemAt path 0) == "flake" then
+                "flake"
+              else if (lib.elemAt path 1) == "default" then
+                "aspect"
+              else
+                lib.elemAt path 1;
           in
           throw ''
             STRICT MODE
