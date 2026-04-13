@@ -28,7 +28,7 @@
         expr = den.hosts.x86_64-linux.igloo.arbitrary;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo\"";
+          msg = "Attempted to set the option \"arbitrary\" on the host \"den.hosts.x86_64-linux.igloo\" but no definition exists.";
         };
       }
     );
@@ -43,7 +43,7 @@
         expr = den.hosts.x86_64-linux.igloo.users.tux.arbitrary;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo.users.tux\"";
+          msg = "Attempted to set the option \"arbitrary\" on the user \"den.hosts.x86_64-linux.igloo.users.tux\" but no definition exists.";
         };
       }
     );
@@ -59,7 +59,7 @@
         expr = den.aspects.igloo.arbitrary;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitrary\" in \"den.aspects.igloo\"";
+          msg = "Attempted to set the option \"arbitrary\" on the aspect \"den.aspects.igloo\" but no definition exists.";
         };
       }
     );
@@ -73,7 +73,7 @@
         expr = config.flake.arbitray;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitray\" in \"flake\"";
+          msg = "Attempted to set the flake output option \"arbitray\" but no definition exists.";
         };
       }
     );
@@ -228,7 +228,7 @@
           expr = den.hosts.x86_64-linux.igloo.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo\"";
+            msg = "Attempted to set the option \"arbitrary\" on the host \"den.hosts.x86_64-linux.igloo\"";
           };
         }
       );
@@ -243,7 +243,7 @@
           expr = den.hosts.x86_64-linux.igloo.users.tux.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo.users.tux\"";
+            msg = "Attempted to set the option \"arbitrary\" on the user \"den.hosts.x86_64-linux.igloo.users.tux\"";
           };
         }
       );
@@ -258,7 +258,7 @@
           expr = den.aspects.test.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"den.aspects.test\"";
+            msg = "Attempted to set the option \"arbitrary\" on the aspect \"den.aspects.test\"";
           };
         }
       );
@@ -273,7 +273,7 @@
           expr = config.flake.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"flake\"";
+            msg = "Attempted to set the flake output option \"arbitrary\" but no definition exists";
           };
         }
       );
@@ -300,7 +300,7 @@
           ];
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"flatMap\" in \"den.ful.test.lib\"";
+            msg = "Attempted to set the option \"lib.flatMap\" on the namespace \"test\"";
           };
         }
       );
