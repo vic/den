@@ -60,8 +60,10 @@ let
     };
 
   manySubmodule =
-    lib:
+    lib: imports:
     lib.types.submodule {
+      inherit imports;
+
       freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
     };
 
@@ -70,7 +72,7 @@ let
     lib.mkOption {
       default = { };
       defaultText = lib.literalExpression "{ }";
-      type = lib.types.lazyAttrsOf (manySubmodule lib);
+      type = lib.types.lazyAttrsOf (manySubmodule lib [ ]);
     };
 
   flakeOut =
@@ -78,15 +80,15 @@ let
     lib.mkOption {
       default = { };
       defaultText = lib.literalExpression "{ }";
-      type = (manySubmodule lib);
+      type = (manySubmodule lib [ ]);
     };
 
   flakeTop =
-    lib:
+    { lib, den }:
     lib.mkOption {
       default = { };
       defaultText = lib.literalExpression "{ }";
-      type = (manySubmodule lib);
+      type = (manySubmodule lib [ (den.schema.flake or { }) ]);
     };
 
   flakeBased = builtins.listToAttrs (
@@ -114,9 +116,12 @@ let
   all.includes = builtins.attrValues (flakeBased // systemBased);
 
   flake =
-    { lib, ... }:
+    { lib, config, ... }:
     {
-      options.flake = flakeTop lib;
+      options.flake = flakeTop {
+        inherit lib;
+        inherit (config) den;
+      };
     };
 
 in
