@@ -9,9 +9,20 @@
 }:
 let
   # isolated test, prevent polution between tests.
-  denTest = module: {
-    inherit ((evalDen module).config) expr expected;
-  };
+  denTest =
+    module:
+    let
+      config = (evalDen module).config;
+    in
+    {
+      expr = config.expr;
+    }
+    // lib.optionalAttrs (config.expected != null) {
+      expected = config.expected;
+    }
+    // lib.optionalAttrs (config.expectedError != null) {
+      expectedError = config.expectedError;
+    };
 
   # emulate fake-parts only for self and nixpkgs.
   withSystem =
@@ -43,7 +54,28 @@ let
   testModule = {
     imports = [ inputs.den.flakeModule ];
     options.expr = lib.mkOption { };
-    options.expected = lib.mkOption { };
+    options.expected = lib.mkOption { default = null; };
+    options.expectedError = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options.type = lib.mkOption {
+            type = lib.types.enum [
+              "RestrictedPathError"
+              "MissingArgumentError"
+              "UndefinedVarError"
+              "TypeError"
+              "Abort"
+              "ThrownError"
+              "AssertionError"
+              "ParseError"
+              "EvalError"
+            ];
+          };
+          options.msg = lib.mkOption { type = lib.types.str; };
+        }
+      );
+      default = null;
+    };
     config = {
       den.schema.user.classes = lib.mkDefault [ "homeManager" ];
       den.default.nixos.system.stateVersion = lib.mkDefault "25.11";

@@ -132,8 +132,8 @@
       {
         den.hosts.x86_64-linux.igloo = { };
 
-        expr = (den.ctx.host { host = den.hosts.x86_64-linux.igloo; }).meta.adapter;
-        expected = null;
+        expr.value = (den.ctx.host { host = den.hosts.x86_64-linux.igloo; }).meta.adapter;
+        expected.value = null;
       }
     );
 
