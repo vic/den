@@ -1,10 +1,21 @@
-{ inputs, denTest, ... }:
+{
+  inputs,
+  denTest,
+  lib,
+  ...
+}:
 {
   imports = [
     inputs.den.flakeModules.denTest
-    inputs.den.flakeOutputs.flake
+    inputs.den.flakeOutputs.tests
   ];
-  flake = {
+
+  options.flake = {
+    denTest = lib.mkOption { };
+    den = lib.mkOption { };
+  };
+
+  config.flake = {
     inherit denTest;
     den =
       (denTest (
