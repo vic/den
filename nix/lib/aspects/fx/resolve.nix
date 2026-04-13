@@ -87,7 +87,20 @@ let
           resolved = resolveOne { inherit ctx class aspect-chain; } aspectVal;
           resolvedIncludes = map (
             child:
-            if builtins.isAttrs child && child ? name then
+            if lib.isFunction child then
+              # Bare function include (e.g. { host, ... }: { ... }) — wrap
+              # in a minimal aspect envelope so resolveOne can handle it.
+              let
+                childAspect = {
+                  name = child.name or "<anon>";
+                  meta = child.meta or { };
+                  __functor = _: child;
+                  __functionArgs = lib.functionArgs child;
+                  includes = [ ];
+                };
+              in
+              go childAspect
+            else if builtins.isAttrs child && child ? name then
               # Named aspect (has envelope shape) — recurse
               go child
             else if builtins.isAttrs child then
