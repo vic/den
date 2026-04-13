@@ -311,8 +311,8 @@ let
       state = defaultState // extraState;
     } comp;
 
-  # Full pipeline: context traversal → resolution → module collection.
-  # Returns { value = resolvedTree; state = { seen; imports; }; }
+  # Full pipeline: context traversal → resolution ��� module collection.
+  # Implemented via mkPipeline with default handlers.
   fxFullResolve =
     {
       ctxNs,
@@ -320,47 +320,7 @@ let
       self,
       ctx,
     }:
-    let
-      comp = fx.bind (ctxApply.ctxApplyEffectful ctxNs self ctx) (
-        includes:
-        fx.bind
-          (resolveDeepEffectful
-            {
-              inherit ctx class;
-              aspect-chain = [ ];
-            }
-            {
-              name = self.name or "<anon>";
-              meta = self.meta or { };
-              inherit includes;
-            }
-          )
-          (
-            resolved:
-            # Emit resolve-complete for root so moduleHandler collects root's class module
-            fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved)
-          )
-      );
-    in
-    fx.handle {
-      handlers =
-        handlers.ctxTraverseHandler
-        // handlers.ctxSeenHandler
-        // handlers.ctxProviderHandler
-        // {
-          "resolve-include" =
-            { param, state }:
-            {
-              resume = [ param ];
-              inherit state;
-            };
-        }
-        // (adapters.moduleHandler class);
-      state = {
-        seen = { };
-        imports = [ ];
-      };
-    } comp;
+    mkPipeline { inherit class; } { inherit ctxNs self ctx; };
 
   # Drop-in shape: returns { imports = [...] }
   fxResolve =
@@ -379,20 +339,24 @@ let
     {
       ctx,
       class,
-      aspect-chain,
+      aspect-chain ? [ ],
       strict ? false,
     }:
     let
-      resolver = (if strict then resolveOneStrict else resolveOne) { inherit ctx class aspect-chain; };
+      resolve = if strict then resolveOneStrict else resolveOne;
       go =
-        aspectVal:
+        chain: aspectVal:
         let
-          resolved = resolver aspectVal;
+          resolved =
+            (resolve {
+              inherit ctx class;
+              aspect-chain = chain;
+            })
+              aspectVal;
+          newChain = chain ++ [ aspectVal ] ++ (lib.optional (aspectVal != resolved) resolved);
           resolvedIncludes = map (
             child:
             if lib.isFunction child then
-              # Bare function include (e.g. { host, ... }: { ... }) — wrap
-              # in a minimal aspect envelope so resolveOne can handle it.
               let
                 childAspect = {
                   name = child.name or "<anon>";
@@ -402,21 +366,16 @@ let
                   includes = [ ];
                 };
               in
-              go childAspect
+              go newChain childAspect
             else if builtins.isAttrs child && child ? name then
-              # Named aspect (has envelope shape) — recurse
-              go child
-            else if builtins.isAttrs child then
-              # Plain attrset config — pass through
-              child
+              go newChain child
             else
-              # Shouldn't happen in well-formed trees, but pass through
               child
           ) (resolved.includes or [ ]);
         in
         resolved // { includes = resolvedIncludes; };
     in
-    go;
+    go aspect-chain;
 
 in
 {
