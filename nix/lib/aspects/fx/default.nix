@@ -16,6 +16,14 @@
           adapters
           ;
       };
+      ctxApply = import ./ctx-apply.nix {
+        inherit
+          lib
+          den
+          fx
+          adapters
+          ;
+      };
     in
     {
       inherit (aspect) wrapAspect;
@@ -24,6 +32,9 @@
         staticHandler
         contextHandlers
         missingArgError
+        ctxSeenHandler
+        ctxProviderHandler
+        ctxTraverseHandler
         ;
       inherit (resolve)
         resolveOne
@@ -32,6 +43,7 @@
         resolveDeepEffectful
         wrapIdentity
         ;
+      inherit ctxApply;
       inherit
         adapters
         aspect
