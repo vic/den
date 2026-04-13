@@ -6,6 +6,7 @@ let
   flakeModules.default = ./flakeModule.nix;
   flakeModules.dendritic = ./dendritic.nix;
   flakeModules.denTest = ./denTest.nix;
+  flakeModules.strict = ./strict.nix;
 
   templates = {
     default.path = ../templates/default;
