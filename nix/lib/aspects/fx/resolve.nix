@@ -5,6 +5,7 @@
   aspect,
   handlers,
   adapters,
+  ctxApply,
   ...
 }:
 let
@@ -248,6 +249,67 @@ let
     in
     go;
 
+  # Full pipeline: context traversal → resolution → module collection.
+  # Returns { value = resolvedTree; state = { seen; imports; }; }
+  fxFullResolve =
+    {
+      ctxNs,
+      class,
+      self,
+      ctx,
+    }:
+    let
+      comp = fx.bind (ctxApply.ctxApplyEffectful ctxNs self ctx) (
+        includes:
+        fx.bind
+          (resolveDeepEffectful
+            {
+              inherit ctx class;
+              aspect-chain = [ ];
+            }
+            {
+              name = self.name or "<anon>";
+              meta = self.meta or { };
+              inherit includes;
+            }
+          )
+          (
+            resolved:
+            # Emit resolve-complete for root so moduleHandler collects root's class module
+            fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved)
+          )
+      );
+    in
+    fx.handle {
+      handlers =
+        handlers.ctxTraverseHandler
+        // handlers.ctxSeenHandler
+        // handlers.ctxProviderHandler
+        // {
+          "resolve-include" =
+            { param, state }:
+            {
+              resume = [ param ];
+              inherit state;
+            };
+        }
+        // (adapters.moduleHandler class);
+      state = {
+        seen = { };
+        imports = [ ];
+      };
+    } comp;
+
+  # Drop-in shape: returns { imports = [...] }
+  fxResolve =
+    args:
+    let
+      result = fxFullResolve args;
+    in
+    {
+      imports = result.state.imports;
+    };
+
   # Recursively resolve an aspect and all its includes.
   # Uses resolveOne by default. Pass strict = true to use resolveOneStrict
   # for diagnostic errors on missing context args.
@@ -301,6 +363,8 @@ in
     resolveOneStrict
     resolveDeep
     resolveDeepEffectful
+    fxFullResolve
+    fxResolve
     wrapIdentity
     ;
 }

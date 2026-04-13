@@ -6,6 +6,14 @@
       adapters = import ./adapters.nix { inherit lib den fx; };
       aspect = import ./aspect.nix { inherit lib den fx; };
       handlers = import ./handlers.nix { inherit lib den fx; };
+      ctxApply = import ./ctx-apply.nix {
+        inherit
+          lib
+          den
+          fx
+          adapters
+          ;
+      };
       resolve = import ./resolve.nix {
         inherit
           lib
@@ -14,14 +22,7 @@
           aspect
           handlers
           adapters
-          ;
-      };
-      ctxApply = import ./ctx-apply.nix {
-        inherit
-          lib
-          den
-          fx
-          adapters
+          ctxApply
           ;
       };
     in
@@ -41,6 +42,8 @@
         resolveOneStrict
         resolveDeep
         resolveDeepEffectful
+        fxFullResolve
+        fxResolve
         wrapIdentity
         ;
       inherit ctxApply;
