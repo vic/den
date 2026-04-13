@@ -107,6 +107,9 @@
     },
     "nix-effects": {
       "inputs": {
+        "nix-unit": [
+          "nix-unit"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -125,6 +128,26 @@
         "type": "github"
       }
     },
+    "nix-unit": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1762774186,
+        "narHash": "sha256-hRADkHjNt41+JUHw2EiSkMaL4owL83g5ZppjYUdF/Dc=",
+        "owner": "nix-community",
+        "repo": "nix-unit",
+        "rev": "1c9ab50554eed0b768f9e5b6f646d63c9673f0f7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nix-unit",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
@@ -132,6 +155,7 @@
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "nix-effects": "nix-effects",
+        "nix-unit": "nix-unit",
         "nixpkgs": "nixpkgs",
         "provider": "provider"
       }
