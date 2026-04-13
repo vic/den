@@ -22,5 +22,8 @@
       import-tree.follows = "import-tree";
       den.follows = "den";
     };
+
+    nix-effects.url = "github:vic/nix-effects";
+    nix-effects.inputs.nixpkgs.follows = "nixpkgs";
   };
 }

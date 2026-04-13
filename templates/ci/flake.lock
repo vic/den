@@ -105,12 +105,33 @@
       },
       "parent": []
     },
+    "nix-effects": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1776045513,
+        "narHash": "sha256-3+Y6/1tERHb9A0hyvrGk1wfHjKFMLfctUfkJmG+tpy8=",
+        "owner": "vic",
+        "repo": "nix-effects",
+        "rev": "8004fefb7487fe5e88728f56ce487763588ecc34",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vic",
+        "repo": "nix-effects",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "darwin": "darwin",
         "den": "den",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
+        "nix-effects": "nix-effects",
         "nixpkgs": "nixpkgs",
         "provider": "provider"
       }
