@@ -32,18 +32,7 @@ let
     {
       inherit nixos darwin homeManager;
     };
-  
-  systemPackages =
-    pkgNames: user:
-    let
-      nixos = { pkgs, ... }: {
-        environment.systemPackages = map (pkgName: pkgs.${pkgName}) pkgNames;
-      };
-      darwin = nixos;
-    in
-    {
-      inherit nixos darwin;
-    };
+
 in
 {
   den.provides.user-packages =
@@ -51,7 +40,6 @@ in
     den.lib.parametric.exactly {
       inherit description;
       includes = [
-        ({ host }: systemPackages pkgNames)
         ({ host, user }: userPackages pkgNames user)
         ({ home }: userPackages pkgNames home)
       ];
