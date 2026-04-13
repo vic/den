@@ -14,11 +14,13 @@
               lib.head
             ];
 
-            kind =
-              if (lib.elemAt path 0) == "flake" then
-                "flake"
-              else if (lib.elemAt path 1) == "default" then
-                "aspect"
+            optionPath =
+              if lib.lists.hasPrefix [ "flake" ] path then
+                "den.schema.flake.options.${decl.name}"
+              else if lib.lists.hasPrefix [ "den" "default" ] path then
+                "den.schema.aspect.options.${decl.name}"
+              else if lib.lists.hasPrefix [ "den" "ful" ] path then
+                "den.schema.namespace.options.${lib.last path}.${decl.name}"
               else
                 lib.elemAt path 1;
           in
@@ -27,7 +29,7 @@
 
             Attempted to set the option "${decl.name}" in "${lib.join "." path}" but no explicit definition exists. If this wasn't a mistake, disable STRICT mode or configure an option. e.g.
 
-            den.schema.${kind}.options.${decl.name} = lib.mkOption { ... };
+            ${optionPath} = lib.mkOption { ... };
 
             See https://documentation.example
           ''

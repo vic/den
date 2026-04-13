@@ -277,6 +277,74 @@
           };
         }
       );
+
+      test-namespace = denTest (
+        {
+          inputs,
+          test,
+          lib,
+          ...
+        }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            (inputs.den.namespace "test" true)
+          ];
+
+          test.lib.flatMap = f: arr: lib.concatMap f arr;
+
+          expr = test.lib.flatMap (x: [ x ]) [
+            1
+            2
+            3
+          ];
+          expectedError = {
+            type = "ThrownError";
+            msg = "Attempted to set the option \"flatMap\" in \"den.ful.test.lib\"";
+          };
+        }
+      );
+
+      test-namespace-fix = denTest (
+        {
+          inputs,
+          test,
+          lib,
+          ...
+        }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            (inputs.den.namespace "test" true)
+          ];
+
+          den.schema.namespace.options.lib = lib.mkOption {
+            type = lib.types.lazyAttrsOf lib.types.unspecified;
+          };
+
+          test.lib.flatMap = f: arr: lib.concatMap f arr;
+
+          expr =
+            test.lib.flatMap
+              (x: [
+                x
+                x
+              ])
+              [
+                1
+                2
+                3
+              ];
+          expected = [
+            1
+            1
+            2
+            2
+            3
+            3
+          ];
+        }
+      );
     };
   };
 }
