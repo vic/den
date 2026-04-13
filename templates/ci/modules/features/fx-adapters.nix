@@ -185,5 +185,176 @@ in
       }
     );
 
+    test-moduleHandler-collects-imports = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        parent = {
+          name = "root";
+          meta = { };
+          includes = [
+            {
+              name = "a";
+              meta = { };
+              nixos = {
+                enable = true;
+              };
+              includes = [ ];
+            }
+            {
+              name = "b";
+              meta = { };
+              includes = [ ];
+            }
+          ];
+        };
+        comp = fxLib.resolve.resolveDeepEffectful {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        } parent;
+        result = fx.handle {
+          handlers = {
+            "resolve-include" =
+              { param, state }:
+              {
+                resume = [ param ];
+                inherit state;
+              };
+          }
+          // (fxLib.adapters.moduleHandler "nixos");
+          state = {
+            imports = [ ];
+          };
+        } comp;
+      in
+      {
+        expr = builtins.length result.state.imports;
+        expected = 1;
+      }
+    );
+
+    test-collectPaths-excludes-tombstones = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        target = {
+          name = "drop";
+          meta = {
+            provider = [ ];
+          };
+        };
+        parent = {
+          name = "root";
+          meta = {
+            adapter = fxLib.adapters.excludeAspect target;
+          };
+          includes = [
+            {
+              name = "keep";
+              meta = {
+                provider = [ ];
+              };
+              includes = [ ];
+            }
+            {
+              name = "drop";
+              meta = {
+                provider = [ ];
+              };
+              includes = [ ];
+            }
+          ];
+        };
+        comp = fxLib.resolve.resolveDeepEffectful {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        } parent;
+        result = fx.handle {
+          handlers = {
+            "resolve-include" =
+              { param, state }:
+              {
+                resume = [ param ];
+                inherit state;
+              };
+          }
+          // fxLib.adapters.collectPathsHandler;
+          state = {
+            paths = [ ];
+          };
+        } comp;
+      in
+      {
+        expr = builtins.length result.state.paths;
+        expected = 1;
+      }
+    );
+
+    test-moduleHandler-skips-tombstones = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        target = {
+          name = "drop";
+          meta = {
+            provider = [ ];
+          };
+        };
+        parent = {
+          name = "root";
+          meta = {
+            adapter = fxLib.adapters.excludeAspect target;
+          };
+          includes = [
+            {
+              name = "keep";
+              meta = {
+                provider = [ ];
+              };
+              nixos = {
+                a = 1;
+              };
+              includes = [ ];
+            }
+            {
+              name = "drop";
+              meta = {
+                provider = [ ];
+              };
+              nixos = {
+                b = 2;
+              };
+              includes = [ ];
+            }
+          ];
+        };
+        comp = fxLib.resolve.resolveDeepEffectful {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        } parent;
+        result = fx.handle {
+          handlers = {
+            "resolve-include" =
+              { param, state }:
+              {
+                resume = [ param ];
+                inherit state;
+              };
+          }
+          // (fxLib.adapters.moduleHandler "nixos");
+          state = {
+            imports = [ ];
+          };
+        } comp;
+      in
+      {
+        expr = builtins.length result.state.imports;
+        expected = 1;
+      }
+    );
+
   };
 }

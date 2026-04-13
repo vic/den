@@ -79,6 +79,34 @@ let
           };
     };
 
+  moduleHandler = class: {
+    "resolve-complete" =
+      { param, state }:
+      let
+        mods = if param ? ${class} && !(param.meta.excluded or false) then [ param.${class} ] else [ ];
+      in
+      {
+        resume = param;
+        state = state // {
+          imports = (state.imports or [ ]) ++ mods;
+        };
+      };
+  };
+
+  collectPathsHandler = {
+    "resolve-complete" =
+      { param, state }:
+      let
+        isExcluded = param.meta.excluded or false;
+      in
+      {
+        resume = param;
+        state = state // {
+          paths = (state.paths or [ ]) ++ (lib.optional (!isExcluded) (aspectPath param));
+        };
+      };
+  };
+
 in
 {
   inherit
@@ -88,5 +116,7 @@ in
     tombstone
     excludeAspect
     substituteAspect
+    moduleHandler
+    collectPathsHandler
     ;
 }
