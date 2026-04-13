@@ -4,6 +4,7 @@
   fx,
   aspect,
   handlers,
+  adapters,
   ...
 }:
 let
@@ -157,12 +158,51 @@ let
         );
 
       # Emit resolve-include for a child, then process the response list.
+      # Conditional markers (includeIf) are handled separately.
       resolveChild =
-        child:
+        parentIncludes: child:
+        if builtins.isAttrs child && (child.meta.conditional or false) then
+          resolveConditional parentIncludes child
+        else
+          let
+            envelope = wrapChild child;
+          in
+          fx.bind (fx.send "resolve-include" envelope) (approvedList: processApproved approvedList);
+
+      # Evaluate a conditional marker against the raw includes tree.
+      resolveConditional =
+        parentIncludes: condNode:
         let
-          envelope = wrapChild child;
+          rawPaths = adapters.collectRawPaths parentIncludes;
+          rawPathSet = adapters.toPathSet rawPaths;
+          guardCtx = {
+            hasAspect = ref: rawPathSet ? ${adapters.pathKey (adapters.aspectPath ref)};
+          };
+          pass = condNode.meta.guard guardCtx;
         in
-        fx.bind (fx.send "resolve-include" envelope) (approvedList: processApproved approvedList);
+        if pass then
+          # Include guarded aspects normally
+          builtins.foldl' (
+            acc: a:
+            fx.bind acc (
+              results:
+              fx.bind (fx.send "resolve-include" a) (
+                approved: fx.bind (processApproved approved) (processed: fx.pure (results ++ processed))
+              )
+            )
+          ) (fx.pure [ ]) condNode.meta.aspects
+        else
+          # Tombstone all guarded aspects
+          builtins.foldl' (
+            acc: a:
+            fx.bind acc (
+              results:
+              let
+                ts = adapters.tombstone a { guardFailed = true; };
+              in
+              fx.bind (fx.send "resolve-complete" ts) (_: fx.pure (results ++ [ ts ]))
+            )
+          ) (fx.pure [ ]) condNode.meta.aspects;
 
       # Process a list of approved children (supports substitution [tombstone, replacement]).
       processApproved =
@@ -192,7 +232,7 @@ let
           childComp = builtins.foldl' (
             acc: child:
             fx.bind acc (
-              results: fx.bind (resolveChild child) (childResults: fx.pure (results ++ childResults))
+              results: fx.bind (resolveChild includes child) (childResults: fx.pure (results ++ childResults))
             )
           ) (fx.pure [ ]) includes;
         in

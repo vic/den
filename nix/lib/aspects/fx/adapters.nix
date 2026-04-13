@@ -107,6 +107,29 @@ let
       };
   };
 
+  includeIf = guardFn: aspects: {
+    name = "<includeIf>";
+    meta = {
+      conditional = true;
+      guard = guardFn;
+      aspects = aspects;
+    };
+    includes = [ ];
+  };
+
+  # Non-effectful walk of raw includes tree. Collects aspectPaths from
+  # all named aspects (skips conditionals, bare functions without name).
+  # Used to back hasAspect guards.
+  collectRawPaths =
+    includes:
+    lib.concatMap (
+      child:
+      if builtins.isAttrs child && child ? name && !(child.meta.conditional or false) then
+        [ (aspectPath child) ] ++ collectRawPaths (child.includes or [ ])
+      else
+        [ ]
+    ) includes;
+
 in
 {
   inherit
@@ -118,5 +141,7 @@ in
     substituteAspect
     moduleHandler
     collectPathsHandler
+    includeIf
+    collectRawPaths
     ;
 }

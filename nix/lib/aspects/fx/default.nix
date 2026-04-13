@@ -13,6 +13,7 @@
           fx
           aspect
           handlers
+          adapters
           ;
       };
     in
