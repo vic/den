@@ -274,6 +274,30 @@ let
     in
     go aspect-chain null;
 
+  # Compose two handler sets, chaining handlers for shared effect names.
+  # For overlapping keys, handler b runs first, then a's state updates are merged.
+  composeHandlers =
+    a: b:
+    let
+      shared = builtins.intersectAttrs a b;
+      sharedComposed = builtins.mapAttrs (
+        name: _:
+        { param, state }:
+        let
+          rb = b.${name} { inherit param state; };
+          ra = a.${name} {
+            inherit param;
+            state = rb.state;
+          };
+        in
+        {
+          resume = rb.resume;
+          state = ra.state;
+        }
+      ) shared;
+    in
+    a // b // sharedComposed;
+
   # Default handler set for the full pipeline.
   defaultHandlers =
     class:
@@ -329,7 +353,7 @@ let
       );
     in
     fx.handle {
-      handlers = defaultHandlers class // extraHandlers;
+      handlers = composeHandlers (defaultHandlers class) extraHandlers;
       state = defaultState // extraState;
     } comp;
 
@@ -411,6 +435,7 @@ in
     mkPipeline
     defaultHandlers
     defaultState
+    composeHandlers
     wrapIdentity
     ;
 }

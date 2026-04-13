@@ -119,6 +119,31 @@ let
       };
   };
 
+  # Tracing variant of ctx-traverse handler. Accumulates ctxTrace items
+  # and sets currentStage/currentKind in state for structuredTraceHandler.
+  ctxTraceHandler = {
+    "ctx-traverse" =
+      { param, state }:
+      let
+        item = {
+          key = param.key;
+          selfName = param.self.name or "<anon>";
+          prevName = if param.prev != null then param.prev.name or "<anon>" else null;
+          hasSelfProvider = (param.self.provides or { }) ? ${param.self.name or ""};
+          hasCrossProvider =
+            param.prev != null && (param.prev.provides or { }) ? ${lib.head (lib.splitString "." param.key)};
+        };
+      in
+      {
+        resume = null;
+        state = state // {
+          ctxTrace = (state.ctxTrace or [ ]) ++ [ item ];
+          currentStage = param.key;
+          currentKind = "aspect";
+        };
+      };
+  };
+
 in
 {
   inherit
@@ -129,5 +154,6 @@ in
     ctxSeenHandler
     ctxProviderHandler
     ctxTraverseHandler
+    ctxTraceHandler
     ;
 }

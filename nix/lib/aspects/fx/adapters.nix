@@ -136,6 +136,38 @@ let
         [ ]
     ) includes;
 
+  # Trace handler that accumulates structured entries for each resolved aspect.
+  # Reads __ctxStage/__ctxKind from provider-tagged aspects (set by ctxApply),
+  # falls back to state.currentStage/currentKind (set by ctxTraceHandler).
+  structuredTraceHandler = class: {
+    "resolve-complete" =
+      { param, state }:
+      let
+        entry = {
+          name = param.name or "<anon>";
+          inherit class;
+          parent = param.__parent or null;
+          provider = param.meta.provider or [ ];
+          excluded = param.meta.excluded or false;
+          excludedFrom = param.meta.excludedFrom or null;
+          replacedBy = param.meta.replacedBy or null;
+          isProvider = (param.meta.provider or [ ]) != [ ];
+          hasAdapter = (param.meta.adapter or null) != null;
+          hasClass = param ? ${class};
+          isParametric = param.meta.isParametric or false;
+          fnArgNames = param.meta.fnArgNames or [ ];
+          ctxStage = param.__ctxStage or (state.currentStage or null);
+          ctxKind = param.__ctxKind or (state.currentKind or null);
+        };
+      in
+      {
+        resume = param;
+        state = state // {
+          entries = (state.entries or [ ]) ++ [ entry ];
+        };
+      };
+  };
+
 in
 {
   inherit
@@ -149,5 +181,6 @@ in
     collectPathsHandler
     includeIf
     collectRawPaths
+    structuredTraceHandler
     ;
 }
