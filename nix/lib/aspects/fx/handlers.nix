@@ -4,9 +4,67 @@
   fx,
   ...
 }:
+let
+  # Build handler set from parametric context.
+  # Each key in ctx becomes a handler that resumes with the value.
+  parametricHandler =
+    ctx:
+    builtins.mapAttrs (
+      _: value:
+      { param, state }:
+      {
+        resume = value;
+        inherit state;
+      }
+    ) ctx;
+
+  # Handle class and aspect-chain effects.
+  staticHandler =
+    { class, aspect-chain }:
+    {
+      "class" =
+        { param, state }:
+        {
+          resume = class;
+          inherit state;
+        };
+      "aspect-chain" =
+        { param, state }:
+        {
+          resume = aspect-chain;
+          inherit state;
+        };
+    };
+
+  # Merge parametric + static into a single handler set.
+  contextHandlers =
+    {
+      ctx,
+      class,
+      aspect-chain,
+    }:
+    parametricHandler ctx // staticHandler { inherit class aspect-chain; };
+
+  # Error handler metadata for unknown effects.
+  errorHandler =
+    { ctx, aspectName }:
+    let
+      available = builtins.attrNames ctx ++ [
+        "class"
+        "aspect-chain"
+      ];
+    in
+    {
+      mkError =
+        effectName:
+        throw "aspect '${aspectName}' requires '${effectName}' but context only provides: ${toString available}";
+    };
+in
 {
-  parametricHandler = _: throw "fx/handlers.nix: not yet implemented";
-  staticHandler = _: throw "fx/handlers.nix: not yet implemented";
-  contextHandlers = _: throw "fx/handlers.nix: not yet implemented";
-  errorHandler = _: throw "fx/handlers.nix: not yet implemented";
+  inherit
+    parametricHandler
+    staticHandler
+    contextHandlers
+    errorHandler
+    ;
 }
