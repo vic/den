@@ -124,8 +124,8 @@ in
         } comp;
       in
       {
-        # child's __parent should be "root" (the parent's path key)
-        expr = builtins.length result.state.parents >= 1;
+        # child's __parent should be "root" (the parent's pathKey)
+        expr = builtins.elem "root" result.state.parents;
         expected = true;
       }
     );

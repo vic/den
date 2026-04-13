@@ -54,8 +54,21 @@ in
             };
       in
       {
-        expr = builtins.length result.state.entries >= 2;
-        expected = true;
+        # root + child = 2 entries (root via mkPipeline's resolve-complete, child during walk)
+        expr =
+          let
+            names = map (e: e.name) result.state.entries;
+          in
+          {
+            hasRoot = builtins.elem "root" names;
+            hasChild = builtins.elem "child" names;
+            allHaveClass = builtins.all (e: e.class == "nixos") result.state.entries;
+          };
+        expected = {
+          hasRoot = true;
+          hasChild = true;
+          allHaveClass = true;
+        };
       }
     );
 
@@ -106,8 +119,18 @@ in
         excluded = builtins.filter (e: e.excluded) result.state.entries;
       in
       {
-        expr = builtins.length excluded >= 1;
-        expected = true;
+        expr =
+          let
+            excludedNames = map (e: e.name) excluded;
+          in
+          {
+            hasExcluded = builtins.elem "~drop" excludedNames;
+            excludedFromSet = (builtins.head excluded).excludedFrom != null;
+          };
+        expected = {
+          hasExcluded = true;
+          excludedFromSet = true;
+        };
       }
     );
 
@@ -179,12 +202,16 @@ in
       in
       {
         expr = {
-          hasEntries = builtins.length result.state.entries >= 1;
-          hasImports = builtins.length result.state.imports >= 1;
+          hasHostEntry = builtins.any (e: e.name == "host") result.state.entries;
+          allEntriesHaveClass = builtins.all (e: e.class == "nixos") result.state.entries;
+          hasImports = result.state.imports != [ ];
+          hasCtxTrace = builtins.elem "host" (map (t: t.key) (result.state.ctxTrace or [ ]));
         };
         expected = {
-          hasEntries = true;
+          hasHostEntry = true;
+          allEntriesHaveClass = true;
           hasImports = true;
+          hasCtxTrace = true;
         };
       }
     );
@@ -231,8 +258,18 @@ in
         provEntries = builtins.filter (e: e.ctxKind == "self-provide") result.state.entries;
       in
       {
-        expr = builtins.length provEntries >= 1;
-        expected = true;
+        expr =
+          let
+            provNames = map (e: e.name) provEntries;
+          in
+          {
+            hasProvider = builtins.elem "host-provider" provNames;
+            kindCorrect = (builtins.head provEntries).ctxKind == "self-provide";
+          };
+        expected = {
+          hasProvider = true;
+          kindCorrect = true;
+        };
       }
     );
 
