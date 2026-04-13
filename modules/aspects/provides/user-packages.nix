@@ -32,7 +32,7 @@ let
         home.packages = map (pkgName: pkgs.${pkgName}) pkgNames;
       };
     });
- 
+
   hmContext =
     { home }:
     userContext {
@@ -40,11 +40,11 @@ let
     };
 in
 {
-  den.provides.user-packages = den.lib.parametric.exactly {
+  den.provides.user-packages = pkgNames: den.lib.parametric.exactly {
     inherit description;
     includes = [
-      userContext
-      hmContext
+      (userContext pkgNames)
+      (hmContext pkgNames)
     ];
   };
 }
