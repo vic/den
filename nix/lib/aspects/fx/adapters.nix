@@ -83,7 +83,13 @@ let
     "resolve-complete" =
       { param, state }:
       let
-        mods = if param ? ${class} && !(param.meta.excluded or false) then [ param.${class} ] else [ ];
+        mods =
+          if param ? ${class} && !(param.meta.excluded or false) then
+            [
+              (lib.setDefaultModuleLocation "${class}@${param.name or "<anon>"}" param.${class})
+            ]
+          else
+            [ ];
       in
       {
         resume = param;

@@ -126,11 +126,11 @@ let
     {
       ctx,
       class,
-      aspect-chain,
+      aspect-chain ? [ ],
       strict ? false,
     }:
     let
-      resolver = (if strict then resolveOneStrict else resolveOne) { inherit ctx class aspect-chain; };
+      resolve = if strict then resolveOneStrict else resolveOne;
 
       # Wrap bare function includes in an aspect envelope.
       wrapChild =
@@ -147,32 +147,39 @@ let
           child;
 
       # Recursive resolution of a single aspect node.
+      # aspect-chain grows at each level, matching existing pipeline behavior.
       go =
-        aspectVal:
+        chain: aspectVal:
         let
-          resolved = resolver aspectVal;
+          resolved =
+            (resolve {
+              inherit ctx class;
+              aspect-chain = chain;
+            })
+              aspectVal;
+          newChain = chain ++ [ aspectVal ] ++ (lib.optional (aspectVal != resolved) resolved);
           metaAdapter = resolved.meta.adapter or null;
           includes = resolved.includes or [ ];
         in
-        resolveChildren metaAdapter includes (
+        resolveChildren newChain metaAdapter includes (
           resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
         );
 
       # Emit resolve-include for a child, then process the response list.
       # Conditional markers (includeIf) are handled separately.
       resolveChild =
-        parentIncludes: child:
+        chain: parentIncludes: child:
         if builtins.isAttrs child && (child.meta.conditional or false) then
-          resolveConditional parentIncludes child
+          resolveConditional chain parentIncludes child
         else
           let
             envelope = wrapChild child;
           in
-          fx.bind (fx.send "resolve-include" envelope) (approvedList: processApproved approvedList);
+          fx.bind (fx.send "resolve-include" envelope) (approvedList: processApproved chain approvedList);
 
       # Evaluate a conditional marker against the raw includes tree.
       resolveConditional =
-        parentIncludes: condNode:
+        chain: parentIncludes: condNode:
         let
           rawPaths = adapters.collectRawPaths parentIncludes;
           rawPathSet = adapters.toPathSet rawPaths;
@@ -188,7 +195,7 @@ let
             fx.bind acc (
               results:
               fx.bind (fx.send "resolve-include" a) (
-                approved: fx.bind (processApproved approved) (processed: fx.pure (results ++ processed))
+                approved: fx.bind (processApproved chain approved) (processed: fx.pure (results ++ processed))
               )
             )
           ) (fx.pure [ ]) condNode.meta.aspects
@@ -207,7 +214,7 @@ let
 
       # Process a list of approved children (supports substitution [tombstone, replacement]).
       processApproved =
-        children:
+        chain: children:
         builtins.foldl' (
           acc: child:
           fx.bind acc (
@@ -219,7 +226,7 @@ let
               fx.bind (fx.send "resolve-complete" child) (_: fx.pure (results ++ [ child ]))
             else
               # Live child: recurse, then emit resolve-complete
-              fx.bind (go child) (
+              fx.bind (go chain child) (
                 resolvedChild:
                 fx.bind (fx.send "resolve-complete" resolvedChild) (_: fx.pure (results ++ [ resolvedChild ]))
               )
@@ -228,12 +235,13 @@ let
 
       # Resolve all children. If meta.adapter present, install scoped handler via rotate.
       resolveChildren =
-        metaAdapter: includes: cont:
+        chain: metaAdapter: includes: cont:
         let
           childComp = builtins.foldl' (
             acc: child:
             fx.bind acc (
-              results: fx.bind (resolveChild includes child) (childResults: fx.pure (results ++ childResults))
+              results:
+              fx.bind (resolveChild chain includes child) (childResults: fx.pure (results ++ childResults))
             )
           ) (fx.pure [ ]) includes;
         in
@@ -247,7 +255,61 @@ let
         else
           fx.bind childComp cont;
     in
-    go;
+    go aspect-chain;
+
+  # Default handler set for the full pipeline.
+  defaultHandlers =
+    class:
+    handlers.ctxTraverseHandler
+    // handlers.ctxSeenHandler
+    // handlers.ctxProviderHandler
+    // {
+      "resolve-include" =
+        { param, state }:
+        {
+          resume = [ param ];
+          inherit state;
+        };
+    }
+    // (adapters.moduleHandler class);
+
+  defaultState = {
+    seen = { };
+    imports = [ ];
+  };
+
+  # Configurable pipeline builder. Pass custom handlers/state to extend.
+  mkPipeline =
+    {
+      extraHandlers ? { },
+      extraState ? { },
+      class,
+    }:
+    {
+      ctxNs,
+      self,
+      ctx,
+    }:
+    let
+      comp = fx.bind (ctxApply.ctxApplyEffectful ctxNs self ctx) (
+        includes:
+        fx.bind (resolveDeepEffectful
+          {
+            inherit ctx class;
+            aspect-chain = [ ];
+          }
+          {
+            name = self.name or "<anon>";
+            meta = self.meta or { };
+            inherit includes;
+          }
+        ) (resolved: fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved))
+      );
+    in
+    fx.handle {
+      handlers = defaultHandlers class // extraHandlers;
+      state = defaultState // extraState;
+    } comp;
 
   # Full pipeline: context traversal → resolution → module collection.
   # Returns { value = resolvedTree; state = { seen; imports; }; }
@@ -365,6 +427,9 @@ in
     resolveDeepEffectful
     fxFullResolve
     fxResolve
+    mkPipeline
+    defaultHandlers
+    defaultState
     wrapIdentity
     ;
 }
