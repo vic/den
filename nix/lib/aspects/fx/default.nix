@@ -3,6 +3,7 @@
   init =
     fx:
     let
+      adapters = import ./adapters.nix { inherit lib den fx; };
       aspect = import ./aspect.nix { inherit lib den fx; };
       handlers = import ./handlers.nix { inherit lib den fx; };
       resolve = import ./resolve.nix {
@@ -29,6 +30,11 @@
         resolveDeep
         wrapIdentity
         ;
-      inherit aspect handlers resolve;
+      inherit
+        adapters
+        aspect
+        handlers
+        resolve
+        ;
     };
 }
