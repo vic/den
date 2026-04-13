@@ -117,6 +117,97 @@ let
       resolved = body;
     };
 
+  # Effectful tree walk. Returns Computation aspect.
+  # Emits resolve-include before and resolve-complete after each child.
+  # meta.adapter on an aspect installs scoped handler via fx.rotate.
+  resolveDeepEffectful =
+    {
+      ctx,
+      class,
+      aspect-chain,
+      strict ? false,
+    }:
+    let
+      resolver = (if strict then resolveOneStrict else resolveOne) { inherit ctx class aspect-chain; };
+
+      # Wrap bare function includes in an aspect envelope.
+      wrapChild =
+        child:
+        if lib.isFunction child then
+          {
+            name = child.name or "<anon>";
+            meta = child.meta or { };
+            __functor = _: child;
+            __functionArgs = lib.functionArgs child;
+            includes = [ ];
+          }
+        else
+          child;
+
+      # Recursive resolution of a single aspect node.
+      go =
+        aspectVal:
+        let
+          resolved = resolver aspectVal;
+          metaAdapter = resolved.meta.adapter or null;
+          includes = resolved.includes or [ ];
+        in
+        resolveChildren metaAdapter includes (
+          resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
+        );
+
+      # Emit resolve-include for a child, then process the response list.
+      resolveChild =
+        child:
+        let
+          envelope = wrapChild child;
+        in
+        fx.bind (fx.send "resolve-include" envelope) (approvedList: processApproved approvedList);
+
+      # Process a list of approved children (supports substitution [tombstone, replacement]).
+      processApproved =
+        children:
+        builtins.foldl' (
+          acc: child:
+          fx.bind acc (
+            results:
+            if child == null then
+              fx.pure results
+            else if child.meta.excluded or false then
+              # Tombstoned: emit resolve-complete but don't recurse
+              fx.bind (fx.send "resolve-complete" child) (_: fx.pure (results ++ [ child ]))
+            else
+              # Live child: recurse, then emit resolve-complete
+              fx.bind (go child) (
+                resolvedChild:
+                fx.bind (fx.send "resolve-complete" resolvedChild) (_: fx.pure (results ++ [ resolvedChild ]))
+              )
+          )
+        ) (fx.pure [ ]) children;
+
+      # Resolve all children. If meta.adapter present, install scoped handler via rotate.
+      resolveChildren =
+        metaAdapter: includes: cont:
+        let
+          childComp = builtins.foldl' (
+            acc: child:
+            fx.bind acc (
+              results: fx.bind (resolveChild child) (childResults: fx.pure (results ++ childResults))
+            )
+          ) (fx.pure [ ]) includes;
+        in
+        if metaAdapter != null then
+          # Install scoped adapter handler. Rotate handles resolve-include,
+          # unknown effects (context args, resolve-complete) pass through.
+          fx.bind (fx.rotate {
+            handlers = metaAdapter;
+            state = { };
+          } childComp) (rotateResult: cont rotateResult.value)
+        else
+          fx.bind childComp cont;
+    in
+    go;
+
   # Recursively resolve an aspect and all its includes.
   # Uses resolveOne by default. Pass strict = true to use resolveOneStrict
   # for diagnostic errors on missing context args.
@@ -169,6 +260,7 @@ in
     resolveOne
     resolveOneStrict
     resolveDeep
+    resolveDeepEffectful
     wrapIdentity
     ;
 }

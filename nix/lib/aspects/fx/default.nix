@@ -28,6 +28,7 @@
         resolveOne
         resolveOneStrict
         resolveDeep
+        resolveDeepEffectful
         wrapIdentity
         ;
       inherit
