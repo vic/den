@@ -17,10 +17,10 @@ let
     {
       expr = config.expr;
     }
-    // lib.optionalAttrs (config.expected != null) {
+    // lib.optionalAttrs (!(config.expected ? undefined)) {
       expected = config.expected;
     }
-    // lib.optionalAttrs (config.expectedError != null) {
+    // lib.optionalAttrs (!(config.expectedError ? undefined)) {
       expectedError = config.expectedError;
     };
 
@@ -54,28 +54,47 @@ let
   testModule = {
     imports = [ inputs.den.flakeModule ];
     options.expr = lib.mkOption { };
-    options.expected = lib.mkOption { default = null; };
-    options.expectedError = lib.mkOption {
-      type = lib.types.nullOr (
-        lib.types.submodule {
-          options.type = lib.mkOption {
-            type = lib.types.enum [
-              "RestrictedPathError"
-              "MissingArgumentError"
-              "UndefinedVarError"
-              "TypeError"
-              "Abort"
-              "ThrownError"
-              "AssertionError"
-              "ParseError"
-              "EvalError"
-            ];
-          };
-          options.msg = lib.mkOption { type = lib.types.str; };
-        }
-      );
-      default = null;
-    };
+    options.expected = lib.mkOption { default.undefined = { }; };
+    options.expectedError =
+      let
+        # lib.types.submodule doesn't work well in types.either or types.oneOf because it lazily evaluates keys
+        # so we need to strictly check the keys with an additional check
+        strictSubmodule = module: lib.types.addCheck (lib.types.submodule module) (strictKeys module);
+
+        strictKeys =
+          module: attrs:
+          lib.pipe module [
+            (x: x.options)
+            (lib.attrNames)
+            (lib.lists.all (key: attrs ? ${key}))
+          ];
+
+        type = lib.mkOption {
+          type = lib.types.enum [
+            "RestrictedPathError"
+            "MissingArgumentError"
+            "UndefinedVarError"
+            "TypeError"
+            "Abort"
+            "ThrownError"
+            "AssertionError"
+            "ParseError"
+            "EvalError"
+          ];
+        };
+
+        msg = lib.mkOption { type = lib.types.str; };
+
+        undefined = lib.mkOption { default.undefined = { }; };
+
+      in
+      lib.mkOption {
+        type = lib.types.oneOf [
+          (strictSubmodule { options = { inherit undefined; }; })
+          (strictSubmodule { options = { inherit type msg; }; })
+        ];
+        default.undefined = { };
+      };
     config = {
       den.schema.user.classes = lib.mkDefault [ "homeManager" ];
       den.default.nixos.system.stateVersion = lib.mkDefault "25.11";
