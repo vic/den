@@ -18,10 +18,9 @@ let
        den.default.includes = [ den._.user-packages [ "hello" ]) ]
   '';
 
-  userContext =
-    pkgNames:
-    ({ host, user }:
-    {
+  userPackages =
+    pkgNames: user:
+    let
       nixos = { pkgs, ... }: {
         users.users.${user.userName}.packages = map (pkgName: pkgs.${pkgName}) pkgNames;
       };
@@ -31,20 +30,20 @@ let
       homeManager = { pkgs, ... }: {
         home.packages = map (pkgName: pkgs.${pkgName}) pkgNames;
       };
-    });
-
-  hmContext =
-    { home }:
-    userContext {
-      user.userName = home.userName;
+    in
+    {
+      inherit nixos darwin homeManager;
     };
+
 in
 {
-  den.provides.user-packages = pkgNames: den.lib.parametric.exactly {
-    inherit description;
-    includes = [
-      (userContext pkgNames)
-      (hmContext pkgNames)
-    ];
-  };
+  den.provides.user-packages =
+    pkgNames:
+    den.lib.parametric.exactly {
+      inherit description;
+      includes = [
+        ({ host, user }: userPackages pkgNames user)
+        ({ home }: userPackages pkgNames home)
+      ];
+    };
 }
