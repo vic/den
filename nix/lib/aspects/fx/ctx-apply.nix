@@ -174,8 +174,20 @@ let
                   crossProv:
                   let
                     mainAspect = if isFirst then parametric.fixedTo ctx self else parametric.atLeast self ctx;
-                    selfProvResult = if selfProv != null then selfProv ctx else null;
-                    crossProvResult = if crossProv != null then crossProv ctx else null;
+                    selfProvRaw = if selfProv != null then selfProv ctx else null;
+                    crossProvRaw = if crossProv != null then crossProv ctx else null;
+                    tagResult =
+                      kind: r:
+                      if builtins.isAttrs r then
+                        r
+                        // {
+                          __ctxStage = key;
+                          __ctxKind = kind;
+                        }
+                      else
+                        r;
+                    selfProvResult = if selfProvRaw != null then tagResult "self-provide" selfProvRaw else null;
+                    crossProvResult = if crossProvRaw != null then tagResult "cross-provide" crossProvRaw else null;
                   in
                   fx.pure (
                     [ mainAspect ]

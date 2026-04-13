@@ -189,5 +189,52 @@ in
       }
     );
 
+    # Provider results carry __ctxStage and __ctxKind tags.
+    test-provider-stage-tagging = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        hostSelf = {
+          name = "host";
+          into = _: { };
+          provides = {
+            host = ctx: {
+              name = "host-provider";
+              meta = { };
+              nixos = {
+                fromProv = true;
+              };
+              includes = [ ];
+            };
+          };
+          nixos = {
+            base = true;
+          };
+          includes = [ ];
+        };
+        result =
+          fxLib.resolve.mkPipeline
+            {
+              class = "nixos";
+              extraHandlers = fxLib.adapters.structuredTraceHandler "nixos";
+              extraState = {
+                entries = [ ];
+              };
+            }
+            {
+              ctxNs = { };
+              self = hostSelf;
+              ctx = {
+                host = "igloo";
+              };
+            };
+        provEntries = builtins.filter (e: e.ctxKind == "self-provide") result.state.entries;
+      in
+      {
+        expr = builtins.length provEntries >= 1;
+        expected = true;
+      }
+    );
+
   };
 }
