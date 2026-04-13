@@ -30,6 +30,55 @@ let
     includes = [ ];
   };
 
+  excludeAspect =
+    ref:
+    let
+      refPath = aspectPath ref;
+    in
+    {
+      "resolve-include" =
+        { param, state }:
+        let
+          ap = aspectPath param;
+        in
+        if ap == refPath || lib.take (builtins.length refPath) ap == refPath then
+          {
+            resume = [ (tombstone param { excludedFrom = state.ownerName or "<anon>"; }) ];
+            inherit state;
+          }
+        else
+          {
+            resume = [ param ];
+            inherit state;
+          };
+    };
+
+  substituteAspect =
+    ref: replacement:
+    let
+      refPath = aspectPath ref;
+    in
+    {
+      "resolve-include" =
+        { param, state }:
+        if aspectPath param == refPath then
+          {
+            resume = [
+              (tombstone param {
+                excludedFrom = state.ownerName or "<anon>";
+                replacedBy = replacement.name or "<anon>";
+              })
+              replacement
+            ];
+            inherit state;
+          }
+        else
+          {
+            resume = [ param ];
+            inherit state;
+          };
+    };
+
 in
 {
   inherit
@@ -37,5 +86,7 @@ in
     pathKey
     toPathSet
     tombstone
+    excludeAspect
+    substituteAspect
     ;
 }
