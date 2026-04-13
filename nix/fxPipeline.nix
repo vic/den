@@ -1,0 +1,6 @@
+{
+  ...
+}:
+{
+  den.fxPipeline = true;
+}
