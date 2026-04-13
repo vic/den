@@ -337,5 +337,146 @@ in
       }
     );
 
+    # rotate topology: known args resolve identically to direct handle path.
+    test-rotate-resolves-same-as-handle = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        aspect = {
+          name = "web";
+          meta = { };
+          __functor =
+            _:
+            { host }:
+            {
+              nixos.networking.hostName = host;
+            };
+          __functionArgs = {
+            host = false;
+          };
+          includes = [ ];
+        };
+        ctx = {
+          host = "igloo";
+        };
+        resultStrict = fxLib.resolve.resolveOneStrict {
+          inherit ctx;
+          class = "nixos";
+          aspect-chain = [ ];
+        } aspect;
+        resultDirect = fxLib.resolve.resolveOne {
+          inherit ctx;
+          class = "nixos";
+          aspect-chain = [ ];
+        } aspect;
+      in
+      {
+        expr = resultStrict.nixos.networking.hostName == resultDirect.nixos.networking.hostName;
+        expected = true;
+      }
+    );
+
+    # rotate topology: multi-arg aspect resolves correctly.
+    test-rotate-multi-arg = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        aspect = {
+          name = "multi";
+          meta = { };
+          __functor =
+            _:
+            { host, user }:
+            {
+              nixos.networking.hostName = host;
+              home.username = user;
+            };
+          __functionArgs = {
+            host = false;
+            user = false;
+          };
+          includes = [ ];
+        };
+        result = fxLib.resolve.resolveOneStrict {
+          ctx = {
+            host = "igloo";
+            user = "tux";
+          };
+          class = "nixos";
+          aspect-chain = [ ];
+        } aspect;
+      in
+      {
+        expr = {
+          hostName = result.nixos.networking.hostName;
+          username = result.home.username;
+        };
+        expected = {
+          hostName = "igloo";
+          username = "tux";
+        };
+      }
+    );
+
+    # Missing required arg produces readable error via rotate path.
+    test-missing-arg-throws = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        aspect = {
+          name = "broken";
+          meta = { };
+          __functor =
+            _:
+            { host }:
+            {
+              nixos.networking.hostName = host;
+            };
+          __functionArgs = {
+            host = false;
+          };
+          includes = [ ];
+        };
+      in
+      {
+        expectedError = {
+          type = "ThrownError";
+          msg = "requires";
+        };
+        expr = fxLib.resolve.resolveOneStrict {
+          ctx = {
+            user = "tux";
+          };
+          class = "nixos";
+          aspect-chain = [ ];
+        } aspect;
+      }
+    );
+
+    # Static aspect through strict path is identical.
+    test-rotate-static-passthrough = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        aspect = {
+          name = "static";
+          meta = { };
+          nixos = {
+            enable = true;
+          };
+          includes = [ ];
+        };
+        result = fxLib.resolve.resolveOneStrict {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        } aspect;
+      in
+      {
+        expr = result.nixos.enable;
+        expected = true;
+      }
+    );
+
   };
 }

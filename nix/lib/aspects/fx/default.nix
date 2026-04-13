@@ -23,7 +23,12 @@
         contextHandlers
         errorHandler
         ;
-      inherit (resolve) resolveOne resolveDeep wrapIdentity;
+      inherit (resolve)
+        resolveOne
+        resolveOneStrict
+        resolveDeep
+        wrapIdentity
+        ;
       inherit aspect handlers resolve;
     };
 }

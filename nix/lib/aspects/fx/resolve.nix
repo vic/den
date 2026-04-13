@@ -73,6 +73,57 @@ let
       resolved = body;
     };
 
+  # Strict variant: uses rotate topology to detect missing context args.
+  # Known effects are handled by rotate; unknowns are re-suspended.
+  # After rotate, we check isPure — if not, the aspect requires an arg
+  # not present in ctx, and we throw a diagnostic error.
+  resolveOneStrict =
+    {
+      ctx,
+      class,
+      aspect-chain,
+    }:
+    aspectVal:
+    let
+      fn = if aspectVal ? __functor then aspectVal.__functor aspectVal else null;
+      isStatic = fn == null || !lib.isFunction fn;
+      aspectName = aspectVal.name or "<anon>";
+
+      body =
+        if isStatic then
+          aspectVal
+        else
+          let
+            comp = wrapAspect ctx fn;
+            knownHandlers = contextHandlers { inherit ctx class aspect-chain; };
+
+            # Inner: handle known context args, rotate unknowns outward
+            rotated = fx.rotate {
+              handlers = knownHandlers;
+              state = { };
+            } comp;
+
+            # Check if all effects were handled
+            available = builtins.attrNames ctx ++ [
+              "class"
+              "aspect-chain"
+            ];
+            errorForEffect =
+              name:
+              throw "aspect '${aspectName}' requires '${name}' but context only provides: ${toString available}";
+          in
+          if fx.isPure rotated then
+            # All effects handled. rotated.value = { value; state; } from rotate's return clause.
+            rotated.value.value
+          else
+            # Unhandled effect: the aspect needs something not in ctx.
+            errorForEffect rotated.effect.name;
+    in
+    wrapIdentity {
+      inherit aspectVal;
+      resolved = body;
+    };
+
   # Recursively resolve an aspect and all its includes.
   resolveDeep =
     {
@@ -117,5 +168,10 @@ let
 
 in
 {
-  inherit resolveOne resolveDeep wrapIdentity;
+  inherit
+    resolveOne
+    resolveOneStrict
+    resolveDeep
+    wrapIdentity
+    ;
 }
