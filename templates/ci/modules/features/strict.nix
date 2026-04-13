@@ -96,11 +96,12 @@
       }
     );
 
-    schema-conf = {
+    flakeModule.strict = {
       test-host = denTest (
-        { den, ... }:
+        { inputs, den, ... }:
         {
-          den.schema.conf = den.lib.strict;
+          imports = [ inputs.den.flakeModules.strict ];
+
           den.hosts.x86_64-linux.igloo.arbitrary = "value";
 
           expr = den.hosts.x86_64-linux.igloo.arbitrary;
@@ -112,9 +113,10 @@
       );
 
       test-user = denTest (
-        { den, ... }:
+        { inputs, den, ... }:
         {
-          den.schema.conf = den.lib.strict;
+          imports = [ inputs.den.flakeModules.strict ];
+
           den.hosts.x86_64-linux.igloo.users.tux.arbitrary = "value";
 
           expr = den.hosts.x86_64-linux.igloo.users.tux.arbitrary;
@@ -126,15 +128,31 @@
       );
 
       test-aspect = denTest (
-        { den, ... }:
+        { inputs, den, ... }:
         {
-          den.schema.conf = den.lib.strict;
+          imports = [ inputs.den.flakeModules.strict ];
+
           den.aspects.test.arbitrary = "value";
 
           expr = den.aspects.test.arbitrary;
           expectedError = {
             type = "ThrownError";
             msg = "Attempted to set the option \"arbitrary\" in \"den.aspects.test\"";
+          };
+        }
+      );
+
+      test-flake = denTest (
+        { inputs, config, ... }:
+        {
+          imports = [ inputs.den.flakeModules.strict ];
+
+          flake.arbitrary = "value";
+
+          expr = config.flake.arbitrary;
+          expectedError = {
+            type = "ThrownError";
+            msg = "Attempted to set the option \"arbitrary\" in \"flake\"";
           };
         }
       );
