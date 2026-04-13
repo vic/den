@@ -36,6 +36,7 @@
         ctxSeenHandler
         ctxProviderHandler
         ctxTraverseHandler
+        ctxTraceHandler
         ;
       inherit (resolve)
         resolveOne
@@ -44,6 +45,10 @@
         resolveDeepEffectful
         fxFullResolve
         fxResolve
+        mkPipeline
+        defaultHandlers
+        defaultState
+        composeHandlers
         wrapIdentity
         ;
       inherit ctxApply;

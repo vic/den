@@ -32,8 +32,8 @@ in
         };
       in
       {
-        expr = builtins.length result.state.imports >= 1;
-        expected = true;
+        expr = builtins.length result.state.imports;
+        expected = 1;
       }
     );
 
@@ -190,8 +190,8 @@ in
         };
       in
       {
-        expr = builtins.length result.state.imports >= 1;
-        expected = true;
+        expr = builtins.length result.state.imports;
+        expected = 1;
       }
     );
 

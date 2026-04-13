@@ -309,5 +309,94 @@ in
       }
     );
 
+    # Nested adapters: inner excludes B, outer excludes A — both tombstoned.
+    test-nested-adapter-override = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        targetA = {
+          name = "A";
+          meta = {
+            provider = [ ];
+          };
+        };
+        targetB = {
+          name = "B";
+          meta = {
+            provider = [ ];
+          };
+        };
+        parent = {
+          name = "root";
+          meta = {
+            adapter = fxLib.adapters.excludeAspect targetA;
+          };
+          includes = [
+            {
+              name = "inner";
+              meta = {
+                adapter = fxLib.adapters.excludeAspect targetB;
+              };
+              includes = [
+                {
+                  name = "B";
+                  meta = {
+                    provider = [ ];
+                  };
+                  nixos = {
+                    b = 1;
+                  };
+                  includes = [ ];
+                }
+              ];
+            }
+            {
+              name = "A";
+              meta = {
+                provider = [ ];
+              };
+              nixos = {
+                a = 1;
+              };
+              includes = [ ];
+            }
+          ];
+        };
+        comp = fxLib.resolve.resolveDeepEffectful {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        } parent;
+        result = fx.handle {
+          handlers = {
+            "resolve-include" =
+              { param, state }:
+              {
+                resume = [ param ];
+                inherit state;
+              };
+            "resolve-complete" =
+              { param, state }:
+              {
+                resume = param;
+                state = state // {
+                  excluded = (state.excluded or [ ]) ++ (lib.optional (param.meta.excluded or false) param.name);
+                };
+              };
+          };
+          state = {
+            excluded = [ ];
+          };
+        } comp;
+      in
+      {
+        expr = builtins.sort builtins.lessThan result.state.excluded;
+        expected = [
+          "~A"
+          "~B"
+        ];
+      }
+    );
+
   };
 }
