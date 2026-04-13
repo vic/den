@@ -32,7 +32,7 @@ let
         home.packages = map (pkgName: pkgs.${pkgName}) pkgNames;
       };
     });
-
+ 
   hmContext =
     { home }:
     userContext {
