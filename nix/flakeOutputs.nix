@@ -50,6 +50,7 @@ let
     "packages"
     "apps"
     "checks"
+    "tests"
     "legacyPackages"
   ];
 
