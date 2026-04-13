@@ -45,26 +45,23 @@ let
     }:
     parametricHandler ctx // staticHandler { inherit class aspect-chain; };
 
-  # Error handler metadata for unknown effects.
-  errorHandler =
+  # Build diagnostic error for unhandled effect (missing context arg).
+  missingArgError =
     { ctx, aspectName }:
+    effectName:
     let
       available = builtins.attrNames ctx ++ [
         "class"
         "aspect-chain"
       ];
     in
-    {
-      mkError =
-        effectName:
-        throw "aspect '${aspectName}' requires '${effectName}' but context only provides: ${toString available}";
-    };
+    throw "aspect '${aspectName}' requires '${effectName}' but context only provides: ${toString available}";
 in
 {
   inherit
     parametricHandler
     staticHandler
     contextHandlers
-    errorHandler
+    missingArgError
     ;
 }

@@ -21,7 +21,7 @@
         parametricHandler
         staticHandler
         contextHandlers
-        errorHandler
+        missingArgError
         ;
       inherit (resolve)
         resolveOne

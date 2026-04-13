@@ -8,7 +8,7 @@
 }:
 let
   inherit (aspect) wrapAspect;
-  inherit (handlers) contextHandlers;
+  inherit (handlers) contextHandlers missingArgError;
 
   # Keys that are structural (part of the identity envelope),
   # not owned configuration.
@@ -103,14 +103,7 @@ let
               state = { };
             } comp;
 
-            # Check if all effects were handled
-            available = builtins.attrNames ctx ++ [
-              "class"
-              "aspect-chain"
-            ];
-            errorForEffect =
-              name:
-              throw "aspect '${aspectName}' requires '${name}' but context only provides: ${toString available}";
+            errorForEffect = missingArgError { inherit ctx aspectName; };
           in
           if fx.isPure rotated then
             # All effects handled. rotated.value = { value; state; } from rotate's return clause.
@@ -125,17 +118,21 @@ let
     };
 
   # Recursively resolve an aspect and all its includes.
+  # Uses resolveOne by default. Pass strict = true to use resolveOneStrict
+  # for diagnostic errors on missing context args.
   resolveDeep =
     {
       ctx,
       class,
       aspect-chain,
+      strict ? false,
     }:
     let
+      resolver = (if strict then resolveOneStrict else resolveOne) { inherit ctx class aspect-chain; };
       go =
         aspectVal:
         let
-          resolved = resolveOne { inherit ctx class aspect-chain; } aspectVal;
+          resolved = resolver aspectVal;
           resolvedIncludes = map (
             child:
             if lib.isFunction child then
