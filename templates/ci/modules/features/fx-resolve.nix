@@ -15,21 +15,28 @@ in
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
+        args = {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        };
         result =
-          fxLib.resolve.resolveOne
+          (fx.handle
             {
-              ctx = { };
-              class = "nixos";
-              aspect-chain = [ ];
+              handlers = fxLib.handlers.contextHandlers args;
+              state = { };
             }
-            {
-              name = "base";
-              meta = { };
-              nixos = {
-                networking.hostName = "test";
-              };
-              includes = [ ];
-            };
+            (
+              fxLib.resolve.resolveOne args {
+                name = "base";
+                meta = { };
+                nixos = {
+                  networking.hostName = "test";
+                };
+                includes = [ ];
+              }
+            )
+          ).value;
       in
       {
         expr = {
@@ -68,13 +75,18 @@ in
           };
           includes = [ ];
         };
-        result = fxLib.resolve.resolveOne {
+        args = {
           ctx = {
             host = "igloo";
           };
           class = "nixos";
           aspect-chain = [ ];
-        } aspect;
+        };
+        result =
+          (fx.handle {
+            handlers = fxLib.handlers.contextHandlers args;
+            state = { };
+          } (fxLib.resolve.resolveOne args aspect)).value;
       in
       {
         expr = result.nixos.networking.hostName;
@@ -170,21 +182,28 @@ in
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
+        args = {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        };
         result =
-          fxLib.resolve.resolveOne
+          (fx.handle
             {
-              ctx = { };
-              class = "nixos";
-              aspect-chain = [ ];
+              handlers = fxLib.handlers.contextHandlers args;
+              state = { };
             }
-            {
-              name = "test";
-              meta = { };
-              nixos = {
-                enable = true;
-              };
-              includes = [ ];
-            };
+            (
+              fxLib.resolve.resolveOne args {
+                name = "test";
+                meta = { };
+                nixos = {
+                  enable = true;
+                };
+                includes = [ ];
+              }
+            )
+          ).value;
       in
       {
         expr = {
@@ -211,31 +230,38 @@ in
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
+        args = {
+          ctx = {
+            host = "igloo";
+          };
+          class = "nixos";
+          aspect-chain = [ ];
+        };
         result =
-          fxLib.resolve.resolveOne
+          (fx.handle
             {
-              ctx = {
-                host = "igloo";
-              };
-              class = "nixos";
-              aspect-chain = [ ];
+              handlers = fxLib.handlers.contextHandlers args;
+              state = { };
             }
-            {
-              name = "test";
-              meta = { };
-              __functor =
-                _:
-                { host }:
-                {
-                  nixos = {
-                    hostName = host;
+            (
+              fxLib.resolve.resolveOne args {
+                name = "test";
+                meta = { };
+                __functor =
+                  _:
+                  { host }:
+                  {
+                    nixos = {
+                      hostName = host;
+                    };
                   };
+                __functionArgs = {
+                  host = false;
                 };
-              __functionArgs = {
-                host = false;
-              };
-              includes = [ ];
-            };
+                includes = [ ];
+              }
+            )
+          ).value;
       in
       {
         expr = {
@@ -258,17 +284,24 @@ in
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
+        args = {
+          ctx = { };
+          class = "nixos";
+          aspect-chain = [ ];
+        };
         result =
-          fxLib.resolve.resolveOne
+          (fx.handle
             {
-              ctx = { };
-              class = "nixos";
-              aspect-chain = [ ];
+              handlers = fxLib.handlers.contextHandlers args;
+              state = { };
             }
-            {
-              name = "bare";
-              includes = [ ];
-            };
+            (
+              fxLib.resolve.resolveOne args {
+                name = "bare";
+                includes = [ ];
+              }
+            )
+          ).value;
       in
       {
         expr = result.meta;
@@ -364,11 +397,16 @@ in
           class = "nixos";
           aspect-chain = [ ];
         } aspect;
-        resultDirect = fxLib.resolve.resolveOne {
+        directArgs = {
           inherit ctx;
           class = "nixos";
           aspect-chain = [ ];
-        } aspect;
+        };
+        resultDirect =
+          (fx.handle {
+            handlers = fxLib.handlers.contextHandlers directArgs;
+            state = { };
+          } (fxLib.resolve.resolveOne directArgs aspect)).value;
       in
       {
         expr = resultStrict.nixos.networking.hostName == resultDirect.nixos.networking.hostName;

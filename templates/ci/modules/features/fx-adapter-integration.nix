@@ -9,8 +9,14 @@ let
 
   # Standard passthrough + module collection pipeline.
   defaultHandlers =
-    fxLib: class:
-    {
+    fxLib:
+    { ctx, class }:
+    fxLib.handlers.parametricHandler ctx
+    // fxLib.handlers.staticHandler {
+      inherit class;
+      aspect-chain = [ ];
+    }
+    // {
       "resolve-include" =
         { param, state }:
         {
@@ -32,7 +38,7 @@ let
       comp = fxLib.resolve.resolveDeepEffectful { inherit ctx class aspect-chain; } aspect;
     in
     fx.handle {
-      handlers = defaultHandlers fxLib class;
+      handlers = defaultHandlers fxLib { inherit ctx class; };
       state = {
         imports = [ ];
       };

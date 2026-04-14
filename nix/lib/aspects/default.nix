@@ -31,7 +31,10 @@ let
         aspect-chain = [ ];
       } resolved;
       result = nxFx.handle {
-        handlers = fxLib.resolve.defaultHandlers class;
+        handlers = fxLib.resolve.defaultHandlers {
+          inherit class;
+          ctx = { };
+        };
         state = fxLib.resolve.defaultState;
       } comp;
     in

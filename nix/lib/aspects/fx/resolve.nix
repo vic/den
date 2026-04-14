@@ -50,8 +50,7 @@ let
     // lib.optionalAttrs (aspectVal ? __ctxAspect) { inherit (aspectVal) __ctxAspect; };
 
   # Resolve a single aspect against the given context.
-  # Static aspects pass through directly.
-  # Parametric aspects (with __functor) are interpreted via fx.handle.
+  # Returns Computation (identity envelope). Effects bubble up.
   resolveOne =
     {
       ctx,
@@ -62,25 +61,20 @@ let
     let
       fn = if aspectVal ? __functor then aspectVal.__functor aspectVal else null;
       isStatic = fn == null || !lib.isFunction fn;
-
-      body =
-        if isStatic then
-          aspectVal
-        else
-          let
-            comp = wrapAspect ctx fn;
-            allHandlers = contextHandlers { inherit ctx class aspect-chain; };
-            result = fx.handle {
-              handlers = allHandlers;
-              state = { };
-            } comp;
-          in
-          result.value;
     in
-    wrapIdentity {
-      inherit aspectVal;
-      resolved = body;
-    };
+    if isStatic then
+      fx.pure (wrapIdentity {
+        inherit aspectVal;
+        resolved = aspectVal;
+      })
+    else
+      fx.bind (wrapAspect ctx fn) (
+        resolved:
+        fx.pure (wrapIdentity {
+          inherit aspectVal;
+          resolved = resolved;
+        })
+      );
 
   # Strict variant: uses rotate topology to detect missing context args.
   # Known effects are handled by rotate; unknowns are re-suspended.
@@ -158,58 +152,58 @@ let
       # parentPath tracks the parent's identity for __parent on resolve-complete.
       go =
         chain: parentPath: aspectVal:
-        let
-          resolved =
+        fx.bind
+          (
             (resolve {
               inherit ctx class;
               aspect-chain = chain;
             })
-              aspectVal;
-          newChain = chain ++ [ aspectVal ] ++ (lib.optional (aspectVal != resolved) resolved);
-          metaAdapter = resolved.meta.adapter or null;
-          # Propagate ctx stage tags to children that don't have their own.
-          # This ensures nested aspects inherit the context stage from their
-          # declaring ancestor, matching the legacy structuredTrace behavior.
-          parentStage = resolved.__ctxStage or null;
-          parentKind = resolved.__ctxKind or null;
-          parentCtxAspect = resolved.__ctxAspect or null;
-          stageAttrs = {
-            __ctxStage = parentStage;
-            __ctxKind = parentKind;
-            __ctxAspect = parentCtxAspect;
-          };
-          tagChild =
-            child:
-            if parentStage == null then
-              child
-            else if builtins.isAttrs child then
-              # Attrset (named aspect, provider, etc) — tag if not already tagged.
-              if child ? __ctxStage then child else child // stageAttrs
-            else if builtins.isFunction child then
-              # Bare lambda — wrap in envelope with tags.
-              {
-                name = child.name or "<anon>";
-                meta = child.meta or { };
-                __functor = _: child;
-                __functionArgs = lib.functionArgs child;
-                includes = [ ];
-              }
-              // stageAttrs
-            else
-              child;
-          includes = map tagChild (resolved.includes or [ ]);
-          rawSelfPath = adapters.pathKey (adapters.aspectPath resolved);
-          rawName = resolved.name or "<anon>";
-          isMeaningful =
-            rawName != "<anon>" && rawName != "<function body>" && !(lib.hasPrefix "[definition " rawName);
-          # If this node has a meaningful name, it becomes the parent for children.
-          # Otherwise, carry the grandparent's path forward so children don't
-          # see anonymous intermediates as their parent.
-          selfPath = if isMeaningful then rawSelfPath else parentPath;
-        in
-        resolveChildren newChain selfPath metaAdapter includes (
-          resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
-        );
+            aspectVal
+          )
+          (
+            resolved:
+            let
+              newChain = chain ++ [ aspectVal ] ++ (lib.optional (aspectVal != resolved) resolved);
+              metaAdapter = resolved.meta.adapter or null;
+              # Propagate ctx stage tags to children that don't have their own.
+              # This ensures nested aspects inherit the context stage from their
+              # declaring ancestor, matching the legacy structuredTrace behavior.
+              parentStage = resolved.__ctxStage or null;
+              parentKind = resolved.__ctxKind or null;
+              parentCtxAspect = resolved.__ctxAspect or null;
+              stageAttrs = {
+                __ctxStage = parentStage;
+                __ctxKind = parentKind;
+                __ctxAspect = parentCtxAspect;
+              };
+              tagChild =
+                child:
+                if parentStage == null then
+                  child
+                else if builtins.isAttrs child then
+                  if child ? __ctxStage then child else child // stageAttrs
+                else if builtins.isFunction child then
+                  {
+                    name = child.name or "<anon>";
+                    meta = child.meta or { };
+                    __functor = _: child;
+                    __functionArgs = lib.functionArgs child;
+                    includes = [ ];
+                  }
+                  // stageAttrs
+                else
+                  child;
+              includes = map tagChild (resolved.includes or [ ]);
+              rawSelfPath = adapters.pathKey (adapters.aspectPath resolved);
+              rawName = resolved.name or "<anon>";
+              isMeaningful =
+                rawName != "<anon>" && rawName != "<function body>" && !(lib.hasPrefix "[definition " rawName);
+              selfPath = if isMeaningful then rawSelfPath else parentPath;
+            in
+            resolveChildren newChain selfPath metaAdapter includes (
+              resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
+            )
+          );
 
       # Emit resolve-include for a child, then process the response list.
       # Conditional markers (includeIf) are handled separately.
@@ -340,8 +334,13 @@ let
 
   # Default handler set for the full pipeline.
   defaultHandlers =
-    class:
-    handlers.ctxTraverseHandler
+    { class, ctx }:
+    handlers.parametricHandler ctx
+    // handlers.staticHandler {
+      inherit class;
+      aspect-chain = [ ];
+    }
+    // handlers.ctxTraverseHandler
     // handlers.ctxSeenHandler
     // handlers.ctxProviderHandler
     // {
@@ -396,7 +395,7 @@ let
       # extraHandlers override defaultHandlers for same effect names.
       # Use tracingHandler (not separate structuredTraceHandler + collectPathsHandler)
       # to avoid // collisions on resolve-complete.
-      handlers = composeHandlers (defaultHandlers class) extraHandlers;
+      handlers = composeHandlers (defaultHandlers { inherit class ctx; }) extraHandlers;
       state = defaultState // extraState;
     } comp;
 
@@ -432,7 +431,18 @@ let
       strict ? false,
     }:
     let
-      resolve = if strict then resolveOneStrict else resolveOne;
+      resolveHandled =
+        args: aspectVal:
+        let
+          comp = resolveOne args aspectVal;
+          allHandlers = contextHandlers args;
+          result = fx.handle {
+            handlers = allHandlers;
+            state = { };
+          } comp;
+        in
+        result.value;
+      resolve = if strict then resolveOneStrict else resolveHandled;
       go =
         chain: aspectVal:
         let
