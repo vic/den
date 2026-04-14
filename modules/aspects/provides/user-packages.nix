@@ -19,14 +19,14 @@ let
   '';
 
   userPackages =
-    pkgNames: user:
+    getPkgs: user:
     let
       nixos = { pkgs, ... }: {
-        users.users.${user.userName}.packages = map (pkgName: pkgs.${pkgName}) pkgNames;
+        users.users.${user.userName}.packages = getPkgs pkgs;
       };
       darwin = nixos;
       homeManager = { pkgs, ... }: {
-        home.packages = map (pkgName: pkgs.${pkgName}) pkgNames;
+        home.packages = getPkgs pkgs;
       };
     in
     {
@@ -36,12 +36,12 @@ let
 in
 {
   den.provides.user-packages =
-    pkgNames:
+    getPkgs:
     den.lib.parametric.exactly {
       inherit description;
       includes = [
-        ({ host, user }: userPackages pkgNames user)
-        ({ home }: userPackages pkgNames home)
+        ({ host, user }: userPackages getPkgs user)
+        ({ home }: userPackages getPkgs home)
       ];
     };
 }

@@ -16,10 +16,10 @@ let
   '';
   
   systemPackages =
-    pkgNames: user:
+    getPkgs: user:
     let
       nixos = { pkgs, ... }: {
-        environment.systemPackages = map (pkgName: pkgs.${pkgName}) pkgNames;
+        environment.systemPackages = getPkgs pkgs;
       };
       darwin = nixos;
     in
@@ -30,11 +30,11 @@ let
 in
 {
   den.provides.system-packages =
-    pkgNames:
+    getPkgs:
     den.lib.parametric.exactly {
       inherit description;
       includes = [
-        ({ host }: systemPackages pkgNames)
+        ({ host }: systemPackages getPkgs)
       ];
     };
 }
