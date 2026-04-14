@@ -187,10 +187,22 @@ in
           ];
         };
         result = runPipeline fxLib { } root;
+        tree = result.value;
+        children = tree.includes or [ ];
+        names = map (c: c.name or "?") children;
       in
       {
-        expr = builtins.length result.state.imports;
-        expected = 1; # new.nixos only, old.nixos tombstoned
+        # Tombstone (~old) + replacement (new) both in tree, only new's module collected.
+        expr = {
+          importCount = builtins.length result.state.imports;
+          hasTombstone = builtins.any (n: n == "~old") names;
+          hasReplacement = builtins.any (n: n == "new") names;
+        };
+        expected = {
+          importCount = 1;
+          hasTombstone = true;
+          hasReplacement = true;
+        };
       }
     );
 

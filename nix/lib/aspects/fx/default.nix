@@ -37,6 +37,7 @@
         ctxProviderHandler
         ctxTraverseHandler
         ctxTraceHandler
+        ctxEmitHandler
         adapterRegistryHandler
         provideClassHandler
         ;

@@ -516,5 +516,54 @@ in
       }
     );
 
+    # composeHandlers: b's resume wins, a's state updates applied on top.
+    test-composeHandlers-resume-from-b-state-from-a =
+      let
+        a = {
+          "test-effect" =
+            { param, state }:
+            {
+              resume = "a-resume";
+              state = state // {
+                fromA = true;
+              };
+            };
+        };
+        b = {
+          "test-effect" =
+            { param, state }:
+            {
+              resume = "b-resume";
+              state = state // {
+                fromB = true;
+              };
+            };
+        };
+      in
+      denTest (
+        { den, ... }:
+        let
+          fxLib = den.lib.aspects.fx.init fx;
+          composed = fxLib.composeHandlers a b;
+          comp = fx.send "test-effect" null;
+          result = fx.handle {
+            handlers = composed;
+            state = { };
+          } comp;
+        in
+        {
+          expr = {
+            resume = result.value;
+            hasA = result.state.fromA or false;
+            hasB = result.state.fromB or false;
+          };
+          expected = {
+            resume = "b-resume";
+            hasA = true;
+            hasB = true;
+          };
+        }
+      );
+
   };
 }

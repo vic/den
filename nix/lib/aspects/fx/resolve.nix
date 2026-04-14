@@ -227,9 +227,9 @@ let
       # Resolve a child: check-exclusion decides keep/exclude/substitute.
       # Conditional markers (includeIf) are handled separately.
       resolveChild =
-        parentPath: parentIncludes: child:
+        parentPath: child:
         if builtins.isAttrs child && (child.meta.conditional or false) then
-          resolveConditional parentPath parentIncludes child
+          resolveConditional parentPath child
         else
           let
             envelope = wrapChild child;
@@ -277,7 +277,7 @@ let
 
       # Evaluate a conditional marker against accumulated paths.
       resolveConditional =
-        parentPath: parentIncludes: condNode:
+        parentPath: condNode:
         fx.bind (fx.send "get-path-set" null) (
           pathSet:
           let
@@ -290,8 +290,7 @@ let
             builtins.foldl' (
               acc: a:
               fx.bind acc (
-                results:
-                fx.bind (resolveChild parentPath parentIncludes a) (childResults: fx.pure (results ++ childResults))
+                results: fx.bind (resolveChild parentPath a) (childResults: fx.pure (results ++ childResults))
               )
             ) (fx.pure [ ]) condNode.meta.aspects
           else
@@ -316,8 +315,7 @@ let
           childComp = builtins.foldl' (
             acc: child:
             fx.bind acc (
-              results:
-              fx.bind (resolveChild parentPath includes child) (childResults: fx.pure (results ++ childResults))
+              results: fx.bind (resolveChild parentPath child) (childResults: fx.pure (results ++ childResults))
             )
           ) (fx.pure [ ]) includes;
         in
@@ -425,9 +423,10 @@ let
       );
     in
     fx.handle {
-      # extraHandlers override defaultHandlers for same effect names.
-      # Use tracingHandler (not separate structuredTraceHandler + collectPathsHandler)
-      # to avoid // collisions on resolve-complete.
+      # For shared effect names: extraHandlers' resume wins,
+      # defaultHandlers' state updates run on top. This lets tracingHandler
+      # (extra) control resume while provide-class handler (default) still
+      # accumulates modules in state.
       handlers = composeHandlers (defaultHandlers { inherit class ctx; }) extraHandlers;
       state = defaultState // extraState;
     } comp;
