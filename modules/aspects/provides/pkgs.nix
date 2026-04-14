@@ -60,12 +60,13 @@ let
 in
 {
   den.provides.pkgs =
-    getPkgs: den.lib.parametric {
+    getPkgs:
+    {
       inherit description;
       includes = [
-        (to-host getPkgs)
-        (to-user getPkgs)
-        (to-home getPkgs)
+        (den.lib.perHost (to-host getPkgs))
+        (den.lib.perUser (to-user getPkgs))
+        (den.lib.perHome (to-home getPkgs))
       ];
     };
 }
