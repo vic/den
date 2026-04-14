@@ -171,27 +171,47 @@ let
   };
 
   # Adapter registry. Handles register-adapter and check-exclusion effects.
+  # Supports identity-based (exclude, substitute) and predicate-based (filter).
   adapterRegistryHandler = {
     "register-adapter" =
       { param, state }:
-      {
-        resume = null;
-        state = state // {
-          adapterRegistry = (state.adapterRegistry or { }) // {
-            ${param.identity} = {
-              type = param.type;
-              replacement = param.replacement or null;
-              owner = param.owner or "<anon>";
+      if param.type == "filter" then
+        {
+          resume = null;
+          state = state // {
+            adapterFilters = (state.adapterFilters or [ ]) ++ [
+              {
+                predicate = param.predicate;
+                owner = param.owner or "<anon>";
+              }
+            ];
+          };
+        }
+      else
+        {
+          resume = null;
+          state = state // {
+            adapterRegistry = (state.adapterRegistry or { }) // {
+              ${param.identity} = {
+                type = param.type;
+                replacement = param.replacement or null;
+                owner = param.owner or "<anon>";
+              };
             };
           };
         };
-      };
 
+    # Check if an aspect should be excluded/substituted/filtered.
+    # First checks identity-based registry, then predicate filters.
+    # param = { identity; aspect; } where aspect is the full attrset
+    # for predicate evaluation.
     "check-exclusion" =
       { param, state }:
       let
-        identity = param;
+        identity = param.identity or param;
+        aspect = param.aspect or null;
         registry = state.adapterRegistry or { };
+        filters = state.adapterFilters or [ ];
       in
       if registry ? ${identity} then
         let
@@ -222,12 +242,26 @@ let
             inherit state;
           }
       else
-        {
-          resume = {
-            action = "keep";
+        # No identity match — check predicate filters.
+        let
+          failedFilter =
+            if aspect != null then lib.findFirst (f: !(f.predicate aspect)) null filters else null;
+        in
+        if failedFilter != null then
+          {
+            resume = {
+              action = "exclude";
+              owner = failedFilter.owner;
+            };
+            inherit state;
+          }
+        else
+          {
+            resume = {
+              action = "keep";
+            };
+            inherit state;
           };
-          inherit state;
-        };
   };
 
   # Accumulates class modules from provide-class effects.

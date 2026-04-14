@@ -170,14 +170,22 @@ let
                   }) (_: fx.pure null)
                 else
                   fx.pure null;
-              metaAdapter = resolved.meta.adapter or null;
-              registerEmit =
-                if metaAdapter != null then
-                  fx.bind (fx.send "register-adapter" (metaAdapter // { owner = resolved.name or "<anon>"; })) (
-                    _: fx.pure null
-                  )
+              rawAdapter = resolved.meta.adapter or null;
+              # Accept single record or list of records. Skip legacy function adapters.
+              adapterList =
+                if rawAdapter == null then
+                  [ ]
+                else if builtins.isList rawAdapter then
+                  rawAdapter
+                else if builtins.isAttrs rawAdapter then
+                  [ rawAdapter ]
                 else
-                  fx.pure null;
+                  [ ]; # legacy function adapter — skip
+              owner = resolved.name or "<anon>";
+              registerEmit = builtins.foldl' (
+                acc: reg:
+                fx.bind acc (_: fx.bind (fx.send "register-adapter" (reg // { inherit owner; })) (_: fx.pure null))
+              ) (fx.pure null) adapterList;
               # Propagate ctx stage tags to children that don't have their own.
               # This ensures nested aspects inherit the context stage from their
               # declaring ancestor, matching the legacy structuredTrace behavior.
@@ -235,45 +243,50 @@ let
             envelope = wrapChild child;
             childIdentity = adapters.pathKey (adapters.aspectPath envelope);
           in
-          fx.bind (fx.send "check-exclusion" childIdentity) (
-            decision:
-            if decision.action == "exclude" then
-              let
-                ts = adapters.tombstone envelope { excludedFrom = decision.owner; };
-              in
-              fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (_: fx.pure [ ts ])
-            else if decision.action == "substitute" then
-              let
-                ts = adapters.tombstone envelope {
-                  excludedFrom = decision.owner;
-                  replacedBy = decision.replacement.name or "<anon>";
-                };
-              in
-              fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (
-                _:
-                fx.bind (go parentPath decision.replacement) (
-                  resolvedReplacement:
-                  fx.bind (fx.send "resolve-complete" (resolvedReplacement // { __parent = parentPath; })) (
-                    _:
-                    fx.pure [
-                      ts
-                      resolvedReplacement
-                    ]
+          fx.bind
+            (fx.send "check-exclusion" {
+              identity = childIdentity;
+              aspect = envelope;
+            })
+            (
+              decision:
+              if decision.action == "exclude" then
+                let
+                  ts = adapters.tombstone envelope { excludedFrom = decision.owner; };
+                in
+                fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (_: fx.pure [ ts ])
+              else if decision.action == "substitute" then
+                let
+                  ts = adapters.tombstone envelope {
+                    excludedFrom = decision.owner;
+                    replacedBy = decision.replacement.name or "<anon>";
+                  };
+                in
+                fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (
+                  _:
+                  fx.bind (go parentPath decision.replacement) (
+                    resolvedReplacement:
+                    fx.bind (fx.send "resolve-complete" (resolvedReplacement // { __parent = parentPath; })) (
+                      _:
+                      fx.pure [
+                        ts
+                        resolvedReplacement
+                      ]
+                    )
                   )
                 )
-              )
-            else
-              # Keep: emit resolve-include (for tracing), then recurse
-              fx.bind (fx.send "resolve-include" envelope) (
-                _:
-                fx.bind (go parentPath envelope) (
-                  resolvedChild:
-                  fx.bind (fx.send "resolve-complete" (resolvedChild // { __parent = parentPath; })) (
-                    _: fx.pure [ resolvedChild ]
+              else
+                # Keep: emit resolve-include (for tracing), then recurse
+                fx.bind (fx.send "resolve-include" envelope) (
+                  _:
+                  fx.bind (go parentPath envelope) (
+                    resolvedChild:
+                    fx.bind (fx.send "resolve-complete" (resolvedChild // { __parent = parentPath; })) (
+                      _: fx.pure [ resolvedChild ]
+                    )
                   )
                 )
-              )
-          );
+            );
 
       # Evaluate a conditional marker against accumulated paths.
       resolveConditional =

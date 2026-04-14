@@ -41,6 +41,13 @@ let
     inherit replacement;
   };
 
+  # Predicate-based filter. Excludes aspects where pred returns false.
+  # pred receives the aspect attrset (with name, meta, includes, etc).
+  filterAspect = pred: {
+    type = "filter";
+    predicate = pred;
+  };
+
   collectPathsHandler = {
     "resolve-complete" =
       { param, state }:
