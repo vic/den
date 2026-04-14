@@ -97,11 +97,16 @@ let
   # Handles per-aspect meta.adapter composition. Probes each include to
   # determine: keep, exclude (tombstone), or substitute (tombstone + replacement).
   # Tags survivors with the adapter for downstream propagation.
+  #
+  # adapterOwner tracks which user-declared aspect originally owned the
+  # adapter. Without it, tombstones downstream of a tagged wrapper
+  # attribute exclusion to "<anon>" instead of the declaring aspect.
   filterIncludes =
     inner:
     args@{ aspect, resolveChild, ... }:
     let
       metaAdapter = aspect.meta.adapter or null;
+      ownerName = aspect.meta.adapterOwner or (pathKey (aspectPath aspect));
     in
     if metaAdapter != null && aspect ? includes then
       let
@@ -121,11 +126,11 @@ let
             probed = probeTransform metaAdapter args resolved;
           in
           if result == { } then
-            [ (tombstone resolved { excludedFrom = aspect.name or "<anon>"; }) ]
+            [ (tombstone resolved { excludedFrom = ownerName; }) ]
           else if aspectPath probed != aspectPath resolved then
             [
               (tombstone resolved {
-                excludedFrom = aspect.name or "<anon>";
+                excludedFrom = ownerName;
                 replacedBy = probed.name or "<anon>";
               })
               probed
@@ -140,6 +145,7 @@ let
             // {
               meta = (i.meta or { }) // {
                 adapter = metaAdapter;
+                adapterOwner = ownerName;
               };
             }
           else
@@ -172,6 +178,10 @@ let
       }) paths
     );
 
+  # Emit this aspect's path if not excluded. Shared by collectPathsInner
+  # and structuredTrace to avoid duplicating the exclusion check.
+  collectSelfPath = aspect: lib.optional (!(aspect.meta.excluded or false)) (aspectPath aspect);
+
   # Shared walker used by collectPaths (through filterIncludes, so it
   # sees tombstones) and by oneOfAspects (raw, to avoid re-entering
   # its own meta.adapter). The excluded-guard is a no-op in the raw
@@ -180,8 +190,7 @@ let
     { aspect, recurse, ... }:
     {
       paths =
-        (lib.optional (!(aspect.meta.excluded or false)) (aspectPath aspect))
-        ++ lib.concatMap (i: (recurse i).paths or [ ]) (aspect.includes or [ ]);
+        collectSelfPath aspect ++ lib.concatMap (i: (recurse i).paths or [ ]) (aspect.includes or [ ]);
     };
 
   # Terminal adapter that walks via filterIncludes and collects the
@@ -233,6 +242,7 @@ in
   inherit
     aspectPath
     collectPaths
+    collectSelfPath
     default
     excludeAspect
     filter
