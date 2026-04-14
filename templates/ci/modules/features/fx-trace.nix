@@ -273,5 +273,107 @@ in
       }
     );
 
+    # tracingHandler collects entries + paths (but not imports) via resolve-complete.
+    # composeHandlers chains it with moduleHandler for imports.
+    test-tracingHandler-collects-entries-and-paths = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        parent = {
+          name = "root";
+          meta = {
+            provider = [ ];
+          };
+          nixos = {
+            a = 1;
+          };
+          includes = [
+            {
+              name = "child";
+              meta = {
+                provider = [ ];
+              };
+              nixos = {
+                b = 2;
+              };
+              includes = [ ];
+            }
+          ];
+        };
+        result =
+          fxLib.resolve.mkPipeline
+            {
+              class = "nixos";
+              extraHandlers = fxLib.adapters.tracingHandler "nixos" // fxLib.handlers.ctxTraceHandler;
+              extraState = {
+                entries = [ ];
+                paths = [ ];
+                ctxTrace = [ ];
+              };
+            }
+            {
+              ctxNs = { };
+              self = parent // {
+                into = _: { };
+                provides = { };
+              };
+              ctx = { };
+            };
+      in
+      {
+        expr = {
+          hasEntries = result.state.entries != [ ];
+          hasPaths = result.state.paths != [ ];
+          hasImports = result.state.imports != [ ];
+        };
+        expected = {
+          hasEntries = true;
+          hasPaths = true;
+          hasImports = true;
+        };
+      }
+    );
+
+    # ctxTraceHandler produces items with ctxKeys, entityNames, provideNames.
+    test-ctxTraceHandler-full-fields = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        self = {
+          name = "host";
+          into = _: { };
+          provides = {
+            host = _: { };
+          };
+        };
+        comp = fxLib.ctxApply.ctxApplyEffectful { } self { host = "igloo"; };
+        result = fx.handle {
+          handlers =
+            fxLib.handlers.ctxTraceHandler
+            // fxLib.handlers.ctxSeenHandler
+            // fxLib.handlers.ctxProviderHandler;
+          state = {
+            seen = { };
+            ctxTrace = [ ];
+          };
+        } comp;
+        firstItem = builtins.head result.state.ctxTrace;
+      in
+      {
+        expr = {
+          hasCtxKeys = firstItem ? ctxKeys;
+          hasEntityNames = firstItem ? entityNames;
+          hasProvideNames = firstItem ? provideNames;
+          ctxKeysHasHost = builtins.elem "host" (firstItem.ctxKeys or [ ]);
+        };
+        expected = {
+          hasCtxKeys = true;
+          hasEntityNames = true;
+          hasProvideNames = true;
+          ctxKeysHasHost = true;
+        };
+      }
+    );
+
   };
 }

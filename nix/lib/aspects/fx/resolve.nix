@@ -44,7 +44,10 @@ let
       // lib.optionalAttrs isParametric { inherit isParametric fnArgNames; };
       inherit includes;
     }
-    // owned;
+    // owned
+    // lib.optionalAttrs (aspectVal ? __ctxStage) { inherit (aspectVal) __ctxStage; }
+    // lib.optionalAttrs (aspectVal ? __ctxKind) { inherit (aspectVal) __ctxKind; }
+    // lib.optionalAttrs (aspectVal ? __ctxAspect) { inherit (aspectVal) __ctxAspect; };
 
   # Resolve a single aspect against the given context.
   # Static aspects pass through directly.
@@ -164,8 +167,45 @@ let
               aspectVal;
           newChain = chain ++ [ aspectVal ] ++ (lib.optional (aspectVal != resolved) resolved);
           metaAdapter = resolved.meta.adapter or null;
-          includes = resolved.includes or [ ];
-          selfPath = adapters.pathKey (adapters.aspectPath resolved);
+          # Propagate ctx stage tags to children that don't have their own.
+          # This ensures nested aspects inherit the context stage from their
+          # declaring ancestor, matching the legacy structuredTrace behavior.
+          parentStage = resolved.__ctxStage or null;
+          parentKind = resolved.__ctxKind or null;
+          parentCtxAspect = resolved.__ctxAspect or null;
+          stageAttrs = {
+            __ctxStage = parentStage;
+            __ctxKind = parentKind;
+            __ctxAspect = parentCtxAspect;
+          };
+          tagChild =
+            child:
+            if parentStage == null then
+              child
+            else if builtins.isAttrs child then
+              # Attrset (named aspect, provider, etc) — tag if not already tagged.
+              if child ? __ctxStage then child else child // stageAttrs
+            else if builtins.isFunction child then
+              # Bare lambda — wrap in envelope with tags.
+              {
+                name = child.name or "<anon>";
+                meta = child.meta or { };
+                __functor = _: child;
+                __functionArgs = lib.functionArgs child;
+                includes = [ ];
+              }
+              // stageAttrs
+            else
+              child;
+          includes = map tagChild (resolved.includes or [ ]);
+          rawSelfPath = adapters.pathKey (adapters.aspectPath resolved);
+          rawName = resolved.name or "<anon>";
+          isMeaningful =
+            rawName != "<anon>" && rawName != "<function body>" && !(lib.hasPrefix "[definition " rawName);
+          # If this node has a meaningful name, it becomes the parent for children.
+          # Otherwise, carry the grandparent's path forward so children don't
+          # see anonymous intermediates as their parent.
+          selfPath = if isMeaningful then rawSelfPath else parentPath;
         in
         resolveChildren newChain selfPath metaAdapter includes (
           resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
@@ -353,6 +393,9 @@ let
       );
     in
     fx.handle {
+      # extraHandlers override defaultHandlers for same effect names.
+      # Use tracingHandler (not separate structuredTraceHandler + collectPathsHandler)
+      # to avoid // collisions on resolve-complete.
       handlers = composeHandlers (defaultHandlers class) extraHandlers;
       state = defaultState // extraState;
     } comp;

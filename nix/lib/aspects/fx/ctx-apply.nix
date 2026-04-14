@@ -173,21 +173,29 @@ let
                 (
                   crossProv:
                   let
-                    mainAspect = if isFirst then parametric.fixedTo ctx self else parametric.atLeast self ctx;
+                    aspectName = self.name or "<anon>";
+                    rawMain = if isFirst then parametric.fixedTo ctx self else parametric.atLeast self ctx;
                     selfProvRaw = if selfProv != null then selfProv ctx else null;
                     crossProvRaw = if crossProv != null then crossProv ctx else null;
                     tagResult =
-                      kind: r:
+                      kind: tagAspect: r:
                       if builtins.isAttrs r then
                         r
                         // {
                           __ctxStage = key;
                           __ctxKind = kind;
+                          __ctxAspect = tagAspect;
                         }
                       else
                         r;
-                    selfProvResult = if selfProvRaw != null then tagResult "self-provide" selfProvRaw else null;
-                    crossProvResult = if crossProvRaw != null then tagResult "cross-provide" crossProvRaw else null;
+                    mainAspect = tagResult "aspect" aspectName rawMain;
+                    selfProvResult =
+                      if selfProvRaw != null then tagResult "self-provide" aspectName selfProvRaw else null;
+                    crossProvResult =
+                      if crossProvRaw != null then
+                        tagResult "cross-provide" (if prev != null then prev.name or "<anon>" else "<anon>") crossProvRaw
+                      else
+                        null;
                   in
                   fx.pure (
                     [ mainAspect ]

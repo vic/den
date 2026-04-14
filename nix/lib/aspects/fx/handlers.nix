@@ -125,6 +125,19 @@ let
     "ctx-traverse" =
       { param, state }:
       let
+        ctx = if builtins.isAttrs param.ctx then param.ctx else { };
+        ctxKeys = builtins.attrNames ctx;
+        entityNames = lib.concatMap (
+          k:
+          let
+            v = ctx.${k} or null;
+          in
+          lib.optional (builtins.isAttrs v && v ? name) {
+            kind = k;
+            name = v.name;
+            aspect = v.aspect or v.name;
+          }
+        ) ctxKeys;
         item = {
           key = param.key;
           selfName = param.self.name or "<anon>";
@@ -132,6 +145,8 @@ let
           hasSelfProvider = (param.self.provides or { }) ? ${param.self.name or ""};
           hasCrossProvider =
             param.prev != null && (param.prev.provides or { }) ? ${lib.head (lib.splitString "." param.key)};
+          inherit ctxKeys entityNames;
+          provideNames = builtins.attrNames (param.self.provides or { });
         };
       in
       {
