@@ -125,7 +125,7 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
@@ -135,6 +135,14 @@ in
                 state = state // {
                   parents = (state.parents or [ ]) ++ [ (param.__parent or "ROOT") ];
                 };
+              };
+            "check-exclusion" =
+              { param, state }:
+              {
+                resume = {
+                  action = "keep";
+                };
+                inherit state;
               };
           };
           state = {

@@ -10,7 +10,7 @@ in
 {
   flake.tests.fx-adapters = {
 
-    test-exclude-matches = denTest (
+    test-exclude-declaration = denTest (
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
@@ -20,135 +20,21 @@ in
             provider = [ ];
           };
         };
-        child = {
-          name = "drop";
-          meta = {
-            provider = [ ];
-          };
-          includes = [ ];
-        };
-        handler = fxLib.adapters.excludeAspect ref;
-        comp = fx.send "resolve-include" child;
-        result = fx.handle {
-          handlers = handler;
-          state = { };
-        } comp;
-      in
-      {
-        expr = builtins.isList result.value && (builtins.head result.value).meta.excluded;
-        expected = true;
-      }
-    );
-
-    test-exclude-no-match = denTest (
-      { den, ... }:
-      let
-        fxLib = den.lib.aspects.fx.init fx;
-        ref = {
-          name = "drop";
-          meta = {
-            provider = [ ];
-          };
-        };
-        child = {
-          name = "keep";
-          meta = {
-            provider = [ ];
-          };
-          includes = [ ];
-        };
-        handler = fxLib.adapters.excludeAspect ref;
-        comp = fx.send "resolve-include" child;
-        result = fx.handle {
-          handlers = handler;
-          state = { };
-        } comp;
-      in
-      {
-        expr = (builtins.head result.value).name;
-        expected = "keep";
-      }
-    );
-
-    test-exclude-transitive = denTest (
-      { den, ... }:
-      let
-        fxLib = den.lib.aspects.fx.init fx;
-        ref = {
-          name = "monitoring";
-          meta = {
-            provider = [ ];
-          };
-        };
-        sub = {
-          name = "node-exporter";
-          meta = {
-            provider = [ "monitoring" ];
-          };
-          includes = [ ];
-        };
-        handler = fxLib.adapters.excludeAspect ref;
-        comp = fx.send "resolve-include" sub;
-        result = fx.handle {
-          handlers = handler;
-          state = { };
-        } comp;
-      in
-      {
-        expr = (builtins.head result.value).meta.excluded;
-        expected = true;
-      }
-    );
-
-    test-substitute-replaces = denTest (
-      { den, ... }:
-      let
-        fxLib = den.lib.aspects.fx.init fx;
-        ref = {
-          name = "old";
-          meta = {
-            provider = [ ];
-          };
-        };
-        replacement = {
-          name = "new";
-          meta = {
-            provider = [ ];
-          };
-          includes = [ ];
-        };
-        child = {
-          name = "old";
-          meta = {
-            provider = [ ];
-          };
-          includes = [ ];
-        };
-        handler = fxLib.adapters.substituteAspect ref replacement;
-        comp = fx.send "resolve-include" child;
-        result = fx.handle {
-          handlers = handler;
-          state = { };
-        } comp;
-        items = result.value;
+        decl = fxLib.adapters.excludeAspect ref;
       in
       {
         expr = {
-          count = builtins.length items;
-          firstExcluded = (builtins.elemAt items 0).meta.excluded;
-          firstReplacedBy = (builtins.elemAt items 0).meta.replacedBy;
-          secondName = (builtins.elemAt items 1).name;
+          type = decl.type;
+          identity = decl.identity;
         };
         expected = {
-          count = 2;
-          firstExcluded = true;
-          firstReplacedBy = "new";
-          secondName = "new";
+          type = "exclude";
+          identity = "drop";
         };
       }
     );
 
-    test-substitute-no-match = denTest (
+    test-substitute-declaration = denTest (
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
@@ -165,23 +51,105 @@ in
           };
           includes = [ ];
         };
-        child = {
-          name = "keep";
+        decl = fxLib.adapters.substituteAspect ref replacement;
+      in
+      {
+        expr = {
+          type = decl.type;
+          identity = decl.identity;
+          replacementName = decl.replacement.name;
+        };
+        expected = {
+          type = "substitute";
+          identity = "old";
+          replacementName = "new";
+        };
+      }
+    );
+
+    test-exclude-via-registry = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        ref = {
+          name = "drop";
+          meta = {
+            provider = [ ];
+          };
+        };
+        decl = fxLib.adapters.excludeAspect ref;
+        # Register then check-exclusion
+        comp = fx.bind (fx.send "register-adapter" (decl // { owner = "test"; })) (
+          _: fx.send "check-exclusion" "drop"
+        );
+        result = fx.handle {
+          handlers = fxLib.handlers.adapterRegistryHandler;
+          state = {
+            adapterRegistry = { };
+          };
+        } comp;
+      in
+      {
+        expr = result.value.action;
+        expected = "exclude";
+      }
+    );
+
+    test-check-exclusion-default-keep = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        comp = fx.send "check-exclusion" "unknown";
+        result = fx.handle {
+          handlers = fxLib.handlers.adapterRegistryHandler;
+          state = {
+            adapterRegistry = { };
+          };
+        } comp;
+      in
+      {
+        expr = result.value.action;
+        expected = "keep";
+      }
+    );
+
+    test-substitute-via-registry = denTest (
+      { den, ... }:
+      let
+        fxLib = den.lib.aspects.fx.init fx;
+        ref = {
+          name = "old";
+          meta = {
+            provider = [ ];
+          };
+        };
+        replacement = {
+          name = "new";
           meta = {
             provider = [ ];
           };
           includes = [ ];
         };
-        handler = fxLib.adapters.substituteAspect ref replacement;
-        comp = fx.send "resolve-include" child;
+        decl = fxLib.adapters.substituteAspect ref replacement;
+        comp = fx.bind (fx.send "register-adapter" (decl // { owner = "test"; })) (
+          _: fx.send "check-exclusion" "old"
+        );
         result = fx.handle {
-          handlers = handler;
-          state = { };
+          handlers = fxLib.handlers.adapterRegistryHandler;
+          state = {
+            adapterRegistry = { };
+          };
         } comp;
       in
       {
-        expr = (builtins.head result.value).name;
-        expected = "keep";
+        expr = {
+          action = result.value.action;
+          replacementName = result.value.replacement.name;
+        };
+        expected = {
+          action = "substitute";
+          replacementName = "new";
+        };
       }
     );
 
@@ -218,13 +186,21 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
               { param, state }:
               {
                 resume = param;
+                inherit state;
+              };
+            "check-exclusion" =
+              { param, state }:
+              {
+                resume = {
+                  action = "keep";
+                };
                 inherit state;
               };
           }
@@ -282,13 +258,15 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
           }
+          // fxLib.handlers.adapterRegistryHandler
           // fxLib.adapters.collectPathsHandler;
           state = {
             paths = [ ];
+            adapterRegistry = { };
           };
         } comp;
       in
@@ -346,7 +324,7 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
@@ -356,9 +334,11 @@ in
                 inherit state;
               };
           }
+          // fxLib.handlers.adapterRegistryHandler
           // fxLib.handlers.provideClassHandler;
           state = {
             imports = [ ];
+            adapterRegistry = { };
           };
         } comp;
       in

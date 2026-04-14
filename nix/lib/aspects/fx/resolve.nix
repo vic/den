@@ -122,7 +122,8 @@ let
 
   # Effectful tree walk. Returns Computation aspect.
   # Emits resolve-include before and resolve-complete after each child.
-  # meta.adapter on an aspect installs scoped handler via fx.rotate.
+  # meta.adapter registers via register-adapter effect; check-exclusion
+  # queries the registry for each child.
   resolveDeepEffectful =
     {
       ctx,
@@ -170,6 +171,13 @@ let
                 else
                   fx.pure null;
               metaAdapter = resolved.meta.adapter or null;
+              registerEmit =
+                if metaAdapter != null then
+                  fx.bind (fx.send "register-adapter" (metaAdapter // { owner = resolved.name or "<anon>"; })) (
+                    _: fx.pure null
+                  )
+                else
+                  fx.pure null;
               # Propagate ctx stage tags to children that don't have their own.
               # This ensures nested aspects inherit the context stage from their
               # declaring ancestor, matching the legacy structuredTrace behavior.
@@ -207,13 +215,16 @@ let
             in
             fx.bind classEmit (
               _:
-              resolveChildren selfPath metaAdapter includes (
-                resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
+              fx.bind registerEmit (
+                _:
+                resolveChildren selfPath includes (
+                  resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
+                )
               )
             )
           );
 
-      # Emit resolve-include for a child, then process the response list.
+      # Resolve a child: check-exclusion decides keep/exclude/substitute.
       # Conditional markers (includeIf) are handled separately.
       resolveChild =
         parentPath: parentIncludes: child:
@@ -222,76 +233,85 @@ let
         else
           let
             envelope = wrapChild child;
+            childIdentity = adapters.pathKey (adapters.aspectPath envelope);
           in
-          fx.bind (fx.send "resolve-include" envelope) (
-            approvedList: processApproved parentPath approvedList
-          );
-
-      # Evaluate a conditional marker against the raw includes tree.
-      resolveConditional =
-        parentPath: parentIncludes: condNode:
-        let
-          rawPaths = adapters.collectRawPaths parentIncludes;
-          rawPathSet = adapters.toPathSet rawPaths;
-          guardCtx = {
-            hasAspect = ref: rawPathSet ? ${adapters.pathKey (adapters.aspectPath ref)};
-          };
-          pass = condNode.meta.guard guardCtx;
-        in
-        if pass then
-          # Include guarded aspects normally
-          builtins.foldl' (
-            acc: a:
-            fx.bind acc (
-              results:
-              fx.bind (fx.send "resolve-include" a) (
-                approved: fx.bind (processApproved parentPath approved) (processed: fx.pure (results ++ processed))
-              )
-            )
-          ) (fx.pure [ ]) condNode.meta.aspects
-        else
-          # Tombstone all guarded aspects
-          builtins.foldl' (
-            acc: a:
-            fx.bind acc (
-              results:
+          fx.bind (fx.send "check-exclusion" childIdentity) (
+            decision:
+            if decision.action == "exclude" then
               let
-                ts = adapters.tombstone a { guardFailed = true; };
+                ts = adapters.tombstone envelope { excludedFrom = decision.owner; };
+              in
+              fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (_: fx.pure [ ts ])
+            else if decision.action == "substitute" then
+              let
+                ts = adapters.tombstone envelope {
+                  excludedFrom = decision.owner;
+                  replacedBy = decision.replacement.name or "<anon>";
+                };
               in
               fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (
-                _: fx.pure (results ++ [ ts ])
-              )
-            )
-          ) (fx.pure [ ]) condNode.meta.aspects;
-
-      # Process a list of approved children (supports substitution [tombstone, replacement]).
-      processApproved =
-        parentPath: children:
-        builtins.foldl' (
-          acc: child:
-          fx.bind acc (
-            results:
-            if child == null then
-              fx.pure results
-            else if child.meta.excluded or false then
-              # Tombstoned: emit resolve-complete but don't recurse
-              fx.bind (fx.send "resolve-complete" (child // { __parent = parentPath; })) (
-                _: fx.pure (results ++ [ child ])
-              )
-            else
-              # Live child: recurse, then emit resolve-complete
-              fx.bind (go parentPath child) (
-                resolvedChild:
-                fx.bind (fx.send "resolve-complete" (resolvedChild // { __parent = parentPath; })) (
-                  _: fx.pure (results ++ [ resolvedChild ])
+                _:
+                fx.bind (go parentPath decision.replacement) (
+                  resolvedReplacement:
+                  fx.bind (fx.send "resolve-complete" (resolvedReplacement // { __parent = parentPath; })) (
+                    _:
+                    fx.pure [
+                      ts
+                      resolvedReplacement
+                    ]
+                  )
                 )
               )
-          )
-        ) (fx.pure [ ]) children;
+            else
+              # Keep: emit resolve-include (for tracing), then recurse
+              fx.bind (fx.send "resolve-include" envelope) (
+                _:
+                fx.bind (go parentPath envelope) (
+                  resolvedChild:
+                  fx.bind (fx.send "resolve-complete" (resolvedChild // { __parent = parentPath; })) (
+                    _: fx.pure [ resolvedChild ]
+                  )
+                )
+              )
+          );
 
-      # Resolve all children. If meta.adapter present, install scoped handler via rotate.
+      # Evaluate a conditional marker against accumulated paths.
+      resolveConditional =
+        parentPath: parentIncludes: condNode:
+        fx.bind (fx.send "get-path-set" null) (
+          pathSet:
+          let
+            guardCtx = {
+              hasAspect = ref: pathSet ? ${adapters.pathKey (adapters.aspectPath ref)};
+            };
+            pass = condNode.meta.guard guardCtx;
+          in
+          if pass then
+            builtins.foldl' (
+              acc: a:
+              fx.bind acc (
+                results:
+                fx.bind (resolveChild parentPath parentIncludes a) (childResults: fx.pure (results ++ childResults))
+              )
+            ) (fx.pure [ ]) condNode.meta.aspects
+          else
+            builtins.foldl' (
+              acc: a:
+              fx.bind acc (
+                results:
+                let
+                  ts = adapters.tombstone a { guardFailed = true; };
+                in
+                fx.bind (fx.send "resolve-complete" (ts // { __parent = parentPath; })) (
+                  _: fx.pure (results ++ [ ts ])
+                )
+              )
+            ) (fx.pure [ ]) condNode.meta.aspects
+        );
+
+      # Resolve all children.
       resolveChildren =
-        parentPath: metaAdapter: includes: cont:
+        parentPath: includes: cont:
         let
           childComp = builtins.foldl' (
             acc: child:
@@ -301,15 +321,7 @@ let
             )
           ) (fx.pure [ ]) includes;
         in
-        if metaAdapter != null then
-          # Install scoped adapter handler. Rotate handles resolve-include,
-          # unknown effects (context args, resolve-complete) pass through.
-          fx.bind (fx.rotate {
-            handlers = metaAdapter;
-            state = { };
-          } childComp) (rotateResult: cont rotateResult.value)
-        else
-          fx.bind childComp cont;
+        fx.bind childComp cont;
     in
     go null;
 
@@ -349,24 +361,33 @@ let
     // handlers.ctxSeenHandler
     // handlers.ctxProviderHandler
     // handlers.provideClassHandler
+    // handlers.adapterRegistryHandler
+    // adapters.pathSetHandler
     // {
       "resolve-include" =
         { param, state }:
         {
-          resume = [ param ];
+          resume = param;
           inherit state;
         };
       "resolve-complete" =
         { param, state }:
+        let
+          isExcluded = param.meta.excluded or false;
+        in
         {
           resume = param;
-          inherit state;
+          state = state // {
+            paths = (state.paths or [ ]) ++ (lib.optional (!isExcluded) (adapters.aspectPath param));
+          };
         };
     };
 
   defaultState = {
     seen = { };
     imports = [ ];
+    adapterRegistry = { };
+    paths = [ ];
   };
 
   # Configurable pipeline builder. Pass custom handlers/state to extend.

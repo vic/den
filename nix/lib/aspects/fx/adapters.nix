@@ -30,54 +30,16 @@ let
     includes = [ ];
   };
 
-  excludeAspect =
-    ref:
-    let
-      refPath = aspectPath ref;
-    in
-    {
-      "resolve-include" =
-        { param, state }:
-        let
-          ap = aspectPath param;
-        in
-        if ap == refPath || lib.take (builtins.length refPath) ap == refPath then
-          {
-            resume = [ (tombstone param { excludedFrom = state.ownerName or "<anon>"; }) ];
-            inherit state;
-          }
-        else
-          {
-            resume = [ param ];
-            inherit state;
-          };
-    };
+  excludeAspect = ref: {
+    type = "exclude";
+    identity = pathKey (aspectPath ref);
+  };
 
-  substituteAspect =
-    ref: replacement:
-    let
-      refPath = aspectPath ref;
-    in
-    {
-      "resolve-include" =
-        { param, state }:
-        if aspectPath param == refPath then
-          {
-            resume = [
-              (tombstone param {
-                excludedFrom = state.ownerName or "<anon>";
-                replacedBy = replacement.name or "<anon>";
-              })
-              replacement
-            ];
-            inherit state;
-          }
-        else
-          {
-            resume = [ param ];
-            inherit state;
-          };
-    };
+  substituteAspect = ref: replacement: {
+    type = "substitute";
+    identity = pathKey (aspectPath ref);
+    inherit replacement;
+  };
 
   collectPathsHandler = {
     "resolve-complete" =
@@ -103,18 +65,19 @@ let
     includes = [ ];
   };
 
-  # Non-effectful walk of raw includes tree. Collects aspectPaths from
-  # all named aspects (skips conditionals, bare functions without name).
-  # Used to back hasAspect guards.
-  collectRawPaths =
-    includes:
-    lib.concatMap (
-      child:
-      if builtins.isAttrs child && child ? name && !(child.meta.conditional or false) then
-        [ (aspectPath child) ] ++ collectRawPaths (child.includes or [ ])
-      else
-        [ ]
-    ) includes;
+  # Handler for get-path-set effect. Returns accumulated paths as a set.
+  pathSetHandler = {
+    "get-path-set" =
+      { param, state }:
+      let
+        paths = state.paths or [ ];
+        ps = toPathSet paths;
+      in
+      {
+        resume = ps;
+        inherit state;
+      };
+  };
 
   # Trace handler that accumulates structured entries for each resolved aspect.
   # Reads __ctxStage/__ctxKind from provider-tagged aspects (set by ctxApply),
@@ -233,7 +196,7 @@ in
     substituteAspect
     collectPathsHandler
     includeIf
-    collectRawPaths
+    pathSetHandler
     structuredTraceHandler
     tracingHandler
     ;

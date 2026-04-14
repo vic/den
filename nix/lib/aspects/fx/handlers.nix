@@ -159,6 +159,66 @@ let
       };
   };
 
+  # Adapter registry. Handles register-adapter and check-exclusion effects.
+  adapterRegistryHandler = {
+    "register-adapter" =
+      { param, state }:
+      {
+        resume = null;
+        state = state // {
+          adapterRegistry = (state.adapterRegistry or { }) // {
+            ${param.identity} = {
+              type = param.type;
+              replacement = param.replacement or null;
+              owner = param.owner or "<anon>";
+            };
+          };
+        };
+      };
+
+    "check-exclusion" =
+      { param, state }:
+      let
+        identity = param;
+        registry = state.adapterRegistry or { };
+      in
+      if registry ? ${identity} then
+        let
+          entry = registry.${identity};
+        in
+        if entry.type == "exclude" then
+          {
+            resume = {
+              action = "exclude";
+              owner = entry.owner;
+            };
+            inherit state;
+          }
+        else if entry.type == "substitute" then
+          {
+            resume = {
+              action = "substitute";
+              replacement = entry.replacement;
+              owner = entry.owner;
+            };
+            inherit state;
+          }
+        else
+          {
+            resume = {
+              action = "keep";
+            };
+            inherit state;
+          }
+      else
+        {
+          resume = {
+            action = "keep";
+          };
+          inherit state;
+        };
+  };
+
   # Accumulates class modules from provide-class effects.
   provideClassHandler = {
     "provide-class" =
@@ -186,6 +246,7 @@ in
     ctxProviderHandler
     ctxTraverseHandler
     ctxTraceHandler
+    adapterRegistryHandler
     provideClassHandler
     ;
 }

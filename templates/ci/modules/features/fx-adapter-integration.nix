@@ -17,18 +17,25 @@ let
       aspect-chain = [ ];
     }
     // fxLib.handlers.provideClassHandler
+    // fxLib.handlers.adapterRegistryHandler
+    // fxLib.adapters.pathSetHandler
     // {
       "resolve-include" =
         { param, state }:
         {
-          resume = [ param ];
+          resume = param;
           inherit state;
         };
       "resolve-complete" =
         { param, state }:
+        let
+          isExcluded = param.meta.excluded or false;
+        in
         {
           resume = param;
-          inherit state;
+          state = state // {
+            paths = (state.paths or [ ]) ++ (lib.optional (!isExcluded) (fxLib.adapters.aspectPath param));
+          };
         };
     };
 
@@ -47,6 +54,8 @@ let
       handlers = defaultHandlers fxLib { inherit ctx class; };
       state = {
         imports = [ ];
+        adapterRegistry = { };
+        paths = [ ];
       };
     } comp;
 in

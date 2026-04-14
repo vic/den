@@ -6,26 +6,25 @@
 }:
 let
   fx = inputs.nix-effects.lib;
-  passthroughHandlers = {
-    "resolve-include" =
-      { param, state }:
-      {
-        resume = [ param ];
-        inherit state;
-      };
-    "resolve-complete" =
-      { param, state }:
-      {
-        resume = param;
-        inherit state;
-      };
-    "provide-class" =
-      { param, state }:
-      {
-        resume = null;
-        inherit state;
-      };
-  };
+  mkPassthroughHandlers =
+    fxLib:
+    {
+      "resolve-include" =
+        { param, state }:
+        {
+          resume = param;
+          inherit state;
+        };
+      "provide-class" =
+        { param, state }:
+        {
+          resume = null;
+          inherit state;
+        };
+    }
+    // fxLib.handlers.adapterRegistryHandler
+    // fxLib.adapters.pathSetHandler
+    // fxLib.adapters.collectPathsHandler;
 in
 {
   flake.tests.fx-includeIf = {
@@ -56,8 +55,11 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = passthroughHandlers;
-          state = { };
+          handlers = mkPassthroughHandlers fxLib;
+          state = {
+            adapterRegistry = { };
+            paths = [ ];
+          };
         } comp;
       in
       {
@@ -89,8 +91,11 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = passthroughHandlers;
-          state = { };
+          handlers = mkPassthroughHandlers fxLib;
+          state = {
+            adapterRegistry = { };
+            paths = [ ];
+          };
         } comp;
       in
       {
@@ -135,8 +140,11 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = passthroughHandlers;
-          state = { };
+          handlers = mkPassthroughHandlers fxLib;
+          state = {
+            adapterRegistry = { };
+            paths = [ ];
+          };
         } comp;
         names = map (c: c.name) result.value.includes;
       in
@@ -177,8 +185,11 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = passthroughHandlers;
-          state = { };
+          handlers = mkPassthroughHandlers fxLib;
+          state = {
+            adapterRegistry = { };
+            paths = [ ];
+          };
         } comp;
       in
       {
@@ -229,8 +240,11 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = passthroughHandlers;
-          state = { };
+          handlers = mkPassthroughHandlers fxLib;
+          state = {
+            adapterRegistry = { };
+            paths = [ ];
+          };
         } comp;
         children = result.value.includes;
         names = map (c: c.name) children;

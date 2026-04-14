@@ -42,7 +42,7 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
@@ -55,6 +55,14 @@ in
               { param, state }:
               {
                 resume = null;
+                inherit state;
+              };
+            "check-exclusion" =
+              { param, state }:
+              {
+                resume = {
+                  action = "keep";
+                };
                 inherit state;
               };
           };
@@ -75,7 +83,7 @@ in
       }
     );
 
-    # Adapter: meta.adapter excludes a child via scoped rotate.
+    # Adapter: meta.adapter excludes a child via stateful registry.
     test-adapter-excludes-child = denTest (
       { den, ... }:
       let
@@ -124,7 +132,7 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
@@ -139,8 +147,11 @@ in
                 resume = null;
                 inherit state;
               };
+          }
+          // fxLib.handlers.adapterRegistryHandler;
+          state = {
+            adapterRegistry = { };
           };
-          state = { };
         } comp;
         children = result.value.includes;
       in
@@ -189,7 +200,7 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
@@ -199,6 +210,14 @@ in
                 state = state // {
                   names = (state.names or [ ]) ++ [ param.name ];
                 };
+              };
+            "check-exclusion" =
+              { param, state }:
+              {
+                resume = {
+                  action = "keep";
+                };
+                inherit state;
               };
           };
           state = {
@@ -258,7 +277,7 @@ in
               "resolve-include" =
                 { param, state }:
                 {
-                  resume = [ param ];
+                  resume = param;
                   inherit state;
                 };
               "resolve-complete" =
@@ -271,6 +290,14 @@ in
                 { param, state }:
                 {
                   resume = null;
+                  inherit state;
+                };
+              "check-exclusion" =
+                { param, state }:
+                {
+                  resume = {
+                    action = "keep";
+                  };
                   inherit state;
                 };
             };
@@ -319,7 +346,7 @@ in
               "resolve-include" =
                 { param, state }:
                 {
-                  resume = [ param ];
+                  resume = param;
                   inherit state;
                 };
               "resolve-complete" =
@@ -332,6 +359,14 @@ in
                 { param, state }:
                 {
                   resume = null;
+                  inherit state;
+                };
+              "check-exclusion" =
+                { param, state }:
+                {
+                  resume = {
+                    action = "keep";
+                  };
                   inherit state;
                 };
             };
@@ -408,7 +443,7 @@ in
             "resolve-include" =
               { param, state }:
               {
-                resume = [ param ];
+                resume = param;
                 inherit state;
               };
             "resolve-complete" =
@@ -419,9 +454,11 @@ in
                   excluded = (state.excluded or [ ]) ++ (lib.optional (param.meta.excluded or false) param.name);
                 };
               };
-          };
+          }
+          // fxLib.handlers.adapterRegistryHandler;
           state = {
             excluded = [ ];
+            adapterRegistry = { };
           };
         } comp;
       in
