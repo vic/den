@@ -1,3 +1,5 @@
+# Tests for den's wrapAspect — the aspect → computation translation.
+# Tests verify den's wrapper behavior, not the nix-effects API.
 {
   denTest,
   inputs,
@@ -10,117 +12,7 @@ in
 {
   flake.tests.fx-aspect = {
 
-    # bind.fn on a normal aspect sends effects for each declared arg.
-    test-normal-aspect-becomes-computation =
-      let
-        aspect =
-          { host, user }:
-          {
-            hostName = host;
-            userName = user;
-          };
-        comp = fx.bind.fn { } aspect;
-        result = fx.handle {
-          handlers = {
-            host =
-              { param, state }:
-              {
-                resume = "igloo";
-                inherit state;
-              };
-            user =
-              { param, state }:
-              {
-                resume = "tux";
-                inherit state;
-              };
-          };
-          state = { };
-        } comp;
-      in
-      {
-        expr = result.value;
-        expected = {
-          hostName = "igloo";
-          userName = "tux";
-        };
-      };
-
-    # Static aspect (plain attrset) wraps in fx.pure.
-    test-static-aspect-becomes-pure =
-      let
-        aspect = {
-          nixos.enable = true;
-        };
-        comp = fx.pure aspect;
-        result = fx.handle {
-          handlers = { };
-          state = { };
-        } comp;
-      in
-      {
-        expr = result.value;
-        expected = {
-          nixos.enable = true;
-        };
-      };
-
-    # Factory function (empty functionArgs) receives full context.
-    test-factory-receives-full-context =
-      let
-        factory = greeting: { message = greeting; };
-        result = fx.handle {
-          handlers = { };
-          state = { };
-        } (fx.pure (factory "hello"));
-      in
-      {
-        expr = result.value;
-        expected = {
-          message = "hello";
-        };
-      };
-
-    # Optional args: bind.fn sends with param=true for optional args.
-    test-optional-arg-handler-overrides-default =
-      let
-        aspect =
-          {
-            host,
-            user ? "default-user",
-          }:
-          {
-            hostName = host;
-            userName = user;
-          };
-        comp = fx.bind.fn { } aspect;
-        result = fx.handle {
-          handlers = {
-            host =
-              { param, state }:
-              {
-                resume = "igloo";
-                inherit state;
-              };
-            user =
-              { param, state }:
-              {
-                resume = "tux";
-                inherit state;
-              };
-          };
-          state = { };
-        } comp;
-      in
-      {
-        expr = result.value;
-        expected = {
-          hostName = "igloo";
-          userName = "tux";
-        };
-      };
-
-    # wrapAspect dispatches correctly for each case.
+    # wrapAspect dispatches normal aspects through bind.fn.
     test-wrapAspect-normal = denTest (
       { den, ... }:
       let
@@ -152,6 +44,7 @@ in
       }
     );
 
+    # wrapAspect wraps static attrsets in fx.pure.
     test-wrapAspect-static = denTest (
       { den, ... }:
       let
@@ -170,6 +63,7 @@ in
       }
     );
 
+    # wrapAspect passes full context to factory functions (empty functionArgs).
     test-wrapAspect-factory = denTest (
       { den, ... }:
       let
