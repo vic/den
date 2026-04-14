@@ -18,22 +18,7 @@ let
        den.default.includes = [ den._.user-packages [ "hello" ]) ]
   '';
 
-  userPackages =
-    getPkgs: user:
-    let
-      nixos = { pkgs, ... }: {
-        users.users.${user.userName}.packages = getPkgs pkgs;
-      };
-      darwin = nixos;
-      homeManager = { pkgs, ... }: {
-        home.packages = getPkgs pkgs;
-      };
-    in
-    {
-      inherit nixos darwin homeManager;
-    };
-  
-  systemPackages =
+  hostPackages =
     getPkgs:
     let
       nixos = { pkgs, ... }: {
@@ -45,15 +30,42 @@ let
       inherit nixos darwin;
     };
 
+  userPackages =
+    getPkgs: user:
+    let
+      nixos = { pkgs, ... }: {
+        users.users.${user.userName}.packages = getPkgs pkgs;
+      };
+      darwin = nixos;
+    in
+    {
+      inherit nixos darwin;
+    };
+
+  homePackages =
+    getPkgs:
+    let
+      homeManager = { pkgs, ... }: {
+        home.packages = getPkgs pkgs;
+      };
+    in
+    {
+      inherit homeManager;
+    };
+
+  to-host = getPkgs: ({ host }: hostPackages getPkgs);
+  to-user = getPkgs: ({ user }: userPackages getPkgs user);
+  to-home = getPkgs: ({ home }: homePackages getPkgs);
+
 in
 {
   den.provides.pkgs =
     getPkgs: den.lib.parametric {
       inherit description;
       includes = [
-        ({ host }: systemPackages getPkgs)
-        ({ user }: userPackages getPkgs user)
-        ({ home }: userPackages getPkgs home)
+        (den.lib.perHost (to-host getPkgs))
+        (den.lib.perUser (to-user getPkgs))
+        (den.lib.perHome (to-home getPkgs))
       ];
     };
 }
