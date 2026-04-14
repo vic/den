@@ -51,6 +51,12 @@ in
                 resume = param;
                 inherit state;
               };
+            "provide-class" =
+              { param, state }:
+              {
+                resume = null;
+                inherit state;
+              };
           };
           state = { };
         } comp;
@@ -125,6 +131,12 @@ in
               { param, state }:
               {
                 resume = param;
+                inherit state;
+              };
+            "provide-class" =
+              { param, state }:
+              {
+                resume = null;
                 inherit state;
               };
           };
@@ -238,7 +250,10 @@ in
         result = fx.handle {
           handlers =
             fxLib.handlers.parametricHandler { host = "igloo"; }
-            // fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; }
+            // fxLib.handlers.staticHandler {
+              class = "nixos";
+              aspect-chain = [ ];
+            }
             // {
               "resolve-include" =
                 { param, state }:
@@ -250,6 +265,12 @@ in
                 { param, state }:
                 {
                   resume = param;
+                  inherit state;
+                };
+              "provide-class" =
+                { param, state }:
+                {
+                  resume = null;
                   inherit state;
                 };
             };
@@ -290,7 +311,10 @@ in
         result = fx.handle {
           handlers =
             fxLib.handlers.parametricHandler { host = "igloo"; }
-            // fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; }
+            // fxLib.handlers.staticHandler {
+              class = "nixos";
+              aspect-chain = [ ];
+            }
             // {
               "resolve-include" =
                 { param, state }:
@@ -302,6 +326,12 @@ in
                 { param, state }:
                 {
                   resume = param;
+                  inherit state;
+                };
+              "provide-class" =
+                { param, state }:
+                {
+                  resume = null;
                   inherit state;
                 };
             };

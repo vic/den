@@ -273,8 +273,8 @@ in
       }
     );
 
-    # tracingHandler collects entries + paths (but not imports) via resolve-complete.
-    # composeHandlers chains it with moduleHandler for imports.
+    # tracingHandler collects entries + paths via resolve-complete.
+    # provideClassHandler collects imports via provide-class effects.
     test-tracingHandler-collects-entries-and-paths = denTest (
       { den, ... }:
       let

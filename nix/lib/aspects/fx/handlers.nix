@@ -159,6 +159,22 @@ let
       };
   };
 
+  # Accumulates class modules from provide-class effects.
+  provideClassHandler = {
+    "provide-class" =
+      { param, state }:
+      let
+        identity = param.identity or "<anon>";
+        mod = lib.setDefaultModuleLocation "${param.class}@${identity}" param.module;
+      in
+      {
+        resume = null;
+        state = state // {
+          imports = (state.imports or [ ]) ++ [ mod ];
+        };
+      };
+  };
+
 in
 {
   inherit
@@ -170,5 +186,6 @@ in
     ctxProviderHandler
     ctxTraverseHandler
     ctxTraceHandler
+    provideClassHandler
     ;
 }

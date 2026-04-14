@@ -185,7 +185,7 @@ in
       }
     );
 
-    test-moduleHandler-collects-imports = denTest (
+    test-provideClassHandler-collects-imports = denTest (
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
@@ -221,8 +221,14 @@ in
                 resume = [ param ];
                 inherit state;
               };
+            "resolve-complete" =
+              { param, state }:
+              {
+                resume = param;
+                inherit state;
+              };
           }
-          // (fxLib.adapters.moduleHandler "nixos");
+          // fxLib.handlers.provideClassHandler;
           state = {
             imports = [ ];
           };
@@ -292,7 +298,7 @@ in
       }
     );
 
-    test-moduleHandler-skips-tombstones = denTest (
+    test-provideClassHandler-skips-tombstones = denTest (
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
@@ -343,8 +349,14 @@ in
                 resume = [ param ];
                 inherit state;
               };
+            "resolve-complete" =
+              { param, state }:
+              {
+                resume = param;
+                inherit state;
+              };
           }
-          // (fxLib.adapters.moduleHandler "nixos");
+          // fxLib.handlers.provideClassHandler;
           state = {
             imports = [ ];
           };

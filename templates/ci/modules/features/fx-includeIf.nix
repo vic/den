@@ -19,6 +19,12 @@ let
         resume = param;
         inherit state;
       };
+    "provide-class" =
+      { param, state }:
+      {
+        resume = null;
+        inherit state;
+      };
   };
 in
 {

@@ -106,8 +106,10 @@ in
           aspect-chain = [ ];
         } factoryResult;
         result = fx.handle {
-          handlers =
-            fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; };
+          handlers = fxLib.handlers.staticHandler {
+            class = "nixos";
+            aspect-chain = [ ];
+          };
           state = { };
         } comp;
       in

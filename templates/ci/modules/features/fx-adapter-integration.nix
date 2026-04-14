@@ -16,6 +16,7 @@ let
       inherit class;
       aspect-chain = [ ];
     }
+    // fxLib.handlers.provideClassHandler
     // {
       "resolve-include" =
         { param, state }:
@@ -23,8 +24,13 @@ let
           resume = [ param ];
           inherit state;
         };
-    }
-    // (fxLib.adapters.moduleHandler class);
+      "resolve-complete" =
+        { param, state }:
+        {
+          resume = param;
+          inherit state;
+        };
+    };
 
   runPipeline =
     fxLib:
@@ -81,7 +87,7 @@ in
       in
       {
         expr = builtins.length result.state.imports;
-        expected = 2;
+        expected = 3; # root + child1 + child2 (provide-class fires for each)
       }
     );
 

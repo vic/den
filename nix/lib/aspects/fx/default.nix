@@ -37,6 +37,7 @@
         ctxProviderHandler
         ctxTraverseHandler
         ctxTraceHandler
+        provideClassHandler
         ;
       inherit (resolve)
         resolveOne

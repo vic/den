@@ -159,6 +159,16 @@ let
           (
             resolved:
             let
+              hasClassConfig = resolved ? ${class} && !(resolved.meta.excluded or false);
+              identity = adapters.pathKey (adapters.aspectPath resolved);
+              classEmit =
+                if hasClassConfig then
+                  fx.bind (fx.send "provide-class" {
+                    inherit class identity;
+                    module = resolved.${class};
+                  }) (_: fx.pure null)
+                else
+                  fx.pure null;
               metaAdapter = resolved.meta.adapter or null;
               # Propagate ctx stage tags to children that don't have their own.
               # This ensures nested aspects inherit the context stage from their
@@ -195,8 +205,11 @@ let
                 rawName != "<anon>" && rawName != "<function body>" && !(lib.hasPrefix "[definition " rawName);
               selfPath = if isMeaningful then rawSelfPath else parentPath;
             in
-            resolveChildren selfPath metaAdapter includes (
-              resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
+            fx.bind classEmit (
+              _:
+              resolveChildren selfPath metaAdapter includes (
+                resolvedIncludes: fx.pure (resolved // { includes = resolvedIncludes; })
+              )
             )
           );
 
@@ -335,6 +348,7 @@ let
     // handlers.ctxTraverseHandler
     // handlers.ctxSeenHandler
     // handlers.ctxProviderHandler
+    // handlers.provideClassHandler
     // {
       "resolve-include" =
         { param, state }:
@@ -342,8 +356,13 @@ let
           resume = [ param ];
           inherit state;
         };
-    }
-    // (adapters.moduleHandler class);
+      "resolve-complete" =
+        { param, state }:
+        {
+          resume = param;
+          inherit state;
+        };
+    };
 
   defaultState = {
     seen = { };

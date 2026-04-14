@@ -79,26 +79,6 @@ let
           };
     };
 
-  moduleHandler = class: {
-    "resolve-complete" =
-      { param, state }:
-      let
-        mods =
-          if param ? ${class} && !(param.meta.excluded or false) then
-            [
-              (lib.setDefaultModuleLocation "${class}@${param.name or "<anon>"}" param.${class})
-            ]
-          else
-            [ ];
-      in
-      {
-        resume = param;
-        state = state // {
-          imports = (state.imports or [ ]) ++ mods;
-        };
-      };
-  };
-
   collectPathsHandler = {
     "resolve-complete" =
       { param, state }:
@@ -169,8 +149,8 @@ let
   };
 
   # Combined resolve-complete handler for tracing: collects trace entries and paths.
-  # Designed to compose with moduleHandler via composeHandlers — does NOT collect
-  # modules (moduleHandler handles that). Use as extraHandlers with mkPipeline.
+  # Module collection is handled by provideClassHandler via provide-class effects.
+  # Use as extraHandlers with mkPipeline.
   #
   # Disambiguates anonymous entries using context stage tags, matching the
   # legacy structuredTrace adapter's naming: stage/kind(aspect):provider.
@@ -251,7 +231,6 @@ in
     tombstone
     excludeAspect
     substituteAspect
-    moduleHandler
     collectPathsHandler
     includeIf
     collectRawPaths

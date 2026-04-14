@@ -39,8 +39,14 @@ in
         } aspect;
         result = fx.handle {
           handlers =
-            fxLib.handlers.parametricHandler { host = "h"; user = "u"; }
-            // fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; };
+            fxLib.handlers.parametricHandler {
+              host = "h";
+              user = "u";
+            }
+            // fxLib.handlers.staticHandler {
+              class = "nixos";
+              aspect-chain = [ ];
+            };
           state = { };
         } comp;
       in
@@ -77,8 +83,10 @@ in
               includes = [ ];
             };
         result = fx.handle {
-          handlers =
-            fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; };
+          handlers = fxLib.handlers.staticHandler {
+            class = "nixos";
+            aspect-chain = [ ];
+          };
           state = { };
         } comp;
       in
