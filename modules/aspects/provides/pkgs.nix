@@ -57,8 +57,7 @@ let
   to-user = getPkgs: ({ host, user }: userPackages getPkgs user);
   to-home = getPkgs: ({ home }: homePackages getPkgs);
 
-  __functor = getPkgs:
-    {
+  __functor = _self: getPkgs: {
       inherit description;
       includes = [
         (den.lib.perHost (to-host getPkgs))
