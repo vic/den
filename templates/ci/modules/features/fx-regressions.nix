@@ -100,14 +100,19 @@ in
           };
           includes = [ ];
         };
-        result = fxLib.resolve.resolveOne {
+        comp = fxLib.resolve.resolveOne {
           ctx = { };
           class = "nixos";
           aspect-chain = [ ];
         } factoryResult;
+        result = fx.handle {
+          handlers =
+            fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; };
+          state = { };
+        } comp;
       in
       {
-        expr = result.nixos.users.users.tux.description;
+        expr = result.value.nixos.users.users.tux.description;
         expected = "hello";
       }
     );

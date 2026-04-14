@@ -29,7 +29,7 @@ in
           };
           includes = [ ];
         };
-        result = fxLib.resolve.resolveOne {
+        comp = fxLib.resolve.resolveOne {
           ctx = {
             host = "h";
             user = "u";
@@ -37,11 +37,17 @@ in
           class = "nixos";
           aspect-chain = [ ];
         } aspect;
+        result = fx.handle {
+          handlers =
+            fxLib.handlers.parametricHandler { host = "h"; user = "u"; }
+            // fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; };
+          state = { };
+        } comp;
       in
       {
         expr = {
-          p = result.meta.isParametric;
-          args = result.meta.fnArgNames;
+          p = result.value.meta.isParametric;
+          args = result.value.meta.fnArgNames;
         };
         expected = {
           p = true;
@@ -57,7 +63,7 @@ in
       { den, ... }:
       let
         fxLib = den.lib.aspects.fx.init fx;
-        result =
+        comp =
           fxLib.resolve.resolveOne
             {
               ctx = { };
@@ -70,9 +76,14 @@ in
               nixos = { };
               includes = [ ];
             };
+        result = fx.handle {
+          handlers =
+            fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; };
+          state = { };
+        } comp;
       in
       {
-        expr = result.meta ? isParametric;
+        expr = result.value.meta ? isParametric;
         expected = false;
       }
     );

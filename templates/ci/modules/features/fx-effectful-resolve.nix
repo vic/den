@@ -236,20 +236,23 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = {
-            "resolve-include" =
-              { param, state }:
-              {
-                resume = [ param ];
-                inherit state;
-              };
-            "resolve-complete" =
-              { param, state }:
-              {
-                resume = param;
-                inherit state;
-              };
-          };
+          handlers =
+            fxLib.handlers.parametricHandler { host = "igloo"; }
+            // fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; }
+            // {
+              "resolve-include" =
+                { param, state }:
+                {
+                  resume = [ param ];
+                  inherit state;
+                };
+              "resolve-complete" =
+                { param, state }:
+                {
+                  resume = param;
+                  inherit state;
+                };
+            };
           state = { };
         } comp;
         child = builtins.head result.value.includes;
@@ -285,20 +288,23 @@ in
           aspect-chain = [ ];
         } parent;
         result = fx.handle {
-          handlers = {
-            "resolve-include" =
-              { param, state }:
-              {
-                resume = [ param ];
-                inherit state;
-              };
-            "resolve-complete" =
-              { param, state }:
-              {
-                resume = param;
-                inherit state;
-              };
-          };
+          handlers =
+            fxLib.handlers.parametricHandler { host = "igloo"; }
+            // fxLib.handlers.staticHandler { class = "nixos"; aspect-chain = [ ]; }
+            // {
+              "resolve-include" =
+                { param, state }:
+                {
+                  resume = [ param ];
+                  inherit state;
+                };
+              "resolve-complete" =
+                { param, state }:
+                {
+                  resume = param;
+                  inherit state;
+                };
+            };
           state = { };
         } comp;
         child = builtins.head result.value.includes;

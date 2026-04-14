@@ -28,13 +28,13 @@ let
       comp = fxLib.resolve.resolveDeepEffectful {
         ctx = { };
         inherit class;
-        aspect-chain = [ ];
+        aspect-chain = [ resolved ];
       } resolved;
       result = nxFx.handle {
         handlers = fxLib.resolve.defaultHandlers {
           inherit class;
           ctx = { };
-        };
+        } // fxLib.handlers.staticHandler { inherit class; aspect-chain = [ resolved ]; };
         state = fxLib.resolve.defaultState;
       } comp;
     in
