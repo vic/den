@@ -38,7 +38,8 @@ let
   substituteAspect = ref: replacement: {
     type = "substitute";
     identity = pathKey (aspectPath ref);
-    inherit replacement;
+    replacementName = replacement.name or "<anon>";
+    getReplacement = _: replacement;
   };
 
   # Predicate-based filter. Excludes aspects where pred returns false.
@@ -201,6 +202,7 @@ in
     tombstone
     excludeAspect
     substituteAspect
+    filterAspect
     collectPathsHandler
     includeIf
     pathSetHandler

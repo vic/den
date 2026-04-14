@@ -107,7 +107,16 @@ let
               config.self = config;
               options.adapter = lib.mkOption {
                 description = "Adapter to compose into resolution for this aspect's subtree";
-                type = lib.types.nullOr (lastFunctionTo lib.types.raw);
+                # Accepts legacy function adapters, v2 attrset records, or lists.
+                # Uses a functor-free custom type to avoid nullOr(raw) warnings.
+                type = lib.types.nullOr (
+                  lib.types.mkOptionType {
+                    name = "adapterValue";
+                    description = "function adapter, attrset record, or list of records";
+                    check = v: lib.isFunction v || builtins.isAttrs v || builtins.isList v;
+                    merge = _: defs: (lib.last defs).value;
+                  }
+                );
                 default = null;
               };
               options.provider = lib.mkOption {

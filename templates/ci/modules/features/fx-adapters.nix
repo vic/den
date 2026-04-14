@@ -57,7 +57,7 @@ in
         expr = {
           type = decl.type;
           identity = decl.identity;
-          replacementName = decl.replacement.name;
+          replacementName = decl.replacementName;
         };
         expected = {
           type = "substitute";

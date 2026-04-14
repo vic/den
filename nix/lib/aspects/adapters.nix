@@ -105,7 +105,10 @@ let
     inner:
     args@{ aspect, resolveChild, ... }:
     let
-      metaAdapter = aspect.meta.adapter or null;
+      rawAdapter = aspect.meta.adapter or null;
+      # Only process function adapters (legacy). v2 attrset/list records
+      # are handled by the fx pipeline and silently skipped here.
+      metaAdapter = if rawAdapter != null && lib.isFunction rawAdapter then rawAdapter else null;
       ownerName = aspect.meta.adapterOwner or (pathKey (aspectPath aspect));
     in
     if metaAdapter != null && aspect ? includes then
@@ -237,6 +240,88 @@ let
       );
   };
 
+  # Structured trace producing flat entry lists with rich metadata.
+  # Each entry carries name, class, parent path, provider chain,
+  # exclusion info, parametric detection, and context stage tags.
+  # Returns { trace = [entries]; paths = [aspectPaths]; }.
+  structuredTrace = filterIncludes (
+    {
+      aspect,
+      recurse,
+      class,
+      classModule,
+      aspect-chain,
+      ...
+    }:
+    let
+      meaningful =
+        name: name != "<anon>" && name != "<function body>" && !(lib.hasPrefix "[definition " name);
+      rawName = aspect.meta.originalName or aspect.name or "<anon>";
+      depth = builtins.length aspect-chain;
+      provPath = lib.concatStringsSep "/" (aspect.meta.provider or [ ]);
+      ctxStages' = builtins.filter (a: builtins.isAttrs a && a ? __ctxStage) aspect-chain;
+      nearestCtx = if ctxStages' == [ ] then null else lib.last ctxStages';
+      ctxKind' = if nearestCtx != null then nearestCtx.__ctxKind or null else null;
+      ctxStage' = if nearestCtx != null then nearestCtx.__ctxStage or null else null;
+      ctxAspect' = if nearestCtx != null then nearestCtx.__ctxAspect or null else null;
+      name =
+        if rawName == "<anon>" || rawName == "<function body>" || lib.hasPrefix "[definition " rawName then
+          let
+            stage = if ctxStage' != null then ctxStage' else "d${toString depth}";
+            kind = if ctxKind' != null then ctxKind' else "resolve";
+            aspectTag = if ctxAspect' != null then "(${ctxAspect'})" else "";
+            provTag = lib.optionalString (provPath != "") ":${provPath}";
+          in
+          "${stage}/${kind}${aspectTag}${provTag}"
+        else
+          rawName;
+      selfFullPath = if provPath != "" then "${provPath}/${name}" else name;
+      chainBareName = a: a.meta.originalName or a.name or "<anon>";
+      chainFullPath =
+        a:
+        let
+          bare = chainBareName a;
+          prov = a.meta.provider or [ ];
+        in
+        if prov != [ ] then lib.concatStringsSep "/" (prov ++ [ bare ]) else bare;
+      parentPaths = builtins.filter (
+        fp: fp != selfFullPath && meaningful (lib.last (lib.splitString "/" fp))
+      ) (builtins.map chainFullPath aspect-chain);
+      chainLen = builtins.length aspect-chain;
+      rawProvided = if chainLen >= 2 then builtins.elemAt aspect-chain (chainLen - 2) else null;
+      rawFnArgs =
+        if
+          rawProvided != null
+          && (builtins.isFunction rawProvided || (builtins.isAttrs rawProvided && rawProvided ? __functor))
+        then
+          lib.functionArgs rawProvided
+        else
+          { };
+      entry = {
+        inherit name class;
+        isParametric = rawFnArgs != { };
+        fnArgNames = builtins.attrNames rawFnArgs;
+        hasClass = classModule != [ ];
+        parent = if parentPaths == [ ] then null else lib.last parentPaths;
+        provider = aspect.meta.provider or [ ];
+        excluded = aspect.meta.excluded or false;
+        excludedFrom = aspect.meta.excludedFrom or null;
+        replacedBy = aspect.meta.replacedBy or null;
+        isProvider = (aspect.meta.provider or [ ]) != [ ];
+        hasAdapter = aspect.meta.adapter or null != null;
+        ctxStage = if nearestCtx != null then nearestCtx.__ctxStage else null;
+        ctxKind = if nearestCtx != null then nearestCtx.__ctxKind else null;
+      };
+      childResults = builtins.map recurse (aspect.includes or [ ]);
+      childTraces = lib.concatMap (r: r.trace or [ ]) childResults;
+      childPaths = lib.concatMap (r: r.paths or [ ]) childResults;
+    in
+    {
+      trace = [ entry ] ++ childTraces;
+      paths = collectSelfPath aspect ++ childPaths;
+    }
+  );
+
 in
 {
   inherit
@@ -253,6 +338,7 @@ in
     module
     oneOfAspects
     pathKey
+    structuredTrace
     substituteAspect
     toPathSet
     tombstone

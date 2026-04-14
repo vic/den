@@ -194,7 +194,7 @@ let
             adapterRegistry = (state.adapterRegistry or { }) // {
               ${param.identity} = {
                 type = param.type;
-                replacement = param.replacement or null;
+                getReplacement = param.getReplacement or (_: null);
                 owner = param.owner or "<anon>";
               };
             };
@@ -229,7 +229,7 @@ let
           {
             resume = {
               action = "substitute";
-              replacement = entry.replacement;
+              replacement = entry.getReplacement null;
               owner = entry.owner;
             };
             inherit state;
