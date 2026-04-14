@@ -63,9 +63,9 @@ in
     getPkgs: den.lib.parametric {
       inherit description;
       includes = [
-        (den.lib.perHost (to-host getPkgs))
-        (den.lib.perUser (to-user getPkgs))
-        (den.lib.perHome (to-home getPkgs))
+        (to-host getPkgs)
+        (to-user getPkgs)
+        (to-home getPkgs)
       ];
     };
 }
