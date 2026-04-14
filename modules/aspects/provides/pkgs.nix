@@ -54,7 +54,7 @@ let
     };
 
   to-host = getPkgs: ({ host }: hostPackages getPkgs);
-  to-user = getPkgs: ({ user }: userPackages getPkgs user);
+  to-user = getPkgs: ({ host, user }: userPackages getPkgs user);
   to-home = getPkgs: ({ home }: homePackages getPkgs);
 
 in
