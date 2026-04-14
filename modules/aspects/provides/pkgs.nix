@@ -53,22 +53,21 @@ let
       inherit homeManager;
     };
 
-  to-host = getPkgs: ({ host }: hostPackages getPkgs);
-  to-user = getPkgs: ({ host, user }: userPackages getPkgs user);
-  to-home = getPkgs: ({ home }: homePackages getPkgs);
+  to-host = getPkgs: den.lib.perHost ({ host }: hostPackages getPkgs);
+  to-user = getPkgs: den.lib.perUser ({ host, user }: userPackages getPkgs user);
+  to-home = getPkgs: den.lib.perHome ({ home }: homePackages getPkgs);
 
   __functor = _self: getPkgs: {
-      inherit description;
       includes = [
-        (den.lib.perHost (to-host getPkgs))
-        (den.lib.perUser (to-user getPkgs))
-        (den.lib.perHome (to-home getPkgs))
+        (to-host getPkgs)
+        (to-user getPkgs)
+        (to-home getPkgs)
       ];
     };
 
 in
 {
   den.provides.pkgs = {
-    inherit __functor to-host to-user to-home;
+    inherit description __functor to-host to-user to-home;
   };
 }
