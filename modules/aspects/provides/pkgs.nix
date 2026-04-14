@@ -68,5 +68,7 @@ let
 
 in
 {
-  den.provides.pkgs = { inherit __functor; };
+  den.provides.pkgs = {
+    inherit __functor to-host to-user to-home;
+  };
 }
