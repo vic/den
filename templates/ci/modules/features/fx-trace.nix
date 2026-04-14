@@ -351,7 +351,8 @@ in
           handlers =
             fxLib.handlers.ctxTraceHandler
             // fxLib.handlers.ctxSeenHandler
-            // fxLib.handlers.ctxProviderHandler;
+            // fxLib.handlers.ctxProviderHandler
+            // fxLib.handlers.ctxEmitHandler;
           state = {
             seen = { };
             ctxTrace = [ ];

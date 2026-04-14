@@ -360,6 +360,7 @@ let
     // handlers.ctxTraverseHandler
     // handlers.ctxSeenHandler
     // handlers.ctxProviderHandler
+    // handlers.ctxEmitHandler
     // handlers.provideClassHandler
     // handlers.adapterRegistryHandler
     // adapters.pathSetHandler

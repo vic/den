@@ -197,11 +197,47 @@ let
                       else
                         null;
                   in
-                  fx.pure (
-                    [ mainAspect ]
-                    ++ lib.optional (selfProvResult != null) selfProvResult
-                    ++ lib.optional (crossProvResult != null) crossProvResult
-                  )
+                  # Bind main aspect, self-provider, and cross-provider as
+                  # sequential computations. Each is emitted via ctx-provide
+                  # so the handler can track/filter provider contributions.
+                  fx.bind
+                    (fx.send "ctx-emit" {
+                      kind = "main";
+                      aspect = mainAspect;
+                      inherit key;
+                    })
+                    (
+                      main:
+                      fx.bind
+                        (
+                          if selfProvResult != null then
+                            fx.send "ctx-emit" {
+                              kind = "self";
+                              aspect = selfProvResult;
+                              inherit key;
+                            }
+                          else
+                            fx.pure null
+                        )
+                        (
+                          selfR:
+                          fx.bind
+                            (
+                              if crossProvResult != null then
+                                fx.send "ctx-emit" {
+                                  kind = "cross";
+                                  aspect = crossProvResult;
+                                  inherit key;
+                                }
+                              else
+                                fx.pure null
+                            )
+                            (
+                              crossR:
+                              fx.pure ([ main ] ++ lib.optional (selfR != null) selfR ++ lib.optional (crossR != null) crossR)
+                            )
+                        )
+                    )
                 )
             )
         );

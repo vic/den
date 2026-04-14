@@ -159,6 +159,17 @@ let
       };
   };
 
+  # Default ctx-provide handler: pass aspect through.
+  # Tracing handlers can intercept to track provider contributions.
+  ctxEmitHandler = {
+    "ctx-emit" =
+      { param, state }:
+      {
+        resume = param.aspect;
+        inherit state;
+      };
+  };
+
   # Adapter registry. Handles register-adapter and check-exclusion effects.
   adapterRegistryHandler = {
     "register-adapter" =
@@ -246,6 +257,7 @@ in
     ctxProviderHandler
     ctxTraverseHandler
     ctxTraceHandler
+    ctxEmitHandler
     adapterRegistryHandler
     provideClassHandler
     ;

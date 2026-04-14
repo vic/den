@@ -57,6 +57,12 @@ let
           resume = null;
           inherit state;
         };
+    "ctx-emit" =
+      { param, state }:
+      {
+        resume = param.aspect;
+        inherit state;
+      };
   };
 in
 {
