@@ -16,7 +16,7 @@ let
   '';
   
   systemPackages =
-    getPkgs: user:
+    getPkgs:
     let
       nixos = { pkgs, ... }: {
         environment.systemPackages = getPkgs pkgs;
