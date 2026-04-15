@@ -12,13 +12,28 @@
         ...
       }:
       {
-        den.hosts.aarch64-darwin.apple.users.tux = { };
+        den.hosts.aarch64-darwin.apple = {
+          users.tux =
+            { config, ... }:
+            {
+              # Added custom submodule per instructions at
+              # https://den.oeiuwq.com/v0.16.0/guides/configure-aspects/#aspect-custom-submodule
 
-        # do something for testing
-        den.aspects.tux.user.description = "The Penguin";
+              imports = [
+                {
+                  options.categories = lib.mkOption {
+                    type = with lib.types; attrsOf str;
+                    default = {
+                      programs = "programs";
+                    };
+                  };
+                }
+              ];
+            };
+        };
 
-        expr = apple.users.users.tux.description;
-        expected = "The Penguin";
+        expr = apple.users.users.tux.categories.programs;
+        expected = "programs";
       }
     );
 
