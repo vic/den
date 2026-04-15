@@ -6,18 +6,18 @@
       {
         den,
         lib,
-        igloo, # igloo = nixosConfigurations.igloo.config
+        # igloo, # igloo = nixosConfigurations.igloo.config
+        apple,
         tuxHm, # tuxHm = igloo.home-manager.users.tux
         ...
       }:
       {
-        # replace <system> if you are reporting a bug in MacOS
-        den.hosts.x86_64-linux.igloo.users.tux = { };
+        den.hosts.aarch64-darwin.apple.users.tux = { };
 
         # do something for testing
         den.aspects.tux.user.description = "The Penguin";
 
-        expr = igloo.users.users.tux.description;
+        expr = apple.users.users.tux.description;
         expected = "The Penguin";
       }
     );
