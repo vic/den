@@ -20,7 +20,7 @@
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
-        den.default.includes = [ den._.hostname ];
+        den.default.includes = [ den.provides.hostname ];
 
         expr = igloo.networking.hostName;
         expected = "igloo";
@@ -56,8 +56,8 @@
       { den, igloo, ... }:
       {
         den.hosts.x86_64-linux.igloo.users.tux.userName = "penguin";
-        den.aspects.igloo._.to-users.includes = [ den._.define-user ];
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.aspects.igloo.provides.to-users.includes = [ den.provides.define-user ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
 
         expr = igloo.users.users.penguin.isNormalUser;
         expected = true;

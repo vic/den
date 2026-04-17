@@ -31,7 +31,7 @@ let
 
   fwd =
     { user, host }:
-    den._.forward {
+    den.provides.forward {
       each = lib.singleton user;
       fromClass = _: "user";
       intoClass = _: host.class;

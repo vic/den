@@ -83,9 +83,13 @@ let
       isFirst = !(item.seen ? ${item.key});
       selfProvider = item.self.provides.${item.self.name} or noop;
       crossProvider = getCrossProvider item;
+      # Strip into — ctxApply already processed it. Leaving it on would cause
+      # aspectToEffect to re-attach it after parametric resolution, attempting
+      # to call the function without the original context args.
+      stripped = builtins.removeAttrs item.self [ "into" ];
     in
     [
-      (if isFirst then parametric.fixedTo item.ctx item.self else parametric.atLeast item.self item.ctx)
+      (if isFirst then parametric.fixedTo item.ctx stripped else parametric.atLeast stripped item.ctx)
       (selfProvider item.ctx)
       (crossProvider item.ctx)
     ];

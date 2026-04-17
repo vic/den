@@ -11,6 +11,7 @@
         inherit (den.lib.aspects) hasAspectIn;
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
 
@@ -29,6 +30,7 @@
         inherit (den.lib.aspects) hasAspectIn;
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
         den.aspects.other.nixos = { };
@@ -48,6 +50,7 @@
         inherit (den.lib.aspects) hasAspectIn adapters;
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.includes = [
           den.aspects.keep
           den.aspects.drop
@@ -85,8 +88,9 @@
         };
       in
       {
-        den.aspects.root.includes = [ den.aspects.foo._.bar ];
-        den.aspects.foo._.bar.nixos = { };
+        den.fxPipeline = false;
+        den.aspects.root.includes = [ den.aspects.foo.provides.bar ];
+        den.aspects.foo.provides.bar.nixos = { };
 
         expr = {
           hasRoot = s ? "root";
@@ -112,6 +116,7 @@
         };
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
 
@@ -145,6 +150,7 @@
         };
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.nixos = { };
         den.aspects.unrelated.nixos = { };
 
@@ -164,6 +170,7 @@
         };
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
 
@@ -184,6 +191,7 @@
         });
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.nixos = { };
 
         # tryEval returns { success = false; value = false; } on throw
@@ -206,6 +214,7 @@
         });
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.nixos = { };
 
         expr = result.success;
@@ -224,6 +233,7 @@
         inherit (den.lib.aspects) adapters;
       in
       {
+        den.fxPipeline = false;
         den.aspects.myFactory = arg: {
           nixos.environment.variables.FACTORY_ARG = arg;
         };

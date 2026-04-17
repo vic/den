@@ -77,14 +77,14 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
 
         den.aspects.igloo.nixos.options.funny = lib.mkOption {
           default = [ ];
           type = lib.types.listOf lib.types.str;
         };
 
-        den.aspects.igloo._.to-users.includes = [
+        den.aspects.igloo.provides.to-users.includes = [
           (den.lib.perHost { nixos.funny = [ (throw "atHost perHost static") ]; })
           (den.lib.perHost (
             { host }:
@@ -139,7 +139,7 @@
       }:
       {
         den.homes.x86_64-linux.tux = { };
-        den.default.includes = [ den._.define-user ];
+        den.default.includes = [ den.provides.define-user ];
 
         den.aspects.tux.homeManager.options.funny = lib.mkOption {
           default = [ ];

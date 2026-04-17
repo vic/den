@@ -1,3 +1,6 @@
+# Legacy resolve pipeline — explicit recursive tree walking.
+# The fx pipeline (aspectToEffect + emit-include handler) replaces this.
+# Active when den.fxPipeline = false.
 { lib, den, ... }:
 let
 

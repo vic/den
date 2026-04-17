@@ -41,7 +41,7 @@ let
   fwd =
     host:
     { class, aspect-chain }:
-    den._.forward {
+    den.provides.forward {
       each = lib.singleton true;
       fromClass = _: "wsl";
       intoClass = _: host.class;

@@ -27,7 +27,7 @@
             programs.emacs.enable = osConfig.programs.vim.enable;
           };
 
-        den.aspects.pingu.includes = [ den._.define-user ];
+        den.aspects.pingu.includes = [ den.provides.define-user ];
 
         expr = config.flake.homeConfigurations.pingu.config.programs.emacs.enable;
         expected = true;

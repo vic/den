@@ -1,3 +1,6 @@
+# Legacy pipeline only — wraps aspects with { class, aspect-chain } functors.
+# The fx pipeline uses aspectToEffect + constantHandler instead.
+# Remove when the legacy pipeline is removed.
 { lib, den, ... }:
 let
   owned = (lib.flip builtins.removeAttrs) [

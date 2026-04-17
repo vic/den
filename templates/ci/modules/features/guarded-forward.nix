@@ -31,7 +31,7 @@ in
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "imper";
             intoClass = _: "nixos";
@@ -63,7 +63,7 @@ in
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "imper";
             intoClass = _: "nixos";
@@ -110,7 +110,7 @@ in
 
             vimer-home =
               { class, aspect-chain }:
-              den._.forward {
+              den.provides.forward {
                 each = lib.singleton true;
                 fromAspect = _: lib.head aspect-chain;
                 fromClass = _: "home-pingu";

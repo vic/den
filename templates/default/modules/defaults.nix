@@ -7,7 +7,7 @@
   den.schema.user.classes = lib.mkDefault [ "homeManager" ];
 
   # host<->user provides
-  den.ctx.user.includes = [ den._.mutual-provider ];
+  den.ctx.user.includes = [ den.provides.mutual-provider ];
 
   # User TODO: REMOVE THIS
   den.aspects.tux.nixos = {

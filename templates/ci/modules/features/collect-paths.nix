@@ -13,6 +13,7 @@
         keys = map toKey paths;
       in
       {
+        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz
@@ -43,6 +44,7 @@
         result = resolve.withAdapter adapters.collectPaths "nixos" den.aspects.alone;
       in
       {
+        den.fxPipeline = false;
         den.aspects.alone = { };
 
         expr = {
@@ -64,6 +66,7 @@
         keys = map (lib.concatStringsSep "/") paths;
       in
       {
+        den.fxPipeline = false;
         # role (static) includes a perHost parametric aspect; collectPaths
         # should force the functor and include its entry in the path list.
         den.aspects.role.includes = [
@@ -99,6 +102,7 @@
         keys = map (lib.concatStringsSep "/") paths;
       in
       {
+        den.fxPipeline = false;
         den.aspects.root.includes = [
           den.aspects.keep
           den.aspects.dropme
@@ -127,6 +131,7 @@
         sharedCount = builtins.length (builtins.filter (k: k == "shared") keys);
       in
       {
+        den.fxPipeline = false;
         # `shared` reached via both `a` and `b`.
         den.aspects.root.includes = [
           den.aspects.a
@@ -149,8 +154,9 @@
         paths = (resolve.withAdapter adapters.collectPaths "nixos" den.aspects.root).paths or [ ];
       in
       {
-        den.aspects.root.includes = [ den.aspects.foo._.sub ];
-        den.aspects.foo._.sub.nixos = { };
+        den.fxPipeline = false;
+        den.aspects.root.includes = [ den.aspects.foo.provides.sub ];
+        den.aspects.foo.provides.sub.nixos = { };
 
         expr = lib.elem [ "foo" "sub" ] paths;
         expected = true;

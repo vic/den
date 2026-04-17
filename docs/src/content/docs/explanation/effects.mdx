@@ -1,0 +1,260 @@
+---
+title: "ABC on Den Effects"
+description: "Den's small guide into Algebraic Effects with Handlers"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+
+This is Den's small guide into Algebraic Effects with Handlers.
+
+Fear not, this guide does not require any scary math nor learning category theory, we limit fancy words to the previous line and that is only for search engines.
+
+The purpose of this guide is to be an approachable introduction to effects. Showing that **You already know effects** and that **You already use them in Nix**, even without using Den.
+
+<Aside>
+From a user perspective, Den's declarative syntax isn't changing. This guide is just here to help you understand the magic happening under the hood, which is mostly useful for contributors or people squashing bugs.
+</Aside>
+
+## You already know effects
+
+Suppose you are writing a standard Nix package. It usually looks something like this:
+
+```nix
+myPackage = { stdenv, jq }: stdenv.mkDerivation { 
+  name = "my-awesome-script";
+  # ...
+};
+```
+
+`myPackage` is a pure function, but it cannot actually *do* its job until `stdenv` and `jq` are given to it from the outside world. 
+
+This is the exact essence of what effects are about: 
+
+<Aside type="tip" title="An Effectful Computation is">
+**A function that asks something from the outside before it can give you a result**. 
+</Aside>
+
+No scary math. Just: "I need a compiler and `jq` to give you this derivation."
+
+Nix itself works exactly like this. When you write that function, you are declaring a dependency. You are describing *what* you need. Somewhere up the chain, `callPackage` acts as the **handler**—it digs through `nixpkgs`, finds the right `stdenv` and the right `jq`, and injects them into your function.
+
+<Aside type="tip" title="A Handler is">
+**A function interacting with the external world.**
+
+A handler takes _effect-requests_ from computations and decides how and when to perform operations, potentially _mutating_ state or other _side-effects_.
+</Aside>
+
+Let's look at how Den brings this concept out of `nixpkgs` and directly into your configurations.
+
+## Try `den.lib.fx` right now
+
+All examples from this guide can be run on a Nix REPL.
+
+For now you have to use our experimental branch until that lands on Den main:
+
+```shell
+nix repl "github:sini/den/feat/fx-resolution?dir=templates/ci" \
+  --override-input den "github:sini/den/feat/fx-resolution"
+```
+
+Once at the REPL, you can access the `nix-effects` API via `den.lib.fx`.
+
+```nix
+# Access lib from nixpkgs
+:a import <nixpkgs> {}
+
+# Add all names from den.lib into scope:
+:a den.lib
+
+# Your first effect depends on nothing: Any constant is pure.
+fx.handle { handlers = {}; } (fx.pure 22)
+# => { state = null; value = 22; }
+```
+
+You just ran your first effect! `fx.pure 22` already has its answer. Pure values do not depend on the external world, so they need no handlers.
+
+<Aside title="Explore nix-effects">
+If you want to explore all that `nix-effects` has to offer—beware of scary words, but an awesome open world of future-Nix posibilities—take a look at the [docs website](https://docs.kleisli.io/nix-effects).
+</Aside>
+
+## Computations and _Effect Requests_
+
+Things become more interesting than `fx.pure` when our computations actually need to ask something from the outside world. 
+
+Effects can represent *any* external dependency. Let's imagine we are building a system configuration and we need to know the target hostname. 
+
+We describe this dependency using an **Effect Request**: 
+
+```nix "fx.send"
+fx.send "hostName" null
+```
+
+Requests are like ordering food. You say what you want, the cook (handler) makes it, you get something delicious to eat.
+
+## _Handlers_ answer Effect Requests
+
+Our previous `send "hostName"` does nothing by its own, it just describes a dependency from the external world. And if we tried to evaluate that effect, it will just crash, because there's no one that knows **how to** answer.
+
+For things to actually work we need someone (a **Handler**) for the `hostName` kind of requests:
+
+```nix
+fx.handle {
+  handlers.hostName = { param, state }: {
+    resume = "igloo"; # The handler decides the host is 'igloo'
+    inherit state;
+  };
+  state = {};
+} (fx.send "hostName" null)
+# => { value = "igloo"; ... }
+```
+
+A handler gets `{ param, state }`, and returns `{ resume, state }`.
+
+`param` is what you sent as payload of the request, `resume` is the answer payload. 
+
+## Chaining Effects: The Hard Way
+
+Effects aren't just for strings; they are heavily used for injecting massive system variables like `pkgs`. If a configuration needs multiple dependencies—like `pkgs` and `hostName` to write a file—`fx.bind` chains computations, so the result of one feeds the next:
+
+```nix
+fx.handle {
+  handlers = {
+    pkgs = { param, state }: { resume = import <nixpkgs> {}; inherit state; };
+    hostName = { param, state }: { resume = "igloo"; inherit state; };
+  };
+  state = {};
+} (fx.bind (fx.send "pkgs" null) 
+    (pkgs:
+      fx.bind (fx.send "hostName" null) 
+        (hostName: fx.pure (pkgs.writeText "motd" "Welcome to ${hostName}"))))
+# => { state = {}; value = «derivation /nix/store/...-motd»; }
+```
+
+If you have used Promises or Futures this is starting to look familiar. But writing deeply nested code like this in Nix would be miserable. Hold on a bit on `fx.bind`'s nested nature for now.
+
+
+## The magic: `fx.bind.fn`
+
+Remember our initial `myPackage = { stdenv, jq }: ...` function? And how `callPackage` magically figures out what arguments it needs?
+
+We can turn *any* pure-Nix function into an effectful Computation automatically by using `fx.bind.fn`. 
+
+It [works](https://github.com/kleisli-io/nix-effects/pull/12/changes#diff-017d9d683e5fee10699fd9ba2f084783199442cd6ebc0c67e186e9b8f90ed410R134) like this: 
+- it takes a plain Nix function
+- uses each argument name to generate effect-requests automatically (e.g., `fx.send "hostName"`)
+- binds all handler responses into a single attrset
+- invokes the original Nix function when all handlers have replied
+- and wraps the result in `fx.pure`.
+
+Let's apply this to a function that generates an actual `/nix/store` derivation for a server banner (`motd`):
+
+```nix
+myMotd = { pkgs, hostName }: pkgs.writeText "motd" ''
+  =======================================
+     Welcome to the ${hostName} server!
+  =======================================
+'';
+
+fx.handle {
+  handlers = {
+    pkgs = { param, state }: { resume = import <nixpkgs> {}; inherit state; };
+    hostName = { param, state }: { resume = "igloo"; inherit state; };
+  };
+  state = {};
+} (fx.bind.fn {} myMotd)
+# => { state = {}; value = «derivation /nix/store/y3p...-motd»; }
+```
+
+Look at that return value. `bind.fn` inspected `{ pkgs, hostName }`, sent the requests, the handlers injected a real `nixpkgs` instance and the string `"igloo"`, and the pure function materialized an actual derivation in your Nix store. 
+
+**Your plain nix functions are already effectful.** They just need a handler to provide their arguments.
+
+## Using the same computation with different handlers
+
+Separating the request from the handler allows you to reuse the exact same function everywhere without hardcoding paths. This is incredibly powerful for testing configurations without accidentally pulling in your heavy system dependencies.
+
+Let's test our `myMotd` function, but instead of handing it a massive `nixpkgs` instance, we will give it a mocked `pkgs` object just to verify the string output:
+
+```nix
+# local unit testing with a mock 'pkgs'
+fx.handle {
+  handlers = {
+    pkgs = { param, state }: { 
+      resume = { writeText = name: text: "MOCKED DIR: ${name} -> ${text}"; }; 
+      inherit state; 
+    };
+    hostName = { param, state }: { resume = "test-runner"; inherit state; };
+  };
+  state = {};
+} (fx.bind.fn {} myMotd)   
+# => { value = "MOCKED DIR: motd -> \n=======================================\n   Welcome to the test-runner server!\n=======================================\n"; ... }
+```
+
+Same computation. Totally different behaviour. We successfully unit-tested a Nix function that normally produces derivations, completely bypassing the Nix store by just swapping the handler.
+
+## The Payoff: How Den aspects uses effects
+
+When you write a Den aspect:
+
+```nix
+{ host, user }: {
+  nixos.networking.hostName = host;
+  homeManager.programs.git.userName = user;
+}
+```
+
+Den uses `bind.fn` under the hood. Each argument automatically becomes an effect request.
+
+> "Hey, I need a `host` to configure `nixos`"
+
+and
+
+> "I need `user` to configure `homeManager`".
+
+Den's pipeline acts as the handler, responding with the right values for each machine and person. Your aspect is just a pure function; effects wire the dependencies (dependency-injection).
+
+Besides that, aspects also contribute `nixos` and `homeManager` classes via effect requests:
+
+> "Hey, I'd like to produce this `nixos` class module, here is it!"
+
+A centralized handler is responsible for keeping track of what is provided and from where, enabling advanced deduplication, feature detection, aspect replacement, etc. Using effects, Den aspects can even communicate between each other via a higher level message handler.
+
+And we are just scratching the surface of what is possible using effects in Den.
+
+---
+
+## Appendix: Under the Hood
+
+*For contributors and those squashing bugs:*
+
+Up to `v0.16.0`, Den already ships a half-baked, rigid-context, manually-threaded effects system as its core.
+
+We are now moving Den to use a proper effects system. The reason is better context control and better dedup detection. Our prototype has already validated this.
+
+<Aside type="tip" title="Den is about UX">
+**Our goal is not Den machinery but the _experience_ we can provide to Den users.**
+</Aside>
+
+Den will be using `vic/nix-effects`, based on `vic/nfx`, based on `vic/fx-rs` based on `vic/fx.go`.
+
+## FAQ
+
+### Why not just use `callPackage`?
+
+**Q**: If `callPackage` is already a dependency injection system, why introduce a dedicated library like `nix-effects`?
+
+**A**: It’s an insightful question—Nix users are naturally cautious about adding complexity to their evaluation graph.
+
+##### 1. Beyond the NixOS Domain
+`callPackage` is a brilliant "one-shot" pattern, but it’s purpose-built for the `nixpkgs` ecosystem and finding package derivations. Den is exploring Nix’s capabilities *outside* of standard package builds. We need a system that isn't hardcoded to look for `stdenv` or `lib`, but can handle arbitrary communication between different parts of a system—including advanced error reporting (Common Lisp-style conditions) and complex cross-aspect coordination.
+
+##### 2. Footprint and Maintenance
+While `nix-effects` is an external dependency, its impact on the project is measured:
+* **The "Core" is minimal:** The actual logic driving the effects is remarkably small. The repository appears larger because it includes extensive inline testing and documentation.
+* **A Structural Swap:** By moving to a formalized effects library, we are actually **removing** a significant amount of "half-baked" internal code from Den’s core. It allows us to replace home-grown, imperative-style hacks with a professional, ability-based system.
+
+##### 3. Provenance and Design
+The library’s design is deeply rooted in functional programming research. It was hand-crafted to explore "freer monads" and "ability-based" programming within the Nix language. While the high-level type theory in the documentation can look dense, it’s there to provide a foundation for reliability that standard `lib` patterns don't natively expose. 
+
+**In short:** We use it because it moves the "magic" of Den’s dependency injection into a formal, transparent, and tested system rather than keeping it buried in the framework's internals.

@@ -14,19 +14,19 @@
               den.aspects.foo =
                 { host, ... }:
                 {
-                  includes = lib.optionals (host.foo._.sub.enable == true) [
-                    den.aspects.foo._.sub
+                  includes = lib.optionals (host.foo.provides.sub.enable == true) [
+                    den.aspects.foo.provides.sub
                   ];
                 };
             };
             b = {
-              den.schema.host.options.foo._.sub.enable = lib.mkEnableOption "sub-aspect toggle";
+              den.schema.host.options.foo.provides.sub.enable = lib.mkEnableOption "sub-aspect toggle";
             };
             c = {
-              den.hosts.x86_64-linux.igloo.foo._.sub.enable = true;
+              den.hosts.x86_64-linux.igloo.foo.provides.sub.enable = true;
             };
             d = {
-              den.aspects.foo._.sub =
+              den.aspects.foo.provides.sub =
                 { host, ... }:
                 {
                   nixos = lib.optionalAttrs (host.hostName != "whatever") {

@@ -27,12 +27,12 @@
 
         den.aspects.igloo.includes = [
           ns.foo
-          ns.bar._.baz
+          ns.bar.provides.baz
           ns.a
-          ns.a._.b
-          ns.a._.c
-          ns.a._.d
-          ns.a._.d._.e
+          ns.a.provides.b
+          ns.a.provides.c
+          ns.a.provides.d
+          ns.a.provides.d.provides.e
         ];
 
         expr = igloo.networking.hostName;
@@ -59,11 +59,11 @@
             den.aspects.monitoring =
               { host, ... }:
               {
-                includes = [ den.aspects.monitoring._.node-exporter ];
+                includes = [ den.aspects.monitoring.provides.node-exporter ];
               };
           }
           {
-            den.aspects.monitoring._.node-exporter =
+            den.aspects.monitoring.provides.node-exporter =
               { host, ... }:
               {
                 nixos.networking.hostName = "${host.name}-monitored";
@@ -89,10 +89,10 @@
 
         imports = [
           {
-            den.aspects.monitoring.includes = [ den.aspects.monitoring._.agent ];
+            den.aspects.monitoring.includes = [ den.aspects.monitoring.provides.agent ];
           }
           {
-            den.aspects.monitoring._.agent =
+            den.aspects.monitoring.provides.agent =
               { host, ... }:
               {
                 nixos.networking.hostName = "${host.name}-agent";

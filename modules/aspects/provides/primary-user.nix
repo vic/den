@@ -9,7 +9,7 @@ let
 
     ## Usage
 
-       den.aspects.my-user.includes = [ den._.primary-user ];
+       den.aspects.my-user.includes = [ den.provides.primary-user ];
 
   '';
 

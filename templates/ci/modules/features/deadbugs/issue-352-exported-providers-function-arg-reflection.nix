@@ -10,7 +10,7 @@
             (inputs.den.namespace "test" true)
           ];
 
-          test.aspect._.host =
+          test.aspect.provides.host =
             { host, ... }:
             {
               nixos.environment.sessionVariables.TEST_HOST = host.name;
@@ -34,7 +34,7 @@
         {
           imports = [ internal ];
 
-          expr = lib.functionArgs test.aspect._.host;
+          expr = lib.functionArgs test.aspect.provides.host;
           expected = {
             host = false;
           };
@@ -49,7 +49,7 @@
           ...
         }:
         {
-          expr = lib.functionArgs (external inputs).denful.test.aspect._.host;
+          expr = lib.functionArgs (external inputs).denful.test.aspect.provides.host;
           expected = {
             host = false;
           };
@@ -67,7 +67,7 @@
         {
           imports = [ (inputs.den.namespace "test" [ (external inputs) ]) ];
 
-          expr = lib.functionArgs test.aspect._.host;
+          expr = lib.functionArgs test.aspect.provides.host;
           expected = {
             host = false;
           };

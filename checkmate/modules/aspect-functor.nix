@@ -72,6 +72,8 @@ let
   identity = {
     meta = {
       adapter = null;
+      excludes = [ ];
+      handleWith = null;
       provider = [ ];
     };
     name = "<anon>";

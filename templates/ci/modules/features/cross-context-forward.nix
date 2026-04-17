@@ -70,7 +70,7 @@
         den.aspects.iceberg.includes = [
           (
             { host }:
-            den._.forward {
+            den.provides.forward {
               each = lib.filter (h: h != host) (lib.attrValues den.hosts.${host.system});
               fromClass = _: "ssh-host-key";
               intoClass = _: host.class;
@@ -96,7 +96,7 @@
         den.aspects.iceberg.includes = [
           (
             { host }:
-            den._.forward {
+            den.provides.forward {
               each = lib.filter (h: h != host) (lib.attrValues den.hosts.${host.system});
               fromClass = _: "test-class";
               intoClass = _: host.class;
@@ -119,6 +119,7 @@
     test-cross-context-adapter-data-collection = denTest (
       { den, iceberg, ... }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
         den.hosts.x86_64-linux.iceberg = { };
 
@@ -185,7 +186,7 @@
                   (lib.attrValues host.users);
             in
             lib.optionalAttrs (primaryUser != null) (
-              den._.forward {
+              den.provides.forward {
                 each = lib.singleton host;
                 fromAspect = h: den.lib.parametric.fixedTo { host = h; } h.aspect;
                 fromClass = _: "homeManager";
@@ -224,7 +225,7 @@
               igloo = den.hosts.x86_64-linux.igloo;
               user = lib.head (lib.attrValues host.users);
             in
-            den._.forward {
+            den.provides.forward {
               each = lib.singleton igloo;
               fromClass = _: "homeManager";
               intoClass = _: host.class;
@@ -261,7 +262,7 @@
         den.aspects.iceberg.includes = [
           (
             { host }:
-            den._.forward {
+            den.provides.forward {
               each = lib.singleton den.hosts.x86_64-linux.igloo;
               fromClass = _: "host-identity";
               intoClass = _: host.class;

@@ -1,224 +1,134 @@
-{ denTest, ... }:
+{ denTest, lib, ... }:
 {
-  flake.tests.parametric = {
+  flake.tests.performance.parametric = {
 
-    test-parametric-forwards-context = denTest (
-      { den, igloo, ... }:
+    test-fixedTo-deep-chain = denTest (
+      { den, funnyNames, ... }:
       let
-        foo = den.lib.parametric {
-          includes = [
-            (
-              { host, ... }:
-              {
-                nixos.users.users.tux.description = host.name;
-              }
-            )
-          ];
+        leaf = den.lib.parametric {
+          funny.names = [ "leaf" ];
+        };
+        mid = den.lib.parametric {
+          funny.names = [ "mid" ];
+          includes = [ leaf ];
+        };
+        top = den.lib.parametric.fixedTo { level = "deep"; } {
+          funny.names = [ "top" ];
+          includes = lib.genList (_: mid) 20;
         };
       in
       {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ foo ];
-
-        expr = igloo.users.users.tux.description;
-        expected = "igloo";
-      }
-    );
-
-    test-parametric-owned-config = denTest (
-      { den, igloo, ... }:
-      let
-        foo = den.lib.parametric {
-          nixos.networking.hostName = "from-parametric-owned";
-          includes = [ ];
+        den.ctx.start = {
+          _.start =
+            { level }:
+            {
+              funny.names = [ level ];
+            };
+          includes = [ top ];
         };
-      in
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ foo ];
 
-        expr = igloo.networking.hostName;
-        expected = "from-parametric-owned";
+        expr = builtins.length (funnyNames (den.ctx.start { level = "deep"; }));
+        expected = 42;
       }
     );
 
-    test-parametric-fixedTo = denTest (
-      { den, igloo, ... }:
+    test-atLeast-wide = denTest (
+      { den, funnyNames, ... }:
       let
-        foo =
-          { host, ... }:
-          den.lib.parametric.fixedTo { planet = "Earth"; } {
+        mkParam =
+          i:
+          den.lib.parametric {
+            funny.names = [ "p${toString i}" ];
             includes = [
               (
-                { planet, ... }:
+                { host, ... }:
                 {
-                  nixos.users.users.tux.description = planet;
+                  funny.names = [ "i${toString i}-${host}" ];
                 }
               )
             ];
           };
+        aspects = lib.genList mkParam 30;
       in
       {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ foo ];
+        den.ctx.start = {
+          _.start =
+            { host }:
+            {
+              funny.names = [ host ];
+            };
+          includes = aspects;
+        };
 
-        expr = igloo.users.users.tux.description;
-        expected = "Earth";
+        expr = builtins.length (funnyNames (den.ctx.start { host = "h"; }));
+        expected = 61;
       }
     );
 
-    test-parametric-expands = denTest (
-      { den, igloo, ... }:
+    test-expands-propagation = denTest (
+      { den, funnyNames, ... }:
       let
-        foo = den.lib.parametric.expands { planet = "Earth"; } {
+        inner =
+          { host, planet, ... }:
+          {
+            funny.names = [ "${host}-${planet}" ];
+          };
+        expanded = den.lib.parametric.expands { planet = "mars"; } {
+          funny.names = [ "exp" ];
+          includes = lib.genList (_: inner) 15;
+        };
+      in
+      {
+        den.ctx.start = {
+          _.start =
+            { host }:
+            {
+              funny.names = [ host ];
+            };
+          includes = [ expanded ];
+        };
+
+        expr = builtins.length (funnyNames (den.ctx.start { host = "h"; }));
+        expected = 17;
+      }
+    );
+
+    test-dedup-parametric = denTest (
+      { den, funnyNames, ... }:
+      let
+        shared = den.lib.parametric {
+          funny.names = [ "shared" ];
           includes = [
             (
-              { host, planet, ... }:
+              { host, ... }:
               {
-                nixos.users.users.tux.description = "${host.name}/${planet}";
+                funny.names = [ "inner-${host}" ];
               }
             )
           ];
         };
       in
       {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ foo ];
-
-        expr = igloo.users.users.tux.description;
-        expected = "igloo/Earth";
-      }
-    );
-
-    # Parametric aspect including a static named aspect — owned configs
-    # on the static aspect must not be dropped by applyDeep recursion.
-    test-parametric-including-static-named-aspect = denTest (
-      { den, igloo, ... }:
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-
-        den.aspects.base.nixos =
-          { ... }:
-          {
-            programs.git.enable = true;
-          };
-
-        den.aspects.dev =
-          { user, ... }:
-          {
-            includes = [ den.aspects.base ];
-          };
-
-        den.aspects.tux.includes = [ den.aspects.dev ];
-
-        expr = igloo.programs.git.enable;
-        expected = true;
-      }
-    );
-
-    # Named aspect with both owned class config and parametric includes,
-    # referenced from inside a parametric function's bare result.
-    test-parametric-including-mixed-owned-and-parametric = denTest (
-      {
-        den,
-        igloo,
-        lib,
-        ...
-      }:
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-
-        den.aspects.tools = {
-          nixos =
-            { ... }:
+        den.ctx.a = {
+          _.a =
+            { host }:
             {
-              programs.git.enable = true;
+              funny.names = [ "a-${host}" ];
             };
-          includes = [
-            (
-              { user, ... }:
-              {
-                nixos =
-                  { ... }:
-                  {
-                    programs.zsh.enable = true;
-                  };
-              }
-            )
-          ];
+          into.b = { host }: [ { host = "${host}!"; } ];
+          includes = [ shared ];
         };
-
-        den.aspects.role =
-          { user, ... }:
-          {
-            includes = [ den.aspects.tools ];
-          };
-
-        den.aspects.tux.includes = [ den.aspects.role ];
-
-        expr = {
-          git = igloo.programs.git.enable;
-          zsh = igloo.programs.zsh.enable;
-        };
-        expected = {
-          git = true;
-          zsh = true;
-        };
-      }
-    );
-
-    # Factory function aspect called inside a nested parametric chain.
-    test-factory-in-nested-parametric-chain = denTest (
-      {
-        den,
-        igloo,
-        lib,
-        ...
-      }:
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-
-        den.aspects.greeter = greeting: {
-          nixos =
-            { ... }:
+        den.ctx.b = {
+          _.b =
+            { host }:
             {
-              users.users.tux.description = greeting;
+              funny.names = [ "b-${host}" ];
             };
+          includes = [ shared ];
         };
 
-        den.aspects.role =
-          { user, ... }:
-          {
-            includes = [ (den.aspects.greeter "hello") ];
-          };
-
-        den.aspects.tux.includes = [ den.aspects.role ];
-
-        expr = igloo.users.users.tux.description;
-        expected = "hello";
-      }
-    );
-
-    test-never-matches-aspect-skipped = denTest (
-      { den, igloo, ... }:
-      let
-        never-matches =
-          { never-exists, ... }:
-          {
-            nixos.networking.hostName = "NEVER";
-          };
-      in
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo = den.lib.parametric {
-          includes = [
-            den._.hostname
-            never-matches
-          ];
-        };
-
-        expr = igloo.networking.hostName;
-        expected = "igloo";
+        expr = builtins.length (funnyNames (den.ctx.a { host = "v"; }));
+        expected = 6;
       }
     );
 

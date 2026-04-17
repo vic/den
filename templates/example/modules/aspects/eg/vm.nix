@@ -3,13 +3,13 @@
   eg.vm.provides = {
     gui.includes = [
       eg.vm
-      eg.vm-bootable._.gui
+      eg.vm-bootable.provides.gui
       eg.xfce-desktop
     ];
 
     tui.includes = [
       eg.vm
-      eg.vm-bootable._.tui
+      eg.vm-bootable.provides.tui
     ];
   };
 }

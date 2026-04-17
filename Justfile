@@ -18,6 +18,9 @@ docs:
 ci test="" *args:
   just nix-unit ci "{{test}}" {{args}}
 
+ci-fast test="" *args:
+  bash ./ci-fast.bash "{{system}}" "{{test}}" {{args}}
+
 bogus *args:
   just nix-unit bogus "bogus" {{args}}
 

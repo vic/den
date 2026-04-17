@@ -74,7 +74,7 @@ let
       forwardPathFn,
     }:
     { host, user }:
-    den._.forward {
+    den.provides.forward {
       each = lib.singleton true;
       fromClass = _: className;
       intoClass = _: host.class;

@@ -12,7 +12,7 @@
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "custom";
             intoClass = _: "nixos";
@@ -46,7 +46,7 @@
 
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "src";
             intoClass = _: "nixos";
@@ -83,7 +83,7 @@
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "git";
             intoClass = _: "homeManager";
@@ -124,7 +124,7 @@
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = [
               "nixos"
               "homeManager"
@@ -173,7 +173,7 @@
         forwarded =
           { host, user }:
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.optional (lib.elem host.name [
               "igloo"
               "iceberg"

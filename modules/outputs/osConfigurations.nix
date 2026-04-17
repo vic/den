@@ -7,7 +7,7 @@ let
 
   osFwd =
     { host }:
-    den._.forward {
+    den.provides.forward {
       each = lib.optional (host.intoAttr != [ ]) true;
       fromClass = _: host.class;
       intoClass = _: "flake";

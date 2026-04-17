@@ -14,11 +14,13 @@ in
 }:
 pkgs.mkShell {
   buildInputs = with pkgs; [
+    jq
     just
     nix-unit
     npins
     pnpm
     nodejs
     hyperfine
+    nix-eval-jobs
   ];
 }

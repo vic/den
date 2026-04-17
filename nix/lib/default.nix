@@ -33,6 +33,7 @@ let
     take = ./take.nix;
     lastFunctionTo = ./last-function-to.nix;
     strict = ./strict.nix;
+    fx = ./fx.nix;
   };
 in
 den-lib

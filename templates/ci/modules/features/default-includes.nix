@@ -27,7 +27,7 @@
       { den, igloo, ... }:
       {
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.default.includes = [ den._.hostname ];
+        den.default.includes = [ den.provides.hostname ];
 
         expr = igloo.networking.hostName;
         expected = "igloo";
@@ -42,6 +42,7 @@
         ...
       }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users = {
           tux = { };
           pingu = { };
@@ -63,6 +64,7 @@
     test-dynamic-class-in-user-host-context = denTest (
       { den, igloo, ... }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.includes = [
           (

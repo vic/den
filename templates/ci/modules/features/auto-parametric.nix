@@ -82,8 +82,8 @@
           ];
         };
 
-        den.ctx.user.includes = [ den._.mutual-provider ];
-        den.aspects.igloo._.to-users.includes = [ den.aspects.strict-helper ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
+        den.aspects.igloo.provides.to-users.includes = [ den.aspects.strict-helper ];
 
         # strict-helper requires exactly { host, user } — since ctx.host only provides
         # { host }, strict-helper is skipped at host level (by exactly semantics).
@@ -112,7 +112,7 @@
     test-second-level-helper-owned-config-preserved = denTest (
       { den, igloo, ... }:
       {
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.second-with-owned = {
@@ -127,7 +127,7 @@
           ];
         };
         den.aspects.helper.includes = [ den.aspects.second-with-owned ];
-        den.aspects.igloo._.to-users.includes = [ den.aspects.helper ];
+        den.aspects.igloo.provides.to-users.includes = [ den.aspects.helper ];
 
         expr = [
           igloo.networking.hostName
@@ -143,7 +143,7 @@
     test-second-provides-helper-owned-config-preserved = denTest (
       { den, igloo, ... }:
       {
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.second.provides.with-owned = {
@@ -158,7 +158,7 @@
           ];
         };
         den.aspects.helper.includes = [ den.aspects.second.provides.with-owned ];
-        den.aspects.igloo._.to-users.includes = [ den.aspects.helper ];
+        den.aspects.igloo.provides.to-users.includes = [ den.aspects.helper ];
 
         expr = [
           igloo.networking.hostName

@@ -4,7 +4,7 @@ let
   perSystemFwd =
     forwardArgs:
     { class, aspect-chain }:
-    den._.forward (
+    den.provides.forward (
       {
         each = lib.optional (class == "flake-parts") forwardArgs;
         intoClass = _: "flake-parts";

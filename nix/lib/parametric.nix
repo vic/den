@@ -15,6 +15,8 @@ let
       name = self.name or "<anon>";
       meta = {
         adapter = meta.adapter or null;
+        handleWith = meta.handleWith or null;
+        excludes = meta.excludes or [ ];
         provider = meta.provider or [ ];
       };
     }
@@ -34,7 +36,7 @@ let
   # When takeFn succeeds and returns a result with sub-includes,
   # also try to resolve those sub-includes with takeFn. This handles
   # provider sub-aspect functions nested inside include results:
-  # e.g. wrapped_fn returns { includes = [foo._.sub]; } where foo._.sub
+  # e.g. wrapped_fn returns { includes = [foo.provides.sub]; } where foo.provides.sub
   # needs parametric context applied before reaching the static pipeline.
   applyDeep =
     takeFn: ctx: fn:

@@ -16,13 +16,13 @@
               nixos.test = [ "aspect-${host.name}" ];
             };
 
-          test.provided._.provider =
+          test.provided.provides.provider =
             { host }:
             {
               nixos.test = [ "provider-${host.name}" ];
             };
 
-          test.provided._.included = {
+          test.provided.provides.included = {
             includes = [
               (
                 { host }:
@@ -61,8 +61,8 @@
 
           den.ctx.host.includes = [
             test.aspect
-            test.provided._.provider
-            test.provided._.included
+            test.provided.provides.provider
+            test.provided.provides.included
           ];
 
           expr = igloo.test;
@@ -91,8 +91,8 @@
 
           den.ctx.host.includes = [
             test.aspect
-            test.provided._.provider
-            test.provided._.included
+            test.provided.provides.provider
+            test.provided.provides.included
           ];
 
           expr = igloo.test;

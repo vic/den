@@ -15,6 +15,7 @@
       test-top-level-has-empty-provider = denTest (
         { den, ... }:
         {
+          den.fxPipeline = false;
           den.aspects.foo.nixos = { };
 
           expr = (den.lib.aspects.resolve.withAdapter getProvenance "nixos" den.aspects.foo).provider;
@@ -25,8 +26,9 @@
       test-provided-aspect-has-provider-path = denTest (
         { den, ... }:
         {
-          den.aspects.foo.includes = [ den.aspects.foo._.bar ];
-          den.aspects.foo._.bar.nixos = { };
+          den.fxPipeline = false;
+          den.aspects.foo.includes = [ den.aspects.foo.provides.bar ];
+          den.aspects.foo.provides.bar.nixos = { };
 
           expr =
             let
@@ -40,9 +42,10 @@
       test-deep-provider-chain = denTest (
         { den, ... }:
         {
-          den.aspects.foo._.bar.includes = [ den.aspects.foo._.bar._.baz ];
-          den.aspects.foo._.bar._.baz.nixos = { };
-          den.aspects.foo.includes = [ den.aspects.foo._.bar ];
+          den.fxPipeline = false;
+          den.aspects.foo.provides.bar.includes = [ den.aspects.foo.provides.bar.provides.baz ];
+          den.aspects.foo.provides.bar.provides.baz.nixos = { };
+          den.aspects.foo.includes = [ den.aspects.foo.provides.bar ];
 
           expr =
             let
@@ -60,6 +63,7 @@
       test-namespace-provider-root = denTest (
         { den, ... }:
         {
+          den.fxPipeline = false;
           den.provides.myaspect.nixos = { };
 
           expr = (den.lib.aspects.resolve.withAdapter getProvenance "nixos" den.provides.myaspect).provider;

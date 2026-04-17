@@ -33,7 +33,7 @@
 
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "src";
             intoClass = _: "nixos";
@@ -92,7 +92,7 @@
 
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "src";
             intoClass = _: "homeManager";

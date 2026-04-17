@@ -12,6 +12,7 @@
           };
       in
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.tux.includes = [ custom-user-config ];
 
@@ -23,8 +24,9 @@
     test-host-aspect-with-context = denTest (
       { den, igloo, ... }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ den._.hostname ];
+        den.aspects.igloo.includes = [ den.provides.hostname ];
 
         expr = igloo.networking.hostName;
         expected = "igloo";
@@ -41,6 +43,7 @@
           };
       in
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.tux.includes = [ from-both ];
 

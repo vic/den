@@ -8,14 +8,14 @@ let
     ## Usage
 
        # for NixOS/Darwin
-       den.aspects.my-user.includes = [ den._.define-user ]
+       den.aspects.my-user.includes = [ den.provides.define-user ]
 
        # for standalone home-manager
-       den.aspects.my-home.includes = [ den._.define-user ]
+       den.aspects.my-home.includes = [ den.provides.define-user ]
 
     or globally (automatically applied depending on context):
 
-       den.default.includes = [ den._.define-user ]
+       den.default.includes = [ den.provides.define-user ]
   '';
 
   homeDir =

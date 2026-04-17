@@ -18,7 +18,7 @@
       {
         den.homes.x86_64-linux.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
-        den.default.includes = [ den._.define-user ];
+        den.default.includes = [ den.provides.define-user ];
         den.aspects.tux.homeManager.programs.fish.enable = true;
 
         expr = config.flake.homeConfigurations.tux.config.programs.fish.enable;
@@ -33,7 +33,7 @@
           userName = "cameron";
         };
         den.default.homeManager.home.stateVersion = "25.11";
-        den.default.includes = [ den._.define-user ];
+        den.default.includes = [ den.provides.define-user ];
 
         expr = config.flake.homeConfigurations.cam.config.home.username;
         expected = "cameron";
@@ -45,7 +45,7 @@
       {
         den.homes.x86_64-linux.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
-        den.default.includes = [ den._.define-user ];
+        den.default.includes = [ den.provides.define-user ];
         den.ctx.home.homeManager.programs.vim.enable = true;
 
         expr = config.flake.homeConfigurations.tux.config.programs.vim.enable;
@@ -63,13 +63,13 @@
       {
         den.homes.x86_64-linux."tux@igloo" = { };
 
-        den.aspects.tux.includes = [ den._.define-user ];
+        den.aspects.tux.includes = [ den.provides.define-user ];
 
         den.aspects.tux.homeManager = args: {
           home.keyboard.model = if args ? osConfig then "os-bound" else "standalone";
         };
 
-        den.ctx.home.includes = [ den._.mutual-provider ];
+        den.ctx.home.includes = [ den.provides.mutual-provider ];
         den.aspects.tux.provides.igloo = {
           homeManager.home.keyboard.layout = "enthium";
           includes = [
@@ -120,7 +120,7 @@
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.nixos.networking.hostName = "blizzard";
-        den.aspects.tux.includes = [ den._.define-user ];
+        den.aspects.tux.includes = [ den.provides.define-user ];
         den.aspects.tux.homeManager =
           { osConfig, ... }:
           {

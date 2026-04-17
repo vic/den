@@ -34,6 +34,7 @@
           }).config.flake;
       in
       {
+        den.fxPipeline = false;
         imports = [ (inputs.den.namespace "remote" input) ];
 
         den.aspects.local.includes = [

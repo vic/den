@@ -6,7 +6,7 @@ let
 
     ## Usage
 
-      den.aspects.my-laptop.includes = [ (den._.unfree [ "example-unfree-package" ]) ];
+      den.aspects.my-laptop.includes = [ (den.provides.unfree [ "example-unfree-package" ]) ];
 
     It will dynamically provide a module for each class when accessed.
   '';

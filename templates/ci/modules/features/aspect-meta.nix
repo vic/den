@@ -80,7 +80,7 @@
             KEYS
             ;
         };
-        expected.KEYS = "adapter:file:loc:name:provider:self";
+        expected.KEYS = "adapter:excludes:file:handleWith:loc:name:provider:self";
       }
     );
 
@@ -110,7 +110,7 @@
             KEYS
             ;
         };
-        expected.KEYS = "adapter:file:foo:loc:name:provider:self";
+        expected.KEYS = "adapter:excludes:file:foo:handleWith:loc:name:provider:self";
       }
     );
 
