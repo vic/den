@@ -11,7 +11,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.default.homeManager.home.stateVersion = "25.11";
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
@@ -40,7 +39,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.default.homeManager.home.stateVersion = "25.11";
 
         den.hosts.x86_64-linux.igloo.users.tux = { };

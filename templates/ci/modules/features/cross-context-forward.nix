@@ -116,51 +116,6 @@
       }
     );
 
-    test-cross-context-adapter-data-collection = denTest (
-      { den, iceberg, ... }:
-      {
-        den.fxPipeline = false;
-        den.hosts.x86_64-linux.igloo = { };
-        den.hosts.x86_64-linux.iceberg = { };
-
-        den.aspects.igloo.meta.sshKey = "ssh-ed25519 AAAA igloo";
-
-        den.aspects.iceberg.includes = [
-          (
-            { host }:
-            let
-              otherHosts = lib.filter (h: h != host) (lib.attrValues den.hosts.${host.system});
-              collectKeys = lib.concatMap (
-                srcHost:
-                let
-                  traceMeta =
-                    { aspect, recurse, ... }:
-                    {
-                      keys =
-                        lib.optional (aspect.meta.sshKey or null != null) {
-                          host = aspect.name or "unknown";
-                          key = aspect.meta.sshKey;
-                        }
-                        ++ lib.concatMap (i: (recurse i).keys or [ ]) (aspect.includes or [ ]);
-                    };
-                  result = den.lib.aspects.resolve.withAdapter traceMeta srcHost.class srcHost.resolved;
-                in
-                result.keys or [ ]
-              ) otherHosts;
-            in
-            {
-              nixos.environment.sessionVariables.COLLECTED_KEYS = lib.concatStringsSep "," (
-                map (k: k.key) collectKeys
-              );
-            }
-          )
-        ];
-
-        expr = iceberg.environment.sessionVariables.COLLECTED_KEYS;
-        expected = "ssh-ed25519 AAAA igloo";
-      }
-    );
-
     test-host-hm-aspects-forward-to-primary-user = denTest (
       { den, igloo, ... }:
       {

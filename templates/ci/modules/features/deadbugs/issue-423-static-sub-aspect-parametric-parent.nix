@@ -9,7 +9,6 @@
     test-static-sub-aspect-from-parametric-parent = denTest (
       { den, igloo, ... }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # Split across modules so the parametric parent and the static sub

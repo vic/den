@@ -68,24 +68,18 @@
     };
 
   # ──────────────────────────────────────────────────────────────────
-  # Pattern 2 — Deciding structure via a `meta.adapter` (`oneOfAspects`)
+  # Pattern 2 — Deciding structure via `meta.handleWith` constraints
   # ──────────────────────────────────────────────────────────────────
   #
   # When the decision is STRUCTURAL ("which of these aspects should
   # actually be part of the tree?") rather than CONFIGURATIONAL ("given
   # this aspect is in the tree, how should it configure NixOS?"), the
-  # right tool is a `meta.adapter` composed via `oneOfAspects`.
+  # right tool is `meta.handleWith` with an fx constraint such as
+  # `den.lib.aspects.fx.constraints.exclude`.
   #
-  # The adapter runs during the resolve tree walk and has full
+  # The constraint runs during the resolve tree walk and has full
   # structural visibility — and crucially, it operates ON the tree
   # rather than reading FROM INSIDE it, so it can't cycle.
-  #
-  # Here: a secrets-bundle aspect lists both an agenix-rekey-style
-  # provider and a sops-nix-style provider in its includes, and a
-  # `oneOfAspects` adapter prefers agenix-rekey when both are present
-  # and falls back to sops-nix otherwise. Both candidates remain in
-  # the includes list — `oneOfAspects` tombstones the loser during
-  # resolution rather than at module-definition time.
 
   den.aspects.example-agenix-rekey.nixos = {
     environment.etc."example-secrets-provider".text = "agenix-rekey";
@@ -95,15 +89,14 @@
     environment.etc."example-secrets-provider".text = "sops-nix";
   };
 
+  # To exclude one provider in favor of another, use:
+  #   meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.example-sops-nix;
   den.aspects.example-secrets-bundle = {
     includes = [
       den.aspects.example-agenix-rekey
       den.aspects.example-sops-nix
     ];
-    meta.adapter = den.lib.aspects.adapters.oneOfAspects [
-      den.aspects.example-agenix-rekey # preferred when present
-      den.aspects.example-sops-nix # fallback
-    ];
+    meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.example-sops-nix;
   };
 
   # ──────────────────────────────────────────────────────────────────
@@ -133,12 +126,11 @@
   # with no fixed point. Nix evaluation reports infinite recursion.
   #
   # The correct tool for "decide what to include based on what else
-  # is structurally present" is a `meta.adapter`. See
-  # `nix/lib/aspects/adapters.nix` for the full set:
+  # is structurally present" is `meta.handleWith` with an fx constraint.
+  # See `nix/lib/aspects/fx/constraints.nix` for available constraints:
   #
-  #   - `oneOfAspects [ a b c ]`     keep the first present, tombstone the rest
-  #   - `excludeAspect <ref>`        tombstone a specific aspect by reference
-  #   - `substituteAspect <a> <b>`   swap one aspect for another
+  #   - `exclude <ref>`              tombstone a specific aspect by reference
+  #   - `substitute <a> <b>`         swap one aspect for another
   #   - `filter` / `filterIncludes`  custom filtering primitives
   #
   # These run during the tree walk with full structural visibility and

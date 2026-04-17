@@ -11,7 +11,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
         den.ctx.user.includes = [ den.provides.mutual-provider ];
 
@@ -31,7 +30,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
         den.ctx.user.includes = [ den.provides.mutual-provider ];
 
@@ -52,7 +50,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
         den.ctx.user.includes = [ den.provides.mutual-provider ];
 
@@ -72,7 +69,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "homeManager" ];
         den.ctx.user.includes = [ den.provides.mutual-provider ];
 

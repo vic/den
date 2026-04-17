@@ -11,7 +11,6 @@
         inherit (den.lib.aspects) hasAspectIn;
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
 
@@ -30,7 +29,6 @@
         inherit (den.lib.aspects) hasAspectIn;
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
         den.aspects.other.nixos = { };
@@ -47,15 +45,14 @@
     test-hasAspectIn-respects-tombstones = denTest (
       { den, ... }:
       let
-        inherit (den.lib.aspects) hasAspectIn adapters;
+        inherit (den.lib.aspects) hasAspectIn;
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [
           den.aspects.keep
           den.aspects.drop
         ];
-        den.aspects.root.meta.adapter = inherited: adapters.excludeAspect den.aspects.drop inherited;
+        den.aspects.root.meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.drop;
         den.aspects.keep.nixos = { };
         den.aspects.drop.nixos = { };
 
@@ -88,7 +85,6 @@
         };
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.foo.provides.bar ];
         den.aspects.foo.provides.bar.nixos = { };
 
@@ -116,7 +112,6 @@
         };
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
 
@@ -150,7 +145,6 @@
         };
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.nixos = { };
         den.aspects.unrelated.nixos = { };
 
@@ -170,7 +164,6 @@
         };
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.child ];
         den.aspects.child.nixos = { };
 
@@ -191,7 +184,6 @@
         });
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.nixos = { };
 
         # tryEval returns { success = false; value = false; } on throw
@@ -214,7 +206,6 @@
         });
       in
       {
-        den.fxPipeline = false;
         den.aspects.root.nixos = { };
 
         expr = result.success;
@@ -229,11 +220,7 @@
     # `host.hasAspect den.aspects.myFactory` is well-defined.
     test-factory-fn-aspect-identity = denTest (
       { den, lib, ... }:
-      let
-        inherit (den.lib.aspects) adapters;
-      in
       {
-        den.fxPipeline = false;
         den.aspects.myFactory = arg: {
           nixos.environment.variables.FACTORY_ARG = arg;
         };
@@ -241,7 +228,7 @@
         den.aspects.consumer.includes = [ (den.aspects.myFactory "/x") ];
 
         expr = {
-          factoryPath = adapters.aspectPath den.aspects.myFactory;
+          factoryPath = den.lib.aspects.fx.identity.aspectPath den.aspects.myFactory;
           factoryIsFunction = builtins.isFunction den.aspects.myFactory;
         };
         expected = {

@@ -12,7 +12,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.default.homeManager.home.stateVersion = "25.11";
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
@@ -45,7 +44,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.default.homeManager.home.stateVersion = "25.11";
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
@@ -100,7 +98,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux.classes = [ "hjem" ];
 
         # hijack a minimal module so hostConf doesn't complain about missing

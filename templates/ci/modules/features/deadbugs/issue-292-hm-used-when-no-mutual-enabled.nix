@@ -11,7 +11,6 @@
         ...
       }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.bash ];

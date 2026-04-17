@@ -5,9 +5,8 @@
     test-aspectPath-named = denTest (
       { den, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.foo.nixos = { };
-        expr = den.lib.aspects.adapters.aspectPath den.aspects.foo;
+        expr = den.lib.aspects.fx.identity.aspectPath den.aspects.foo;
         expected = [ "foo" ];
       }
     );
@@ -15,12 +14,11 @@
     test-aspectPath-with-provider = denTest (
       { den, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.monitoring = {
           nixos = { };
           provides.node-exporter.nixos = { };
         };
-        expr = den.lib.aspects.adapters.aspectPath den.aspects.monitoring.provides.node-exporter;
+        expr = den.lib.aspects.fx.identity.aspectPath den.aspects.monitoring.provides.node-exporter;
         expected = [
           "monitoring"
           "node-exporter"
@@ -32,13 +30,11 @@
     test-excludeAspect-tombstone-in-trace = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz
         ];
-        den.aspects.foo.meta.adapter =
-          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.baz inherited;
+        den.aspects.foo.meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.baz;
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
 
@@ -56,14 +52,12 @@
     test-excludeAspect-no-modules = denTest (
       { den, igloo, ... }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
         den.aspects.igloo.includes = [
           den.aspects.bar
           den.aspects.baz
         ];
-        den.aspects.igloo.meta.adapter =
-          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.baz inherited;
+        den.aspects.igloo.meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.baz;
         den.aspects.bar.nixos.environment.sessionVariables.msg = "bar";
         den.aspects.baz.nixos.environment.sessionVariables.msg = "baz";
 
@@ -77,10 +71,8 @@
     test-excludeAspect-propagates-to-subtree = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.role ];
-        den.aspects.root.meta.adapter =
-          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.baz inherited;
+        den.aspects.root.meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.baz;
         den.aspects.role.includes = [
           den.aspects.bar
           den.aspects.baz
@@ -105,7 +97,6 @@
     test-excludeAspect-by-provider = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.monitoring = {
           nixos = { };
           provides.node-exporter.nixos = { };
@@ -116,9 +107,8 @@
           monitoring.provides.node-exporter
           monitoring.provides.alerting
         ];
-        den.aspects.server.meta.adapter =
-          inherited:
-          den.lib.aspects.adapters.excludeAspect den.aspects.monitoring.provides.node-exporter inherited;
+        den.aspects.server.meta.handleWith =
+          den.lib.aspects.fx.constraints.exclude den.aspects.monitoring.provides.node-exporter;
 
         expr = trace "nixos" den.aspects.server;
         # node-exporter tombstone visible, alerting kept
@@ -135,7 +125,6 @@
     test-excludeAspect-cascades-to-providers = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.monitoring = {
           nixos = { };
           provides.node-exporter.nixos = { };
@@ -146,8 +135,7 @@
           monitoring.provides.node-exporter
           monitoring.provides.alerting
         ];
-        den.aspects.server.meta.adapter =
-          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.monitoring inherited;
+        den.aspects.server.meta.handleWith = den.lib.aspects.fx.constraints.exclude den.aspects.monitoring;
 
         expr = trace "nixos" den.aspects.server;
         # monitoring and all its providers excluded
@@ -164,13 +152,12 @@
     test-substituteAspect-replaces = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz
         ];
-        den.aspects.foo.meta.adapter =
-          inherited: den.lib.aspects.adapters.substituteAspect den.aspects.bar den.aspects.qux inherited;
+        den.aspects.foo.meta.handleWith =
+          den.lib.aspects.fx.constraints.substitute den.aspects.bar den.aspects.qux;
         den.aspects.bar.nixos = { };
         den.aspects.baz.nixos = { };
         den.aspects.qux.nixos = { };
@@ -190,11 +177,10 @@
     test-substituteAspect-build-uses-replacement = denTest (
       { den, igloo, ... }:
       {
-        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
         den.aspects.igloo.includes = [ den.aspects.bar ];
-        den.aspects.igloo.meta.adapter =
-          inherited: den.lib.aspects.adapters.substituteAspect den.aspects.bar den.aspects.qux inherited;
+        den.aspects.igloo.meta.handleWith =
+          den.lib.aspects.fx.constraints.substitute den.aspects.bar den.aspects.qux;
         den.aspects.bar.nixos.environment.sessionVariables.msg = "bar";
         den.aspects.qux.nixos.environment.sessionVariables.msg = "qux";
 
@@ -208,10 +194,9 @@
     test-substituteAspect-propagates = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.role ];
-        den.aspects.root.meta.adapter =
-          inherited: den.lib.aspects.adapters.substituteAspect den.aspects.baz den.aspects.qux inherited;
+        den.aspects.root.meta.handleWith =
+          den.lib.aspects.fx.constraints.substitute den.aspects.baz den.aspects.qux;
         den.aspects.role.includes = [
           den.aspects.bar
           den.aspects.baz
@@ -238,7 +223,6 @@
     test-perHost-visible-in-trace = denTest (
       { den, trace, ... }:
       {
-        den.fxPipeline = false;
         den.aspects.role.includes = with den.aspects; [
           leaf
           param

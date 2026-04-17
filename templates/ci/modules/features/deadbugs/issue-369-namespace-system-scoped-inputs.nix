@@ -11,7 +11,6 @@
         ...
       }:
       {
-        den.fxPipeline = false; # CRASHES with fx
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
 
@@ -38,7 +37,6 @@
         ...
       }:
       {
-        den.fxPipeline = false; # CRASHES with fx
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
 
@@ -71,7 +69,6 @@
         imports = [ (inputs.den.namespace "gloom" false) ];
         _module.args.__findFile = den.lib.__findFile;
 
-        den.fxPipeline = false; # CRASHES with fx
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
 

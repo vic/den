@@ -11,7 +11,6 @@
     test-real-aspect-through-fx = denTest (
       { den, igloo, ... }:
       {
-        den.fxPipeline = true;
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.igloo.nixos =
           { ... }:
@@ -27,7 +26,6 @@
     test-parametric-through-fx = denTest (
       { den, igloo, ... }:
       {
-        den.fxPipeline = true;
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.web =
           { host, ... }:
@@ -41,21 +39,6 @@
         den.aspects.igloo.includes = [ den.aspects.web ];
         expr = igloo.networking.hostName;
         expected = "igloo";
-      }
-    );
-
-    # Flag off uses old pipeline — existing behavior preserved.
-    test-flag-off-uses-legacy = denTest (
-      { den, igloo, ... }:
-      {
-        den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.nixos =
-          { ... }:
-          {
-            networking.hostName = "legacy";
-          };
-        expr = igloo.networking.hostName;
-        expected = "legacy";
       }
     );
 
