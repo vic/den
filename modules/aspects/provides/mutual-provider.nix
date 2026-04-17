@@ -15,7 +15,7 @@ let
     ## Usage
 
       den.hosts.x86_64-linux.igloo.users.tux = { };
-      den.ctx.user.includes = [ den._.mutual-provider ];
+      den.ctx.user.includes = [ den.provides.mutual-provider ];
 
       # user aspect provides to specific host or to all where it lives
       den.aspects.tux = {
@@ -34,9 +34,9 @@ let
       };
   '';
 
-  find-mutual = from: to: from.aspect._.${to.aspect.name} or { };
-  to-hosts = from: from.aspect._.to-hosts or { };
-  to-users = from: from.aspect._.to-users or { };
+  find-mutual = from: to: from.aspect.provides.${to.aspect.name} or { };
+  to-hosts = from: from.aspect.provides.to-hosts or { };
+  to-users = from: from.aspect.provides.to-users or { };
 
   mutual-user-user = host: user: {
     includes = map (
@@ -66,7 +66,7 @@ let
   mutual-standalone-home =
     { home }:
     parametric.fixedTo { inherit home; } (
-      if home.hostName == null then { } else home.aspect._.${home.hostName} or { }
+      if home.hostName == null then { } else home.aspect.provides.${home.hostName} or { }
     );
 
 in

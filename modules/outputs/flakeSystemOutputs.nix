@@ -16,7 +16,7 @@ let
   systemOutputFwd =
     { system, output }:
     { class, aspect-chain }:
-    den._.forward {
+    den.provides.forward {
       each = lib.optional (class == "flake") output;
       fromClass = _: output;
       intoClass = _: "flake";

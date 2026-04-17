@@ -4,7 +4,7 @@ let
 
     This battery must be included in a Host aspect.
 
-       den.aspects.my-laptop.includes = [ (den._.tty-autologin "root") ];
+       den.aspects.my-laptop.includes = [ (den.provides.tty-autologin "root") ];
   '';
 
   # From https://discourse.nixos.org/t/autologin-for-single-tty/49427/2

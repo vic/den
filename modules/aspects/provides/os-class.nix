@@ -16,7 +16,7 @@ let
 
   os-class =
     { class, aspect-chain }:
-    den._.forward {
+    den.provides.forward {
       each = [
         "nixos"
         "darwin"

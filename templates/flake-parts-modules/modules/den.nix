@@ -17,7 +17,7 @@
   };
 
   den.aspects.tux = {
-    includes = [ den._.define-user ];
+    includes = [ den.provides.define-user ];
     user.description = "Bird";
 
     packages =

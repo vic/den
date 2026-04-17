@@ -10,7 +10,7 @@
     (inputs.den.namespace "provider" true)
   ];
 
-  provider.tools._.dev._.editors = {
+  provider.tools.provides.dev.provides.editors = {
     description = "Editor configurations from provider flake";
     nixos.programs.vim.enable = true;
     homeManager =
@@ -20,7 +20,7 @@
       };
   };
 
-  provider.tools._.dev._.host-stamp = den.lib.parametric {
+  provider.tools.provides.dev.provides.host-stamp = den.lib.parametric {
     includes = [
       (
         { host, ... }:
@@ -31,7 +31,7 @@
     ];
   };
 
-  provider.tools._.dev._.user-stamp = den.lib.parametric.exactly {
+  provider.tools.provides.dev.provides.user-stamp = den.lib.parametric.exactly {
     includes = [
       (
         { host, user, ... }:
@@ -43,7 +43,7 @@
   };
 
   # A ctx entry shared to consumers — provides a self-provider function.
-  provider.ctx.simple._.simple = _: { funny.names = [ "from-provider-ctx" ]; };
+  provider.ctx.simple.provides.simple = _: { funny.names = [ "from-provider-ctx" ]; };
 
   # A schema entry that can be shared to consumers.
   provider.schema.entity = {

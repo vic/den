@@ -8,7 +8,7 @@ let
 
       den.aspects.vic.includes = [
         # will always love red snappers.
-        (den._.user-shell "fish")
+        (den.provides.user-shell "fish")
       ];
   '';
 

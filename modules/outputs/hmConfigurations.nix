@@ -8,7 +8,7 @@ let
 
   hmFwd =
     { home }:
-    den._.forward {
+    den.provides.forward {
       each = lib.optional (home.intoAttr != [ ]) true;
       fromClass = _: home.class;
       intoClass = _: "flake";

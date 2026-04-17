@@ -9,7 +9,7 @@ let
     This is a private aspect always included in den.default.
 
     It adds a module option that gathers all packages defined
-    in den._.unfree usages and declares a
+    in den.provides.unfree usages and declares a
     nixpkgs.config.allowUnfreePredicate for each class.
 
   '';

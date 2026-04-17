@@ -46,7 +46,7 @@
         home.packages = [ pkgs.htop ];
       };
 
-    # <user>.provides.<host>, via den._.mutual-provider
+    # <user>.provides.<host>, via den.provides.mutual-provider
     provides.igloo =
       { host, ... }:
       {

@@ -7,7 +7,7 @@ let
 
     ## Usage
 
-       den.defaults.includes = [ den._.hostname ];
+       den.defaults.includes = [ den.provides.hostname ];
   '';
 
   setHostname =

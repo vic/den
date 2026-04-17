@@ -13,7 +13,7 @@
     ```
       # this is at <repo>/modules/non-dendritic.nix
       den.aspects.my-laptop.includes = [
-        (den._.import-tree._.host ../non-dendritic)
+        (den.provides.import-tree.provides.host ../non-dendritic)
       ]
     ```
 
@@ -43,23 +43,23 @@
       this aspect can be included explicitly on any aspect:
 
           # example: will import ./disko/_nixos files automatically.
-          den.aspects.my-disko.includes = [ (den._.import-tree ./disko/) ];
+          den.aspects.my-disko.includes = [ (den.provides.import-tree ./disko/) ];
 
       or it can be default imported per host/user/home:
 
           # load from ./hosts/<host>/_nixos
-          den.ctx.os.includes = [ (den._.import-tree._.host ./hosts) ];
+          den.ctx.os.includes = [ (den.provides.import-tree.provides.host ./hosts) ];
 
           # load from ./users/<user>/{_homeManager, _nixos}
-          den.ctx.hm.includes = [ (den._.import-tree._.user ./users) ];
+          den.ctx.hm.includes = [ (den.provides.import-tree.provides.user ./users) ];
 
           # load from ./homes/<home>/_homeManager
-          den.ctx.home.includes = [ (den._.import-tree._.home ./homes) ];
+          den.ctx.home.includes = [ (den.provides.import-tree.provides.home ./homes) ];
 
       you are also free to create your own auto-imports layout following the implementation of these.
   '';
 
-  den._.import-tree.__functor =
+  den.provides.import-tree.__functor =
     _: root:
     { class, aspect-chain }:
     let
@@ -68,9 +68,9 @@
     in
     if builtins.pathExists path then aspect else { };
 
-  den._.import-tree.provides = {
-    host = root: { host, ... }: den._.import-tree "${toString root}/${host.name}";
-    home = root: { home, ... }: den._.import-tree "${toString root}/${home.name}";
-    user = root: { user, ... }: den._.import-tree "${toString root}/${user.name}";
+  den.provides.import-tree.provides = {
+    host = root: { host, ... }: den.provides.import-tree "${toString root}/${host.name}";
+    home = root: { home, ... }: den.provides.import-tree "${toString root}/${home.name}";
+    user = root: { user, ... }: den.provides.import-tree "${toString root}/${user.name}";
   };
 }

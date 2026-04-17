@@ -19,13 +19,13 @@ let
     **Global (Recommended):**
     Apply to all hosts, users, and homes.
 
-        den.default.includes = [ den._.inputs' ];
+        den.default.includes = [ den.provides.inputs' ];
 
     **Specific:**
     Apply only to a specific host, user, or home aspect.
 
-        den.aspects.my-laptop.includes = [ den._.inputs' ];
-        den.aspects.alice.includes = [ den._.inputs' ];
+        den.aspects.my-laptop.includes = [ den.provides.inputs' ];
+        den.aspects.alice.includes = [ den.provides.inputs' ];
 
     **Note:** This aspect is contextual. When included in a `host` aspect, it
     configures `inputs'` for the host's OS. When included in a `user` or `home`
