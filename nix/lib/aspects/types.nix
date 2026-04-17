@@ -40,7 +40,43 @@ let
         ];
     };
 
-  providerType = cnf: lib.types.either (providerFnType cnf) (aspectType cnf);
+  providerType =
+    cnf:
+    let
+      pft = providerFnType cnf;
+      at = aspectType cnf;
+      eth = lib.types.either pft at;
+    in
+    eth
+    // {
+      merge =
+        loc: defs:
+        let
+          hasFns = builtins.any (d: lib.isFunction d.value) defs;
+          hasNonFns = builtins.any (d: !lib.isFunction d.value) defs;
+          isMixed = hasFns && hasNonFns;
+        in
+        if isMixed then
+          # Mixed function + attrset defs: coerce parametric functions to
+          # { includes = [fn]; } so they merge as aspects instead of being
+          # evaluated as NixOS modules (which would fail on missing host/user args).
+          at.merge loc (
+            map (
+              d:
+              if lib.isFunction d.value && !isSubmoduleFn d.value then
+                d
+                // {
+                  value = {
+                    includes = [ d.value ];
+                  };
+                }
+              else
+                d
+            ) defs
+          )
+        else
+          eth.merge loc defs;
+    };
 
   aspectType =
     cnf:
