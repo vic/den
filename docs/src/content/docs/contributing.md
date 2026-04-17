@@ -52,6 +52,9 @@ Use `just help` to get a list of all tasks.
 ```console
 just fmt
 just ci
+
+# or if you are in a hurry
+just ci-fast
 ```
 
 ### Bug Reports

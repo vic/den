@@ -140,15 +140,19 @@ The `provider/` subdirectory is a **separate flake** that defines a namespace `p
 From the Den root against your local checkout:
 
 ```console
-nix flake check --override-input den . ./templates/ci
+just ci
 ```
 
 You can also run a single or a subset of tests using:
 
 ```console
 # You can use any attr-path bellow flake.tests after system-agnositc to run those specific tests:
-nix-unit  --override-input den .  --flake ./templates/ci#.tests.systems.x86_64-linux.system-agnostic
+just ci wsl-class
 ```
+
+If you are in a hurry you can also use `just ci-fast`.
+NOTE: `ci-fast` cannot show error diffs and ignores tests using nix-unit `expectedError`.
+
 
 ## Writing New Tests
 
