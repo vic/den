@@ -53,8 +53,8 @@ Use `just help` to get a list of all tasks.
 just fmt
 just ci
 
-# or if you are in a hurry
-just ci-fast
+# or for deep tests with nix-unit diffs
+just ci-deep
 ```
 
 ### Bug Reports

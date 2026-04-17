@@ -147,11 +147,11 @@ You can also run a single or a subset of tests using:
 
 ```console
 # You can use any attr-path bellow flake.tests after system-agnositc to run those specific tests:
-just ci wsl-class
+just ci-deep wsl-class
 ```
 
-If you are in a hurry you can also use `just ci-fast`.
-NOTE: `ci-fast` cannot show error diffs and ignores tests using nix-unit `expectedError`.
+The default `just ci` is fast but cannot show error diffs and ignores tests using nix-unit `expectedError`.
+Use `just ci-deep` for full nix-unit output with diffs.
 
 
 ## Writing New Tests
