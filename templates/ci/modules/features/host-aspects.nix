@@ -97,6 +97,47 @@
       }
     );
 
+    # Host nixos modules are NOT duplicated when user includes host-aspects.
+    # Uses a listOf option to detect double-application.
+    test-no-nixos-duplication = denTest (
+      {
+        den,
+        lib,
+        igloo,
+        tuxHm,
+        ...
+      }:
+      {
+        den.hosts.x86_64-linux.igloo.users.tux = { };
+
+        den.default.nixos.imports = [
+          {
+            options.tags = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+          }
+        ];
+
+        den.aspects.igloo = {
+          nixos.tags = [ "host" ];
+          homeManager.programs.vim.enable = true;
+        };
+
+        den.aspects.tux.includes = [ den._.host-aspects ];
+
+        expr = {
+          tags = igloo.tags;
+          vim = tuxHm.programs.vim.enable;
+        };
+        expected = {
+          # "host" should appear exactly once — not duplicated
+          tags = [ "host" ];
+          vim = true;
+        };
+      }
+    );
+
     # User who does NOT include den._.host-aspects does not receive host homeManager.
     test-opt-in-only = denTest (
       {
