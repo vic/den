@@ -22,5 +22,12 @@
       import-tree.follows = "import-tree";
       den.follows = "den";
     };
+
+    nix-unit.url = "github:nix-community/nix-unit";
+    nix-unit.inputs.nixpkgs.follows = "nixpkgs";
+
+    nix-effects.url = "github:vic/nix-effects";
+    nix-effects.inputs.nixpkgs.follows = "nixpkgs";
+    nix-effects.inputs.nix-unit.follows = "nix-unit";
   };
 }
