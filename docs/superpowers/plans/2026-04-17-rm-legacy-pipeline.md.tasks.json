@@ -1,0 +1,126 @@
+{
+  "planPath": "docs/superpowers/plans/2026-04-17-rm-legacy-pipeline.md",
+  "tasks": [
+    {
+      "id": 0,
+      "subject": "Task 0: Establish baseline",
+      "status": "pending",
+      "description": "Run tests on current branch, record baseline count (~493)",
+      "metadata": {
+        "verifyCommand": "nix develop -c just ci \"\"",
+        "acceptanceCriteria": ["All tests pass on current branch", "Baseline test count recorded"]
+      }
+    },
+    {
+      "id": 1,
+      "subject": "Task 1: Delete legacy pipeline files and fxPipeline gate",
+      "status": "pending",
+      "blockedBy": [0],
+      "description": "Delete statics.nix, resolve.nix, adapters.nix, fxPipeline.nix, 7 legacy tests. Make resolve=fxResolveTree. Fix: no duplicate resolve binding in exports.",
+      "metadata": {
+        "files": ["nix/lib/statics.nix", "nix/lib/aspects/resolve.nix", "nix/lib/aspects/adapters.nix", "modules/fxPipeline.nix", "nix/lib/aspects/default.nix", "nix/lib/default.nix"],
+        "verifyCommand": "nix eval .#lib --override-input den . 2>&1 | head -5",
+        "acceptanceCriteria": ["All 4 legacy files deleted", "7 legacy test files deleted", "resolve = fxResolveTree directly"]
+      }
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: Strip defaultFunctor from type system",
+      "status": "pending",
+      "blockedBy": [1],
+      "description": "Remove __functor from aspectSubmodule, simplify providerFnType.merge, update checkmate/aspect-functor.nix. Verify providerFnType.merge multi-module composition not broken.",
+      "metadata": {
+        "files": ["nix/lib/aspects/types.nix", "checkmate/modules/aspect-functor.nix"],
+        "acceptanceCriteria": ["aspectSubmodule has no __functor option", "providerFnType.merge does direct merge", "checkmate tests updated"]
+      }
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: Gut parametric.nix of legacy machinery",
+      "status": "pending",
+      "blockedBy": [2],
+      "description": "Remove withOwn, deepRecurse, deep, deepParametrics, applyDeep, applyIncludes. Rewrite fixedTo. CAUTION: parametric.expands semantic change — verify against tests.",
+      "metadata": {
+        "files": ["nix/lib/parametric.nix"],
+        "acceptanceCriteria": ["Legacy functions deleted", "fixedTo rewritten", "statics imports removed", "expands verified"]
+      }
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: Verify ctx-apply.nix compatibility",
+      "status": "pending",
+      "blockedBy": [3],
+      "description": "Verify buildIncludes works with rewritten fixedTo. forward.nix is UNCHANGED (fromAspect hook stays).",
+      "metadata": {
+        "files": ["nix/lib/ctx-apply.nix"],
+        "acceptanceCriteria": ["buildIncludes works with static fixedTo output", "forward.nix unchanged"]
+      }
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: Remove aspect-chain from providers, templates, and tests",
+      "status": "pending",
+      "blockedBy": [4],
+      "description": "Remove aspect-chain and fromAspect=lib.head aspect-chain from 6 providers + home-env + 2 templates + 5 forward test files. Keep fromAspect where it uses proper context objects.",
+      "metadata": {
+        "files": ["modules/aspects/provides/os-class.nix", "modules/aspects/provides/wsl.nix", "modules/outputs/flakeSystemOutputs.nix", "modules/aspects/provides/import-tree.nix", "modules/aspects/provides/unfree/unfree.nix", "nix/lib/home-env.nix", "templates/flake-parts-modules/modules/perSystem-forward.nix", "templates/nvf-standalone/modules/nvf-integration.nix", "templates/ci/modules/features/forward.nix", "templates/ci/modules/features/forward-alias-class.nix", "templates/ci/modules/features/guarded-forward.nix", "templates/ci/modules/features/forward-from-custom-class.nix", "templates/ci/modules/features/dynamic-intopath.nix"],
+        "acceptanceCriteria": ["No aspect-chain in destructuring args", "Only context-based fromAspect remains"]
+      }
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: Clean fx pipeline (remove aspect-chain shim)",
+      "status": "pending",
+      "blockedBy": [5],
+      "description": "Remove aspect-chain from constantHandler and mkPipeline root override.",
+      "metadata": {
+        "files": ["nix/lib/aspects/fx/pipeline.nix"],
+        "acceptanceCriteria": ["No aspect-chain in constantHandler", "No root override in mkPipeline"]
+      }
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: Rewrite has-aspect.nix to use fx pipeline",
+      "status": "pending",
+      "blockedBy": [3],
+      "description": "Replace resolve.withAdapter + adapters.collectPaths with fxFullResolve + state.pathSet. Includes root normalization inline.",
+      "metadata": {
+        "files": ["nix/lib/aspects/has-aspect.nix"],
+        "acceptanceCriteria": ["collectPathSet uses fx pipeline with root normalization", "refKey uses fx identity functions"]
+      }
+    },
+    {
+      "id": 8,
+      "subject": "Task 8: Remove fxPipeline=false and rewrite legacy tests",
+      "status": "pending",
+      "blockedBy": [6, 7],
+      "description": "Remove den.fxPipeline from all tests. Rewrite has-aspect tests, aspect-path.nix (use fx.identity.aspectPath), handle issue-369 (CRASHES with fx).",
+      "metadata": {
+        "verifyCommand": "grep -r fxPipeline templates/ | wc -l",
+        "acceptanceCriteria": ["No test references fxPipeline", "has-aspect tests use fx constraints", "aspect-path uses fx identity", "issue-369 addressed"]
+      }
+    },
+    {
+      "id": 9,
+      "subject": "Task 9: Run full test suite and fix failures",
+      "status": "pending",
+      "blockedBy": [8],
+      "description": "All tests pass. Fix cascade breakages.",
+      "metadata": {
+        "verifyCommand": "nix develop -c just ci \"\"",
+        "acceptanceCriteria": ["All tests pass", "nix flake check passes"]
+      }
+    },
+    {
+      "id": 10,
+      "subject": "Task 10: Final cleanup and documentation",
+      "status": "pending",
+      "blockedBy": [9],
+      "description": "Remove stale comments, verify no dead code.",
+      "metadata": {
+        "acceptanceCriteria": ["No stale comments about legacy pipeline", "No dead exports"]
+      }
+    }
+  ],
+  "lastUpdated": "2026-04-17T00:00:00Z"
+}
