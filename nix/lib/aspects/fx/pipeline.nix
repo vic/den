@@ -51,12 +51,6 @@ let
       ctx
       // {
         inherit class;
-        # Provider functions from the type system (providerFnType.merge in types.nix)
-        # create { class, aspect-chain } functors. These reach bind.fn through
-        # aspectToEffect and send aspect-chain as an effect. Provide empty chain —
-        # the fx pipeline uses chain-push/chain-pop for provenance tracking instead.
-        # TODO(vic): Remove when type system no longer creates { class, aspect-chain } providers.
-        "aspect-chain" = [ ];
       }
     )
     // handlers.classCollectorHandler { targetClass = class; }
@@ -93,13 +87,7 @@ let
     }:
     let
       comp = aspectToEffect self;
-      # Override aspect-chain to include root aspect — consumed by type-system provider
-      # functions (parametric.nix, home-env.nix) and legacy resolve pipeline.
-      rootHandlers =
-        defaultHandlers { inherit class ctx; }
-        // handlers.constantHandler {
-          "aspect-chain" = [ self ];
-        };
+      rootHandlers = defaultHandlers { inherit class ctx; };
     in
     fx.handle {
       handlers = composeHandlers rootHandlers extraHandlers;
