@@ -6,16 +6,9 @@
 }:
 let
   rawTypes = import ./types.nix { inherit den lib; };
-  adapters = import ./adapters.nix { inherit den lib; };
-  legacyResolve = import ./resolve.nix { inherit den lib; };
   hasAspect = import ./has-aspect.nix { inherit den lib; };
   fx = import ./fx { inherit den lib; };
 
-  fxEnabled = den.fxPipeline or true;
-
-  # When fxPipeline is enabled, resolve uses the unified aspectToEffect pipeline.
-  # Raw functions (e.g. { class, aspect-chain }: ...) can reach resolve from
-  # forward.nix's fromAspect. Wrap them so aspectToEffect handles them as parametric.
   fxResolveTree =
     class: resolved:
     let
@@ -51,23 +44,11 @@ let
       ctx = { };
     };
 
-  resolve = if fxEnabled then fxResolveTree else legacyResolve;
-
-  # defaultFunctor is baked into the aspect type system (types.nix:178).
-  # It uses parametric.withOwn which creates { class, aspect-chain } functors.
-  # The fx pipeline provides aspect-chain = [] via constantHandler as a compat shim.
-  # TODO: Replace with a simpler functor when the legacy pipeline is removed.
-  defaultFunctor = (den.lib.parametric { }).__functor;
-  typesConf = { inherit defaultFunctor; };
-  types = lib.mapAttrs (_: v: v typesConf) rawTypes;
+  types = lib.mapAttrs (_: v: v { }) rawTypes;
 in
 {
-  inherit
-    types
-    adapters
-    resolve
-    fx
-    ;
+  inherit types fx;
+  resolve = fxResolveTree;
   inherit (hasAspect) hasAspectIn collectPathSet mkEntityHasAspect;
-  mkAspectsType = cnf': lib.mapAttrs (_: v: v (typesConf // cnf')) rawTypes;
+  mkAspectsType = cnf': lib.mapAttrs (_: v: v cnf') rawTypes;
 }

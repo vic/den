@@ -29,7 +29,6 @@ let
     nixModule = ../nixModule;
     nsTypes = ./namespace-types.nix;
     parametric = ./parametric.nix;
-    statics = ./statics.nix;
     take = ./take.nix;
     lastFunctionTo = ./last-function-to.nix;
     strict = ./strict.nix;
