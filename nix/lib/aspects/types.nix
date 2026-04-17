@@ -106,9 +106,33 @@ let
               freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
               config.self = config;
               options.adapter = lib.mkOption {
-                description = "Adapter to compose into resolution for this aspect's subtree";
-                type = lib.types.nullOr (lastFunctionTo lib.types.raw);
+                description = "Legacy adapter function for resolution";
+                type = lib.types.nullOr (
+                  lib.types.mkOptionType {
+                    name = "adapterFunction";
+                    description = "function adapter";
+                    check = lib.isFunction;
+                    merge = _: defs: (lib.last defs).value;
+                  }
+                );
                 default = null;
+              };
+              options.handleWith = lib.mkOption {
+                description = "Resolution handlers for this aspect's subtree";
+                type = lib.types.nullOr (
+                  lib.types.mkOptionType {
+                    name = "handlerValue";
+                    description = "handler record or list of handler records";
+                    check = v: builtins.isAttrs v || builtins.isList v;
+                    merge = _: defs: (lib.last defs).value;
+                  }
+                );
+                default = null;
+              };
+              options.excludes = lib.mkOption {
+                description = "Aspects to exclude from this subtree (sugar for handleWith)";
+                type = lib.types.listOf lib.types.unspecified;
+                default = [ ];
               };
               options.provider = lib.mkOption {
                 internal = true;
