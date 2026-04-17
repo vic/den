@@ -12,11 +12,23 @@ let
 
     Any host aspect that defines a `homeManager` key will have that
     config forwarded to the user's homeManager evaluation. Other class
-    keys (nixos, darwin) are ignored — the pipeline resolves with
-    class = "homeManager" so only homeManager modules are collected.
+    keys (nixos, darwin) are ignored — host.aspect is resolved
+    specifically for class "homeManager", so only homeManager modules
+    are collected. This avoids duplicating nixos modules that are
+    already applied via the host's own resolution.
   '';
 
-  from-host = { host, user }: parametric.fixedTo { inherit host user; } host.aspect;
+  # Resolve host.aspect for homeManager class only, producing a single
+  # homeManager module. This prevents nixos/darwin class keys from
+  # being collected again when the user context contributes to the
+  # host's resolution.
+  from-host =
+    { host, user }:
+    {
+      homeManager = den.lib.aspects.resolve "homeManager" (
+        parametric.fixedTo { inherit host user; } host.aspect
+      );
+    };
 
 in
 {
