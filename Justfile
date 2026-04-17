@@ -4,9 +4,12 @@ help:
   just -l
 
 check-all:
-  nix-build ./templates/noflake --no-out-link -A flake.nixosConfigurations.igloo
+  just check-noflake
   just all check
   just unit
+
+check-noflake:
+  nix-build ./templates/noflake --no-out-link -A flake.nixosConfigurations.igloo
 
 update-all:
   cd templates/noflake && npins update den
