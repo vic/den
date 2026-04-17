@@ -39,7 +39,8 @@ export default defineConfig({
 						{ label: 'Motivation', slug: 'motivation', },
 						{ label: 'Versioning', slug: 'releases' },
 						{ label: 'Community', slug: 'community' },
-						{ label: 'Contributing', slug: 'contributing' },
+						{ label: 'Contributors Guide', slug: 'contributing' },
+						{ label: 'Maintainers Guide', slug: 'maintainers' },
 					],
 				},
 				{
