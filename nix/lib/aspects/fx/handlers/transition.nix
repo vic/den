@@ -36,18 +36,34 @@ let
     );
 
   # Resolve a single context value by running aspectToEffect in a scoped handler.
+  # Also includes the cross-provider: parent.provides.${key} called with parent ctx.
   resolveContextValue =
-    parentCtx: targetAspect: results: newCtx:
+    {
+      parentCtx,
+      parentAspect,
+      transitionKey,
+    }:
+    targetAspect: results: newCtx:
     let
       scopedCtx = parentCtx // newCtx;
+      crossProvider =
+        let
+          pathHead = lib.head (lib.splitString "/" transitionKey);
+          provides = parentAspect.provides or { };
+        in
+        if provides ? ${pathHead} then provides.${pathHead} parentCtx else null;
+      crossProviderIncludes = if crossProvider != null then [ crossProvider ] else [ ];
+      targetWithCross = targetAspect // {
+        includes = (targetAspect.includes or [ ]) ++ crossProviderIncludes;
+      };
     in
-    fx.bind (fx.effects.scope.stateful (constantHandler scopedCtx) (aspectToEffect targetAspect)) (
+    fx.bind (fx.effects.scope.stateful (constantHandler scopedCtx) (aspectToEffect targetWithCross)) (
       childResult: fx.pure (results ++ [ childResult ])
     );
 
   # Resolve a single transition: look up target aspect, check dedup, resolve each context value.
   resolveTransition =
-    currentCtx: results: transition:
+    parentAspect: currentCtx: results: transition:
     let
       key = lib.concatStringsSep "/" transition.path;
       # den.ctx is the global context aspect registry (e.g. den.ctx.user, den.ctx.host).
@@ -75,7 +91,14 @@ let
         else
           builtins.foldl' (
             acc: newCtx:
-            fx.bind acc (innerResults: resolveContextValue currentCtx targetAspect innerResults newCtx)
+            fx.bind acc (
+              innerResults:
+              resolveContextValue {
+                parentCtx = currentCtx;
+                inherit parentAspect;
+                transitionKey = key;
+              } targetAspect innerResults newCtx
+            )
           ) (fx.pure results) transition.contexts
       );
 
@@ -86,10 +109,11 @@ let
         currentCtx = state.currentCtx or { };
         intoResult = param.intoFn currentCtx;
         transitions = flattenInto intoResult [ ];
+        parentAspect = param.self or { };
       in
       {
         resume = builtins.foldl' (
-          acc: transition: fx.bind acc (results: resolveTransition currentCtx results transition)
+          acc: transition: fx.bind acc (results: resolveTransition parentAspect currentCtx results transition)
         ) (fx.pure [ ]) transitions;
         inherit state;
       };

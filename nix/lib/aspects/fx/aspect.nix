@@ -15,6 +15,7 @@ let
     "into"
     "__functor"
     "__functionArgs"
+    "__ctx"
   ];
 
   # Emit emit-class for each non-structural attr on the aspect.
