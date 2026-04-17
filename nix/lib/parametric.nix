@@ -41,10 +41,10 @@ let
       map (i: if canTake.upTo attrs i then carryMeta i (takeFn i attrs) else i) (includes)
     );
 
-  # Extract the aspect's class keys (nixos, darwin, etc.) without structural keys.
-  # These must be emitted as a child include so the fx pipeline picks them up
-  # via compileStatic → emit-class.
+  # Keys that are structural (not class/capability emissions).
   structuralKeys = [
+    "name"
+    "meta"
     "includes"
     "provides"
     "into"
@@ -52,18 +52,23 @@ let
     "__functionArgs"
     "__ctx"
   ];
-  owned = aspect: builtins.removeAttrs aspect structuralKeys;
 
   # Bind context values to an aspect for the fx pipeline.
-  # Tags the result with __ctx so the pipeline can install scoped handlers
-  # that provide the context values to nested parametric includes.
-  # The owned class keys are emitted as a child include.
+  # Class keys stay inline on the result — compileStatic emits them directly.
+  # Tagged with __ctx so the pipeline installs scoped constantHandler for
+  # nested parametric includes that need host/user/etc.
   bindCtx =
     takeFn: attrs: aspect:
-    withIdentity aspect {
-      __ctx = attrs;
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes takeFn attrs (aspect.includes or [ ]);
-    };
+    let
+      classKeys = builtins.removeAttrs aspect structuralKeys;
+    in
+    withIdentity aspect (
+      classKeys
+      // {
+        __ctx = attrs;
+        includes = applyCtxToIncludes takeFn attrs (aspect.includes or [ ]);
+      }
+    );
 
   parametric.fixedTo.__functor = _: attrs: bindCtx take.atLeast attrs;
   parametric.fixedTo.exactly = attrs: bindCtx take.exactly attrs;
