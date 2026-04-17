@@ -150,7 +150,7 @@ let
           {
             resume = null;
             state = state // {
-              imports = (state.imports or [ ]) ++ [ mod ];
+              imports = x: (state.imports x) ++ [ mod ];
             };
           };
     };

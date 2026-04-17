@@ -71,7 +71,7 @@ let
 
   defaultState = {
     seen = { };
-    imports = [ ];
+    imports = _: [ ];
     constraintRegistry = { };
     constraintFilters = [ ];
     paths = [ ];
@@ -127,7 +127,7 @@ let
       result = mkPipeline { inherit class; } { inherit self ctx; };
     in
     {
-      imports = result.state.imports;
+      imports = result.state.imports null;
     };
 in
 {
