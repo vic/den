@@ -128,8 +128,23 @@ let
       )
     );
 
+  handlers = den.lib.aspects.fx.handlers;
+
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
-  keepChild = child: fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ]);
+  # If the child carries __ctx (from parametric.fixedTo), install a scoped
+  # constantHandler so nested parametric includes get the context values.
+  keepChild =
+    child:
+    let
+      comp = aspectToEffect child;
+      hasCtx = builtins.isAttrs child && child ? __ctx && child.__ctx != { };
+    in
+    if hasCtx then
+      fx.bind (fx.effects.scope.stateful (handlers.constantHandler child.__ctx) comp) (
+        resolved: fx.pure [ resolved ]
+      )
+    else
+      fx.bind comp (resolved: fx.pure [ resolved ]);
 
   # The handler.
   includeHandler = {

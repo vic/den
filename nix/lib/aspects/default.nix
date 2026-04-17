@@ -37,11 +37,14 @@ let
           }
         else
           resolved;
+      # Extract __ctx from ctxApply-tagged aspects. These carry context values
+      # (host, user, etc.) that the pipeline's constantHandler needs to provide
+      # to nested parametric includes.
+      ctx = resolved.__ctx or { };
     in
     fx.pipeline.fxResolve {
-      inherit class;
+      inherit class ctx;
       self = wrapped;
-      ctx = { };
     };
 
   types = lib.mapAttrs (_: v: v { }) rawTypes;

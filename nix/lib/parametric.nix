@@ -41,55 +41,40 @@ let
       map (i: if canTake.upTo attrs i then carryMeta i (takeFn i attrs) else i) (includes)
     );
 
-  # Extract the aspect's class keys (nixos, darwin, etc.) without includes/functor.
+  # Extract the aspect's class keys (nixos, darwin, etc.) without structural keys.
   # These must be emitted as a child include so the fx pipeline picks them up
-  # via compileStatic → emit-class. Matches the old `owned self` from statics.nix.
-  owned =
-    aspect:
-    builtins.removeAttrs aspect [
-      "includes"
-      "__functor"
-      "__functionArgs"
-    ];
+  # via compileStatic → emit-class.
+  structuralKeys = [
+    "includes"
+    "provides"
+    "into"
+    "__functor"
+    "__functionArgs"
+    "__ctx"
+  ];
+  owned = aspect: builtins.removeAttrs aspect structuralKeys;
 
-  parametric.fixedTo.__functor =
-    _: attrs: aspect:
+  # Bind context values to an aspect for the fx pipeline.
+  # Tags the result with __ctx so the pipeline can install scoped handlers
+  # that provide the context values to nested parametric includes.
+  # The owned class keys are emitted as a child include.
+  bindCtx =
+    takeFn: attrs: aspect:
     withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.atLeast attrs (aspect.includes or [ ]);
-    };
-  parametric.fixedTo.exactly =
-    attrs: aspect:
-    withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.exactly attrs (aspect.includes or [ ]);
-    };
-  parametric.fixedTo.atLeast =
-    attrs: aspect:
-    withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.atLeast attrs (aspect.includes or [ ]);
-    };
-  parametric.fixedTo.upTo =
-    attrs: aspect:
-    withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.upTo attrs (aspect.includes or [ ]);
+      __ctx = attrs;
+      includes = [ (owned aspect) ] ++ applyCtxToIncludes takeFn attrs (aspect.includes or [ ]);
     };
 
-  parametric.atLeast =
-    aspect: ctx:
-    withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.atLeast ctx (aspect.includes or [ ]);
-    };
+  parametric.fixedTo.__functor = _: attrs: bindCtx take.atLeast attrs;
+  parametric.fixedTo.exactly = attrs: bindCtx take.exactly attrs;
+  parametric.fixedTo.atLeast = attrs: bindCtx take.atLeast attrs;
+  parametric.fixedTo.upTo = attrs: bindCtx take.upTo attrs;
 
-  parametric.exactly =
-    aspect: ctx:
-    withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.exactly ctx (aspect.includes or [ ]);
-    };
+  parametric.atLeast = aspect: ctx: bindCtx take.atLeast ctx aspect;
 
-  parametric.expands =
-    attrs: aspect:
-    withIdentity aspect {
-      includes = [ (owned aspect) ] ++ applyCtxToIncludes take.atLeast attrs (aspect.includes or [ ]);
-    };
+  parametric.exactly = aspect: ctx: bindCtx take.exactly ctx aspect;
+
+  parametric.expands = attrs: aspect: bindCtx take.atLeast attrs aspect;
 
   parametric.withIdentity = withIdentity;
 
