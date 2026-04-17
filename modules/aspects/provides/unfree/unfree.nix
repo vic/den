@@ -13,7 +13,7 @@ let
 
   __functor =
     _self: allowed-names:
-    { class, ... }:
+    { class, aspect-chain }:
     if
       (builtins.elem class [
         "nixos"

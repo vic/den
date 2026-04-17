@@ -3,11 +3,12 @@ let
 
   perSystemFwd =
     forwardArgs:
-    { class, ... }:
+    { class, aspect-chain }:
     den.provides.forward (
       {
         each = lib.optional (class == "flake-parts") forwardArgs;
         intoClass = _: "flake-parts";
+        fromAspect = _: lib.head aspect-chain;
         adaptArgs = { config, ... }: config.allModuleArgs;
       }
       // forwardArgs

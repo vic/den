@@ -40,12 +40,13 @@ let
 
   fwd =
     host:
-    { class, ... }:
+    { class, aspect-chain }:
     den.provides.forward {
       each = lib.singleton true;
       fromClass = _: "wsl";
       intoClass = _: host.class;
       intoPath = _: [ "wsl" ];
+      fromAspect = _: lib.head aspect-chain;
       guard = { options, ... }: options ? wsl;
     };
 

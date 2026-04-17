@@ -12,12 +12,13 @@
       }:
       let
         forwarded =
-          { class, ... }:
+          { class, aspect-chain }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "home";
             intoClass = _: "homeManager";
             intoPath = _: [ ];
+            fromAspect = _: lib.head aspect-chain;
             guard = { pkgs, ... }: true;
             adaptArgs =
               { osConfig, ... }:
@@ -80,12 +81,13 @@
       }:
       let
         forwarded =
-          { class, ... }:
+          { class, aspect-chain }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "home";
             intoClass = _: "homeManager";
             intoPath = _: [ ];
+            fromAspect = _: lib.head aspect-chain;
             guard = { config, ... }: _: lib.mkIf config.programs.fish.enable;
             adaptArgs =
               { config, ... }:
@@ -131,7 +133,7 @@
       }:
       let
         forwarded =
-          { class, ... }:
+          { class, aspect-chain }:
           den.provides.forward {
             each = [
               "Linux"
@@ -140,6 +142,7 @@
             fromClass = platform: "hm${platform}";
             intoClass = _: "homeManager";
             intoPath = _: [ ];
+            fromAspect = _: lib.head aspect-chain;
             guard = { pkgs, ... }: platform: lib.mkIf pkgs.stdenv."is${platform}";
             adaptArgs =
               { config, ... }:

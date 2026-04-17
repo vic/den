@@ -32,7 +32,7 @@
           };
 
         forwarded =
-          { class, ... }:
+          { class, aspect-chain }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "src";
@@ -44,6 +44,7 @@
                 "my-box"
                 config.my-slot
               ];
+            fromAspect = _: lib.head aspect-chain;
           };
       in
       {
@@ -90,7 +91,7 @@
           };
 
         forwarded =
-          { class, ... }:
+          { class, aspect-chain }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "src";
@@ -102,6 +103,7 @@
                 "my-box"
                 config.my-slot
               ];
+            fromAspect = _: lib.head aspect-chain;
           };
       in
       {

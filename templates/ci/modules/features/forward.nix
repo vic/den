@@ -12,7 +12,7 @@
           intoPath = _: [ ];
           fromAspect =
             _:
-            { class, ... }:
+            { class, aspect-chain }:
             {
               src.names = [ "forwarded" ];
             };
@@ -43,7 +43,7 @@
           intoPath = _: [ "somewhere" ];
           fromAspect =
             item:
-            { class, ... }:
+            { class, aspect-chain }:
             {
               src.names = [ item ];
             };
