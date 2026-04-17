@@ -57,7 +57,7 @@ in
         result = runPipeline den { } root;
       in
       {
-        expr = builtins.length result.state.imports null;
+        expr = builtins.length (result.state.imports null);
         expected = 3; # root + child1 + child2 (emit-class fires for each)
       }
     );
@@ -103,7 +103,7 @@ in
         result = runPipeline den { } root;
       in
       {
-        expr = builtins.length result.state.imports null;
+        expr = builtins.length (result.state.imports null);
         expected = 1;
       }
     );
@@ -198,7 +198,7 @@ in
         result = runPipeline den { } root;
       in
       {
-        expr = builtins.length result.state.imports null;
+        expr = builtins.length (result.state.imports null);
         expected = 1; # sopsConf.nixos
       }
     );
@@ -252,7 +252,7 @@ in
         result = runPipeline den { } root;
       in
       {
-        expr = builtins.length result.state.imports null;
+        expr = builtins.length (result.state.imports null);
         expected = 1; # only x11.nixos
       }
     );
@@ -321,7 +321,7 @@ in
       in
       {
         # web.nixos (hostName) + keep.nixos (y), skip is tombstoned
-        expr = builtins.length result.state.imports null;
+        expr = builtins.length (result.state.imports null);
         expected = 2;
       }
     );
