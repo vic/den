@@ -74,7 +74,18 @@ let
           if canTake.upTo ctx sub then
             carryMeta sub (take.upTo sub ctx)
           else if builtins.isAttrs sub && sub ? __functor && sub ? includes then
-            sub // { includes = map (applyDeep takeFn ctx) (sub.includes or [ ]); }
+            sub
+            // {
+              includes = map (
+                i:
+                let
+                  r = applyDeep takeFn ctx i;
+                in
+                # Preserve includes that applyDeep couldn't resolve (wrong context).
+                # They'll be resolved later by the statics path with { class, aspect-chain }.
+                if r == { } then i else r
+              ) (sub.includes or [ ]);
+            }
           else
             sub
         ) rRaw.includes;
