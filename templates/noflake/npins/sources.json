@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "6bf070c84ea223873709ee7c1d00429cf9836267",
-      "url": "https://github.com/vic/den/archive/6bf070c84ea223873709ee7c1d00429cf9836267.tar.gz",
-      "hash": "sha256-Kdb+ozQl+x1+dITuk91YHAunpD+tbOQmonE/jSVUlo4="
+      "revision": "fed2e347cdc1e6d530dd6945b38602b3671abb46",
+      "url": "https://github.com/vic/den/archive/fed2e347cdc1e6d530dd6945b38602b3671abb46.tar.gz",
+      "hash": "sha256-ZyNKZpmRpnzaDEu7PhNkp0bEVZkGWw3vJQ+xQKyJgUM="
     },
     "hjem": {
       "type": "Git",
@@ -55,8 +55,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre955350.c0f3d81a7ddb/nixexprs.tar.xz",
-      "hash": "sha256-BHKMR414WpfUddNyUtx2GR1VPl0R9sWGQs/opgYm9rc="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre980800.566acc07c54d/nixexprs.tar.xz",
+      "hash": "sha256-bo9Hbl5yPjDRldsn1Stnbsmn/nPF0cVlowuLSGHduuA="
     },
     "smfh": {
       "type": "Git",
