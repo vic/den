@@ -28,7 +28,16 @@ let
     in
     eth
     // {
-      merge = loc: defs: eth.merge loc defs;
+      merge =
+        loc: defs:
+        (aspectType cnf).merge loc [
+          {
+            file = (lib.last defs).file;
+            value = {
+              __functor = _: eth.merge loc defs;
+            };
+          }
+        ];
     };
 
   providerType =
