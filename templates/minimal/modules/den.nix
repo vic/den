@@ -16,6 +16,7 @@
         # USER TODO: remove this
         boot.loader.grub.enable = false;
         fileSystems."/".device = "/dev/null";
+        fileSystems."/".fsType = "auto";
       };
   };
 

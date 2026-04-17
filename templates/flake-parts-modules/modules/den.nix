@@ -13,6 +13,7 @@
   den.aspects.igloo = {
     # User TODO: Remove for real host
     nixos.fileSystems."/".device = "/dev/no-boot";
+    nixos.fileSystems."/".fsType = "auto";
     nixos.boot.loader.grub.enable = false;
   };
 

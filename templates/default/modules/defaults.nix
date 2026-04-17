@@ -13,5 +13,6 @@
   den.aspects.tux.nixos = {
     boot.loader.grub.enable = false;
     fileSystems."/".device = "/dev/fake";
+    fileSystems."/".fsType = "auto";
   };
 }
