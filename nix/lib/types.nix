@@ -200,7 +200,11 @@ let
         options = {
           name = strOpt "home configuration name" userName;
           userName = strOpt "user account name" userName;
-          hostName = strOpt "host name" hostName;
+          hostName = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = hostName;
+            description = "host name (null for unbound standalone homes)";
+          };
           user = lib.mkOption {
             default = userByName;
             defaultText = lib.literalExpression "user";
