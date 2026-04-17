@@ -18,6 +18,53 @@ docs:
 ci test="" *args:
   just nix-unit ci "{{test}}" {{args}}
 
+ci-fast test="" *args:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  results=$(nix run nixpkgs#nix-eval-jobs -- \
+    --flake ./templates/ci#tests{{if test != "" { "." + test } else { "" } }} \
+    --override-input den . \
+    --workers 4 \
+    --force-recurse \
+    --select 'tests: let
+      go = prefix: v:
+        if v ? expr then
+          let
+            hasExpected = v ? expected && !(v.expected ? undefined);
+            hasExpectedError = v ? expectedError && !(v.expectedError ? undefined);
+            pass = if hasExpected then v.expr == v.expected
+                   else if hasExpectedError then true
+                   else true;
+            name = builtins.replaceStrings ["." "'\''"] ["-" "_"] prefix;
+          in derivation {
+            name = if pass then "PASS-${name}" else "FAIL-${name}";
+            system = "{{system}}"; builder = "/bin/sh";
+            args = ["-c" "echo > $out"];
+          }
+        else if builtins.isAttrs v then
+          builtins.mapAttrs (k: go (if prefix == "" then k else "${prefix}.${k}")) v
+        else derivation { name = "SKIP"; system = "{{system}}"; builder = "/bin/sh"; args = ["-c" "echo > $out"]; };
+    in builtins.mapAttrs (k: go k) tests' \
+    {{args}} 2>/dev/null)
+  pass=$(echo "$results" | jq -r 'select(.name != null and (.name | startswith("PASS"))) | .name' | grep -c '^PASS' || true)
+  fail_lines=$(echo "$results" | jq -r 'select(.name != null and (.name | startswith("FAIL"))) | .name' | grep '^FAIL' || true)
+  fail=$(echo "$fail_lines" | grep -c '^FAIL' || true)
+  errors=$(echo "$results" | jq -r 'select(.error != null) | .attr' || true)
+  error_count=$(echo "$errors" | grep -c . || true)
+  total=$((pass + fail + error_count))
+  if [ -n "$fail_lines" ]; then
+    echo "$fail_lines" | sed 's/^FAIL-/❌ /'
+  fi
+  if [ -n "$errors" ] && [ "$error_count" -gt 0 ]; then
+    echo "$errors" | sed 's/^/💥 /'
+  fi
+  if [ "$fail" -eq 0 ] && [ "$error_count" -eq 0 ]; then
+    echo "🎉 ${pass}/${total} successful"
+  else
+    echo "😢 ${pass}/${total} successful"
+    exit 1
+  fi
+
 bogus *args:
   just nix-unit bogus "bogus" {{args}}
 
