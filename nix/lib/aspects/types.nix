@@ -182,6 +182,15 @@ let
             default = { };
           };
 
+          __functor = lib.mkOption {
+            internal = true;
+            visible = false;
+            description = "Functor — default is lib.const (ignores context)";
+            type = lastFunctionTo (providerType cnf);
+            defaultText = lib.literalExpression "lib.const";
+            default = lib.const;
+          };
+
           includes = lib.mkOption {
             description = "Providers to ask aspects from";
             type = lib.types.listOf (providerType cnf);
