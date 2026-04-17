@@ -26,7 +26,7 @@
         };
       in
       {
-        expr = builtins.length result.state.imports;
+        expr = builtins.length result.state.imports null;
         expected = 1;
       }
     );
@@ -59,7 +59,7 @@
         };
       in
       {
-        expr = builtins.length result.state.imports;
+        expr = builtins.length result.state.imports null;
         expected = 2;
       }
     );
@@ -165,7 +165,7 @@
         };
       in
       {
-        expr = builtins.length result.state.imports;
+        expr = builtins.length result.state.imports null;
         expected = 1;
       }
     );

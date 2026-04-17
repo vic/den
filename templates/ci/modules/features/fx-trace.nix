@@ -205,7 +205,7 @@
         expr = {
           hasHostEntry = builtins.any (e: e.name == "host") result.state.entries;
           allEntriesHaveClass = builtins.all (e: e.class == "nixos") result.state.entries;
-          hasImports = result.state.imports != [ ];
+          hasImports = (result.state.imports null) != [ ];
         };
         expected = {
           hasHostEntry = true;
@@ -267,7 +267,7 @@
         expr = {
           hasProvider = builtins.elem "host-provider" entryNames;
           hasHost = builtins.elem "host" entryNames;
-          importCount = builtins.length result.state.imports;
+          importCount = builtins.length (result.state.imports null);
         };
         expected = {
           hasProvider = true;
@@ -333,7 +333,7 @@
         expr = {
           hasEntries = result.state.entries != [ ];
           hasPaths = result.state.paths != [ ];
-          hasImports = result.state.imports != [ ];
+          hasImports = (result.state.imports null) != [ ];
         };
         expected = {
           hasEntries = true;
