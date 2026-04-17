@@ -15,6 +15,7 @@
       test-parametric-aspect-preserves-name = denTest (
         { den, ... }:
         {
+          den.fxPipeline = false;
           den.aspects.igloo.includes = [ den.aspects.foo ];
 
           den.aspects.foo =
@@ -31,6 +32,7 @@
       test-parametric-child-preserves-name = denTest (
         { den, ... }:
         {
+          den.fxPipeline = false;
           den.aspects.foo.includes = [ den.aspects.bar ];
           den.aspects.bar =
             { host }:
@@ -50,6 +52,7 @@
       test-meta-preserved-through-functor = denTest (
         { den, ... }:
         {
+          den.fxPipeline = false;
           den.aspects.foo.nixos = { };
 
           expr = (den.lib.aspects.resolve.withAdapter getName "nixos" den.aspects.foo).adapter;
@@ -72,6 +75,7 @@
             };
         in
         {
+          den.fxPipeline = false;
           den.aspects.foo.includes = [ den.aspects.bar ];
           den.aspects.bar =
             { host }:

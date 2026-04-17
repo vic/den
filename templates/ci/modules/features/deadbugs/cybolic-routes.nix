@@ -12,14 +12,15 @@
         ...
       }:
       {
+        den.fxPipeline = false;
         den.default.homeManager.home.stateVersion = "25.11";
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.routes =
           let
             inherit (den.lib) parametric;
-            # eg, `<user>._.<host>` and `<host>._.<user>`
-            mutual = from: to: from.aspect._.${to.aspect.name} or { };
+            # eg, `<user>.provides.<host>` and `<host>.provides.<user>`
+            mutual = from: to: from.aspect.provides.${to.aspect.name} or { };
 
             routes =
               { host, user, ... }@ctx:

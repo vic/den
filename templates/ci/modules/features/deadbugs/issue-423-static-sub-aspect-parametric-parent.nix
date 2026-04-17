@@ -9,6 +9,7 @@
     test-static-sub-aspect-from-parametric-parent = denTest (
       { den, igloo, ... }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # Split across modules so the parametric parent and the static sub
@@ -18,11 +19,11 @@
             den.aspects.role =
               { host, ... }:
               {
-                includes = [ den.aspects.role._.sub ];
+                includes = [ den.aspects.role.provides.sub ];
               };
           }
           {
-            den.aspects.role._.sub.nixos.networking.networkmanager.enable = true;
+            den.aspects.role.provides.sub.nixos.networking.networkmanager.enable = true;
           }
           {
             den.aspects.igloo.includes = [ den.aspects.role ];

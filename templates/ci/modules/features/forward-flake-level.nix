@@ -10,7 +10,7 @@
         ...
       }:
       let
-        fwd = den._.forward {
+        fwd = den.provides.forward {
           each = [ { name = "moo"; } ];
           fromClass = item: "goofy";
           intoClass = _: "flake";
@@ -35,7 +35,7 @@
       in
       {
 
-        den.ctx.foo._.foo = { name }: den.aspects.${name};
+        den.ctx.foo.provides.foo = { name }: den.aspects.${name};
 
         den.aspects.moo = {
           goofy.names = [ "hello" ];

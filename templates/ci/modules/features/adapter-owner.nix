@@ -50,6 +50,7 @@
         pathKeys = map adapters.pathKey (pathResult.paths or [ ]);
       in
       {
+        den.fxPipeline = false;
         expr = {
           dropExcluded = !(builtins.elem "drop" pathKeys);
           keepPresent = builtins.elem "keep" pathKeys;
@@ -109,6 +110,7 @@
         pathKeys = map adapters.pathKey (pathResult.paths or [ ]);
       in
       {
+        den.fxPipeline = false;
         expr = {
           deepDropExcluded = !(builtins.elem "deep-drop" pathKeys);
           deepKeepPresent = builtins.elem "deep-keep" pathKeys;

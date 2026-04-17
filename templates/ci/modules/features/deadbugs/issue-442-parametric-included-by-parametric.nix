@@ -13,6 +13,7 @@
     test-parametric-aspect-included-by-parametric-aspect = denTest (
       { den, igloo, ... }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.git =
@@ -53,6 +54,7 @@
         ...
       }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.shell =

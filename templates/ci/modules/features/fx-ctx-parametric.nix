@@ -1,0 +1,162 @@
+{
+  denTest,
+  lib,
+  ...
+}:
+{
+  flake.tests.fx-ctx-parametric = {
+
+    # Bare lambda include with context arg — pipeline provides host via ctx.
+    test-bare-lambda-host = denTest (
+      { den, ... }:
+      let
+        fx = den.lib.fx;
+        parent = {
+          name = "parent";
+          meta = { };
+          nixos = { };
+          includes = [
+            (
+              { host, ... }:
+              {
+                nixos.networking.hostName = host;
+              }
+            )
+          ];
+        };
+        comp = den.lib.aspects.fx.aspect.aspectToEffect parent;
+        result = fx.handle {
+          handlers = den.lib.aspects.fx.pipeline.defaultHandlers {
+            class = "nixos";
+            ctx = {
+              host = "igloo";
+            };
+          };
+          state = den.lib.aspects.fx.pipeline.defaultState;
+        } comp;
+      in
+      {
+        expr = (builtins.head result.value.includes).nixos.networking.hostName;
+        expected = "igloo";
+      }
+    );
+
+    # Attrset-with-functor parametric child — explicit __functionArgs with host.
+    test-attrset-functor-host = denTest (
+      { den, ... }:
+      let
+        fx = den.lib.fx;
+        child = {
+          name = "child";
+          meta = { };
+          __functor =
+            _:
+            { host }:
+            {
+              nixos.networking.hostName = host;
+            };
+          __functionArgs = {
+            host = false;
+          };
+          includes = [ ];
+        };
+        parent = {
+          name = "parent";
+          meta = { };
+          nixos = { };
+          includes = [ child ];
+        };
+        comp = den.lib.aspects.fx.aspect.aspectToEffect parent;
+        result = fx.handle {
+          handlers = den.lib.aspects.fx.pipeline.defaultHandlers {
+            class = "nixos";
+            ctx = {
+              host = "igloo";
+            };
+          };
+          state = den.lib.aspects.fx.pipeline.defaultState;
+        } comp;
+      in
+      {
+        expr = (builtins.head result.value.includes).nixos.networking.hostName;
+        expected = "igloo";
+      }
+    );
+
+    # fixedTo-wrapped aspect through full pipeline with ctx — manual pipeline setup.
+    test-fixedto-with-ctx = denTest (
+      { den, ... }:
+      let
+        fx = den.lib.fx;
+        parametric = den.lib.parametric;
+        innerAspect = {
+          name = "tux";
+          meta = { };
+          user = {
+            description = "test-user";
+          };
+          includes = [
+            (
+              { host, ... }:
+              lib.optionalAttrs (host == "igloo") {
+                user.extraGroups = [ "wheel" ];
+              }
+            )
+          ];
+        };
+        wrapped = parametric.fixedTo {
+          host = "igloo";
+        } innerAspect;
+        comp = den.lib.aspects.fx.aspect.aspectToEffect wrapped;
+        # Provide host in ctx so the pipeline has a handler for it.
+        result = fx.handle {
+          handlers = den.lib.aspects.fx.pipeline.defaultHandlers {
+            class = "user";
+            ctx = {
+              host = "igloo";
+            };
+          };
+          state = den.lib.aspects.fx.pipeline.defaultState;
+        } comp;
+      in
+      {
+        expr = builtins.length result.state.imports > 0;
+        expected = true;
+      }
+    );
+
+    # fixedTo-wrapped aspect through fxResolveTree — ctx is empty, deepRecurse
+    # should handle context internally without needing host in pipeline handlers.
+    test-fixedto-through-fxResolveTree = denTest (
+      { den, ... }:
+      let
+        parametric = den.lib.parametric;
+        innerAspect = {
+          name = "tux";
+          meta = { };
+          user = {
+            description = "test-user";
+          };
+          includes = [
+            (
+              { host, ... }:
+              lib.optionalAttrs (host == "igloo") {
+                user.extraGroups = [ "wheel" ];
+              }
+            )
+          ];
+        };
+        wrapped = parametric.fixedTo {
+          host = "igloo";
+        } innerAspect;
+        # This is what forward.nix calls:
+        resolved = den.lib.aspects.resolve "user" wrapped;
+      in
+      {
+        expr = builtins.length resolved.imports > 0;
+        expected = true;
+      }
+    );
+
+  };
+}

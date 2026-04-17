@@ -26,7 +26,7 @@
             inputs.provider
           ])
         ];
-        expr = provider.tools._.dev ? _;
+        expr = provider.tools.provides.dev ? _;
         expected = true;
       }
     );
@@ -45,7 +45,7 @@
           ])
         ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ provider.tools._.dev._.editors ];
+        den.aspects.igloo.includes = [ provider.tools.provides.dev.provides.editors ];
         expr = igloo.programs.vim.enable;
         expected = true;
       }
@@ -65,7 +65,7 @@
           ])
         ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo.includes = [ provider.tools._.dev._.host-stamp ];
+        den.aspects.igloo.includes = [ provider.tools.provides.dev.provides.host-stamp ];
         expr = igloo.environment.sessionVariables.PROVIDER_HOST;
         expected = "igloo";
       }
@@ -86,8 +86,8 @@
           ])
         ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
-        den.aspects.igloo._.to-users.includes = [ provider.tools._.dev._.user-stamp ];
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.aspects.igloo.provides.to-users.includes = [ provider.tools.provides.dev.provides.user-stamp ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
         expr = igloo.users.users.tux.description;
         expected = "user-of-igloo";
       }

@@ -11,10 +11,11 @@
         ...
       }:
       {
+        den.fxPipeline = false; # CRASHES with fx
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
 
-        den.default.includes = [ den._.self' ];
+        den.default.includes = [ den.provides.self' ];
         den.aspects.tux.includes = [ den.aspects.hola ];
 
         den.aspects.hola.homeManager =
@@ -37,10 +38,11 @@
         ...
       }:
       {
+        den.fxPipeline = false; # CRASHES with fx
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
 
-        den.default.includes = [ den._.inputs' ];
+        den.default.includes = [ den.provides.inputs' ];
         den.aspects.tux.includes = [ den.aspects.hola ];
 
         den.aspects.hola.homeManager =
@@ -69,12 +71,13 @@
         imports = [ (inputs.den.namespace "gloom" false) ];
         _module.args.__findFile = den.lib.__findFile;
 
+        den.fxPipeline = false; # CRASHES with fx
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.default.homeManager.home.stateVersion = "25.11";
 
         den.default.includes = [
-          den._.inputs'
-          den._.define-user
+          den.provides.inputs'
+          den.provides.define-user
         ];
         den.aspects.tux.includes = [ gloom.everywhere ];
         gloom.everywhere.includes = [ <gloom/apps/helix> ];

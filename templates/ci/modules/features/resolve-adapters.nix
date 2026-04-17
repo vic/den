@@ -10,6 +10,7 @@
         ...
       }:
       {
+        den.fxPipeline = false;
 
         den.aspects.foo.includes = [ den.aspects.bar ];
         den.aspects.bar.includes = [ den.aspects.baz ];
@@ -34,6 +35,7 @@
         ...
       }:
       {
+        den.fxPipeline = false;
 
         den.aspects.foo.includes = [ den.aspects.bar ];
         den.aspects.bar.includes = [ den.aspects.baz ];
@@ -59,6 +61,7 @@
         ...
       }:
       {
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
         den.hosts.x86_64-linux.iceberg = { };
 

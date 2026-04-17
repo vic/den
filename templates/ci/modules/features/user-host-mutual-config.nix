@@ -42,8 +42,8 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.mutual-provider ];
-        den.aspects.igloo._.to-users.homeManager.programs.direnv.enable = true;
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
+        den.aspects.igloo.provides.to-users.homeManager.programs.direnv.enable = true;
 
         expr = [
           tuxHm.programs.direnv.enable
@@ -69,9 +69,9 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
 
-        den.aspects.igloo._.to-users.includes = [
+        den.aspects.igloo.provides.to-users.includes = [
           {
             homeManager.programs.direnv.enable = true;
           }
@@ -136,9 +136,9 @@
           pingu = { };
         };
 
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
 
-        den.aspects.igloo._.to-users.includes = [
+        den.aspects.igloo.provides.to-users.includes = [
           (
             { host, user }:
             {
@@ -252,7 +252,7 @@
         ...
       }:
       {
-        den.ctx.user.includes = [ den._.mutual-provider ];
+        den.ctx.user.includes = [ den.provides.mutual-provider ];
 
         den.hosts.x86_64-linux.igloo.users = {
           tux = { };

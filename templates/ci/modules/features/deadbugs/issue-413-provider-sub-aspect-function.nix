@@ -13,11 +13,11 @@
             den.aspects.foo =
               { host, ... }:
               {
-                includes = [ den.aspects.foo._.sub ];
+                includes = [ den.aspects.foo.provides.sub ];
               };
           }
           {
-            den.aspects.foo._.sub =
+            den.aspects.foo.provides.sub =
               { host, ... }:
               {
                 nixos.networking.networkmanager.enable = true;

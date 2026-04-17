@@ -13,7 +13,7 @@
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "home";
             intoClass = _: "homeManager";
@@ -82,7 +82,7 @@
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "home";
             intoClass = _: "homeManager";
@@ -134,7 +134,7 @@
       let
         forwarded =
           { class, aspect-chain }:
-          den._.forward {
+          den.provides.forward {
             each = [
               "Linux"
               "Darwin"
