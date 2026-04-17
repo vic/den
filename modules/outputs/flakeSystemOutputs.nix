@@ -15,7 +15,7 @@ let
 
   systemOutputFwd =
     { system, output }:
-    { class, aspect-chain }:
+    { class, ... }:
     den.provides.forward {
       each = lib.optional (class == "flake") output;
       fromClass = _: output;
@@ -27,7 +27,6 @@ let
       ];
       guard = _: has-flake-output output;
       adaptArgs = _: { pkgs = inputs.nixpkgs.legacyPackages.${system}; };
-      fromAspect = _: lib.head aspect-chain;
     };
 
   ctxSystemOuts =

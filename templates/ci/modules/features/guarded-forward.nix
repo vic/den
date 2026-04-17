@@ -30,13 +30,12 @@ in
       }:
       let
         forwarded =
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "imper";
             intoClass = _: "nixos";
             intoPath = _: [ "impermanence" ];
-            fromAspect = _: lib.head aspect-chain;
             guard = { options, ... }: options ? impermanence;
           };
       in
@@ -62,13 +61,12 @@ in
       }:
       let
         forwarded =
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "imper";
             intoClass = _: "nixos";
             intoPath = _: [ "impermanence" ];
-            fromAspect = _: lib.head aspect-chain;
             guard = { options, ... }: options ? impermanence;
           };
       in
@@ -109,10 +107,9 @@ in
             unset.homeManager.home.keyboard.model = lib.mkDefault "unset";
 
             vimer-home =
-              { class, aspect-chain }:
+              { class, ... }:
               den.provides.forward {
                 each = lib.singleton true;
-                fromAspect = _: lib.head aspect-chain;
                 fromClass = _: "home-pingu";
                 intoClass = _: "homeManager";
                 intoPath = _: [ "home" ];

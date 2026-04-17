@@ -11,13 +11,12 @@
       }:
       let
         forwarded =
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "custom";
             intoClass = _: "nixos";
             intoPath = _: [ ];
-            fromAspect = _: lib.head aspect-chain;
           };
       in
       {
@@ -45,13 +44,12 @@
         };
 
         forwarded =
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "src";
             intoClass = _: "nixos";
             intoPath = _: [ "fwd-box" ];
-            fromAspect = _: lib.head aspect-chain;
           };
       in
       {
@@ -82,7 +80,7 @@
       }:
       let
         forwarded =
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = lib.singleton class;
             fromClass = _: "git";
@@ -91,7 +89,6 @@
               "programs"
               "git"
             ];
-            fromAspect = _: lib.head aspect-chain;
             adaptArgs =
               { config, ... }:
               {
@@ -123,7 +120,7 @@
       }:
       let
         forwarded =
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = [
               "nixos"
@@ -132,7 +129,6 @@
             fromClass = _: "nix";
             intoClass = lib.id;
             intoPath = _: [ "nix" ];
-            fromAspect = _: lib.head aspect-chain;
             adaptArgs =
               { config, ... }:
               {
@@ -172,7 +168,7 @@
       let
         forwarded =
           { host, user }:
-          { class, aspect-chain }:
+          { class, ... }:
           den.provides.forward {
             each = lib.optional (lib.elem host.name [
               "igloo"
@@ -181,7 +177,6 @@
             fromClass = _: "iced";
             intoClass = _: host.class;
             intoPath = _: [ ];
-            fromAspect = _: lib.head aspect-chain;
           };
       in
       {

@@ -15,7 +15,7 @@ let
   '';
 
   os-class =
-    { class, aspect-chain }:
+    { class, ... }:
     den.provides.forward {
       each = [
         "nixos"
@@ -24,7 +24,6 @@ let
       fromClass = _: "os";
       intoClass = lib.id;
       intoPath = _: [ ];
-      fromAspect = _: lib.head aspect-chain;
     };
 
 in

@@ -59,7 +59,7 @@ let
   userEnvAspect =
     ctxName:
     { host, user }:
-    { class, aspect-chain }:
+    { class, ... }:
     {
       includes = [
         (den.ctx."${ctxName}-user" { inherit host user; })
