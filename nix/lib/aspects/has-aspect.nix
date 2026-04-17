@@ -2,22 +2,48 @@
 # Entity-facing wiring lives in modules/context/has-aspect.nix.
 { lib, den, ... }:
 let
-  inherit (den.lib.aspects) adapters resolve;
-  inherit (adapters) pathKey toPathSet;
+  inherit (den.lib.aspects.fx) identity;
+  inherit (identity) aspectPath pathKey;
 
-  # Validate a ref has both `name` and `meta` (aspectPath requires
-  # both) and return its slash-joined path key.
   refKey =
     ref:
     if (ref ? name) && (ref ? meta) then
-      pathKey (adapters.aspectPath ref)
+      pathKey (aspectPath ref)
     else
       throw "hasAspect: ref must have both `name` and `meta` (got ${builtins.typeOf ref}).";
 
-  # Run collectPaths under `class` on `tree`, returned as an
-  # attrset-as-set keyed by slash-joined path.
+  # Resolve tree via fx pipeline and extract pathSet from state.
+  # Inlines the same root normalization as fxResolveTree (default.nix)
+  # to handle raw lambdas and functor attrsets.
   collectPathSet =
-    { tree, class }: toPathSet ((resolve.withAdapter adapters.collectPaths class tree).paths or [ ]);
+    { tree, class }:
+    let
+      isRawFn = builtins.isFunction tree;
+      isFunctor = builtins.isAttrs tree && tree ? __functor;
+      functorArgs = if isFunctor then builtins.functionArgs (tree.__functor tree) else { };
+      needsWrap = isRawFn || (isFunctor && functorArgs != { });
+      normalized =
+        if needsWrap then
+          let
+            innerFn = if isFunctor then tree.__functor tree else tree;
+            innerArgs = if isFunctor then functorArgs else builtins.functionArgs innerFn;
+          in
+          {
+            __functor = _: innerFn;
+            __functionArgs = innerArgs;
+            name = tree.name or "<function body>";
+            meta = tree.meta or { };
+            includes = tree.includes or [ ];
+          }
+        else
+          tree;
+      result = den.lib.aspects.fx.pipeline.fxFullResolve {
+        inherit class;
+        self = normalized;
+        ctx = { };
+      };
+    in
+    result.state.pathSet or { };
 
   hasAspectIn =
     {
@@ -27,9 +53,6 @@ let
     }:
     (collectPathSet { inherit tree class; }) ? ${refKey ref};
 
-  # Build the functor+attrs value attached to entities as `.hasAspect`.
-  # Per-class path sets are thunk-cached inside `setFor` so repeated
-  # calls share one traversal per class.
   mkEntityHasAspect =
     {
       tree,
