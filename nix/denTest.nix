@@ -146,7 +146,6 @@ let
           iceberg
           tuxHm
           pinguHm
-          trace
           ;
       };
     };
