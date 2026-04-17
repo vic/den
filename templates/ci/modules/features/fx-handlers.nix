@@ -8,7 +8,8 @@
   flake.tests.fx-handlers = {
 
     # constantHandler resumes with ctx value for known arg.
-    test-parametric-handler-provides-value = denTest({ den, ...}:
+    test-parametric-handler-provides-value = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         ctx = {
@@ -32,10 +33,12 @@
       {
         expr = result.value;
         expected = "igloo";
-      });
+      }
+    );
 
     # constantHandler provides class.
-    test-static-handler-provides-class = denTest({ den, ... }:
+    test-static-handler-provides-class = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         handlers = {
@@ -55,10 +58,12 @@
       {
         expr = result.value;
         expected = "nixos";
-      });
+      }
+    );
 
     # Combined handlers: constantHandler merges ctx + static in one handle call.
-    test-combined-handlers = denTest({ den, ... }:
+    test-combined-handlers = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         ctx = {
@@ -98,10 +103,12 @@
           hostName = "igloo";
           cls = "nixos";
         };
-      });
+      }
+    );
 
     # Two-layer topology: rotate handles known, outer catches unknown.
-    test-rotate-unknown-to-outer = denTest({ den, ... }:
+    test-rotate-unknown-to-outer = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         ctx = {
@@ -141,7 +148,8 @@
           host = "igloo";
           missing-arg = "caught";
         };
-      });
+      }
+    );
 
     # constantHandler merges ctx values.
     test-constantHandler-denTest = denTest (

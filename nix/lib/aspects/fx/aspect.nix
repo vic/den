@@ -20,11 +20,16 @@ let
   # Emit emit-class for each non-structural attr on the aspect.
   emitClasses =
     aspect: classKeys: nodeIdentity:
-    fx.seq (map (k: fx.send "emit-class" {
-      class = k;
-      identity = nodeIdentity;
-      module = aspect.${k};
-    }) classKeys);
+    fx.seq (
+      map (
+        k:
+        fx.send "emit-class" {
+          class = k;
+          identity = nodeIdentity;
+          module = aspect.${k};
+        }
+      ) classKeys
+    );
 
   # Register constraints from meta.handleWith and meta.excludes.
   registerConstraints =
@@ -57,8 +62,7 @@ let
     builtins.foldl' (
       acc: child:
       fx.bind acc (
-        results:
-        fx.bind (fx.send "emit-include" child) (childResults: fx.pure (results ++ childResults))
+        results: fx.bind (fx.send "emit-include" child) (childResults: fx.pure (results ++ childResults))
       )
     ) (fx.pure [ ]) incs;
 
@@ -101,11 +105,7 @@ let
     nodeIdentity: isMeaningful: comp:
     if isMeaningful then
       fx.bind (fx.send "chain-push" { identity = nodeIdentity; }) (
-        _:
-        fx.bind comp (
-          result:
-          fx.bind (fx.send "chain-pop" null) (_: fx.pure result)
-        )
+        _: fx.bind comp (result: fx.bind (fx.send "chain-pop" null) (_: fx.pure result))
       )
     else
       comp;
@@ -114,24 +114,27 @@ let
   resolveChildren =
     aspect:
     { isMeaningful, nodeIdentity }:
-    fx.bind (chainWrap nodeIdentity isMeaningful (
-      fx.bind (emitSelfProvide aspect) (
-        selfProvResults:
-        fx.bind (emitTransitions aspect) (
-          transitionResults:
-          fx.bind (emitIncludes (aspect.includes or [ ])) (
-            children:
-            fx.pure (selfProvResults ++ transitionResults ++ children)
+    fx.bind
+      (chainWrap nodeIdentity isMeaningful (
+        fx.bind (emitSelfProvide aspect) (
+          selfProvResults:
+          fx.bind (emitTransitions aspect) (
+            transitionResults:
+            fx.bind (emitIncludes (aspect.includes or [ ])) (
+              children: fx.pure (selfProvResults ++ transitionResults ++ children)
+            )
           )
         )
-      )
-    )) (
-      allChildren:
-      let
-        resolved = aspect // { includes = allChildren; };
-      in
-      fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved)
-    );
+      ))
+      (
+        allChildren:
+        let
+          resolved = aspect // {
+            includes = allChildren;
+          };
+        in
+        fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved)
+      );
 
   # Compile a static (non-functor) aspect into an effectful computation.
   compileStatic =

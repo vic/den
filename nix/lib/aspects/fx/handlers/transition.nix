@@ -41,9 +41,9 @@ let
     let
       scopedCtx = parentCtx // newCtx;
     in
-    fx.bind
-      (fx.effects.scope.stateful (constantHandler scopedCtx) (aspectToEffect targetAspect))
-      (childResult: fx.pure (results ++ [ childResult ]));
+    fx.bind (fx.effects.scope.stateful (constantHandler scopedCtx) (aspectToEffect targetAspect)) (
+      childResult: fx.pure (results ++ [ childResult ])
+    );
 
   # Resolve a single transition: look up target aspect, check dedup, resolve each context value.
   resolveTransition =
@@ -73,12 +73,10 @@ let
         if !isFirst then
           fx.pure results
         else
-          builtins.foldl'
-            (acc: newCtx:
-              fx.bind acc (innerResults:
-                resolveContextValue currentCtx targetAspect innerResults newCtx))
-            (fx.pure results)
-            transition.contexts
+          builtins.foldl' (
+            acc: newCtx:
+            fx.bind acc (innerResults: resolveContextValue currentCtx targetAspect innerResults newCtx)
+          ) (fx.pure results) transition.contexts
       );
 
   transitionHandler = {
@@ -91,8 +89,7 @@ let
       in
       {
         resume = builtins.foldl' (
-          acc: transition:
-          fx.bind acc (results: resolveTransition currentCtx results transition)
+          acc: transition: fx.bind acc (results: resolveTransition currentCtx results transition)
         ) (fx.pure [ ]) transitions;
         inherit state;
       };

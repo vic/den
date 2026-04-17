@@ -7,7 +7,7 @@
     test-resolve-honors-meta-adapter = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.foo.includes = [ den.aspects.bar ];
         den.aspects.foo.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "bar");
         den.aspects.bar.nixos = { };
@@ -20,7 +20,7 @@
     test-tags-includes-with-adapter = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.parent.includes = [ den.aspects.child ];
         den.aspects.parent.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "baz");
         den.aspects.child.includes = [ den.aspects.baz ];
@@ -41,7 +41,7 @@
     test-child-inherits-parent-adapter = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.parent.includes = [ den.aspects.child ];
         den.aspects.parent.meta.adapter = den.lib.aspects.adapters.filter (
           a: (a.name or null) != "excluded"
@@ -68,7 +68,7 @@
     test-deep-chain-a-excludes-c-through-b = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.a.includes = [ den.aspects.b ];
         den.aspects.a.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "c");
         den.aspects.b.includes = [
@@ -93,7 +93,7 @@
     test-diamond-a-excludes-d-through-both-paths = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.a.includes = [
           den.aspects.b
           den.aspects.c
@@ -123,7 +123,7 @@
     test-ctx-carries-meta-adapter = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
 
         den.ctx.host.meta.adapter = den.lib.aspects.adapters.filter (a: a.name != "foo");
@@ -136,7 +136,7 @@
     test-ctx-meta-adapter-null-when-unset = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
 
         expr = (den.ctx.host { host = den.hosts.x86_64-linux.igloo; }).meta.adapter;
@@ -151,7 +151,7 @@
     test-ctx-host-adapter-filters-transitively = denTest (
       { den, igloo, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.ctx.host.meta.adapter = den.lib.aspects.adapters.filter (a: (a.name or null) != "blocked");

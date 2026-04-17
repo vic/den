@@ -39,11 +39,16 @@ let
       in
       {
         resume = param;
-        state = state // {
-          paths = (state.paths or [ ]) ++ (lib.optional (!isExcluded) path);
-        } // lib.optionalAttrs (!isExcluded) {
-          pathSet = (state.pathSet or { }) // { ${key} = true; };
-        };
+        state =
+          state
+          // {
+            paths = (state.paths or [ ]) ++ (lib.optional (!isExcluded) path);
+          }
+          // lib.optionalAttrs (!isExcluded) {
+            pathSet = (state.pathSet or { }) // {
+              ${key} = true;
+            };
+          };
       };
   };
 

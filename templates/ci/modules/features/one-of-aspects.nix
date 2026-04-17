@@ -7,7 +7,7 @@
     test-prefers-first-present = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.bundle.includes = [
           den.aspects.pref-a
           den.aspects.pref-b
@@ -32,7 +32,7 @@
     test-falls-through-to-second = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.bundle.includes = [ den.aspects.only-b ];
         den.aspects.bundle.meta.adapter = den.lib.aspects.adapters.oneOfAspects [
           den.aspects.pref-a
@@ -53,7 +53,7 @@
     test-both-absent-no-effect = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.bundle.includes = [ den.aspects.neither ];
         den.aspects.bundle.meta.adapter = den.lib.aspects.adapters.oneOfAspects [
           den.aspects.pref-a
@@ -76,7 +76,7 @@
     test-composes-with-outer-adapter = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         # root sibling-filters bundle and sibling; bundle internally
         # uses oneOfAspects. Verifies the two adapters both take effect
         # at their own level without interfering: root's filter kills
@@ -115,7 +115,7 @@
     test-works-on-sub-aspects = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.bundle.includes = [
           den.aspects.foo.provides.impl-a
           den.aspects.foo.provides.impl-b
@@ -139,7 +139,7 @@
     test-preserves-non-candidate-includes = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.bundle.includes = [
           den.aspects.pref-a
           den.aspects.pref-b

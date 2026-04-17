@@ -5,7 +5,7 @@
     test-meta-adapter-filters-subtree = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz
@@ -27,7 +27,7 @@
     test-meta-adapter-only-affects-subtree = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.root.includes = [
           den.aspects.foo
           den.aspects.baz
@@ -53,7 +53,7 @@
     test-meta-adapter-composes-with-caller = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz

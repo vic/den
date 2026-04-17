@@ -25,20 +25,18 @@ let
     if filtered == [ ] then null else lib.last filtered;
 
   # Shared entry fields for both trace handlers.
-  mkBaseEntry =
-    class: param:
-    {
-      inherit class;
-      provider = param.meta.provider or [ ];
-      excluded = param.meta.excluded or false;
-      excludedFrom = param.meta.excludedFrom or null;
-      replacedBy = param.meta.replacedBy or null;
-      isProvider = (param.meta.provider or [ ]) != [ ];
-      handlers = param.meta.handleWith or [ ];
-      hasClass = param ? ${class};
-      isParametric = param.meta.isParametric or false;
-      fnArgNames = param.meta.fnArgNames or [ ];
-    };
+  mkBaseEntry = class: param: {
+    inherit class;
+    provider = param.meta.provider or [ ];
+    excluded = param.meta.excluded or false;
+    excludedFrom = param.meta.excludedFrom or null;
+    replacedBy = param.meta.replacedBy or null;
+    isProvider = (param.meta.provider or [ ]) != [ ];
+    handlers = param.meta.handleWith or [ ];
+    hasClass = param ? ${class};
+    isParametric = param.meta.isParametric or false;
+    fnArgNames = param.meta.fnArgNames or [ ];
+  };
 
   # Minimal trace handler — accumulates entries without disambiguation.
   # Use for tests that verify basic parent/entry structure.

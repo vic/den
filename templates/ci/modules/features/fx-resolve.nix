@@ -507,7 +507,7 @@
       denTest (
         { den, ... }:
         let
-        fx = den.lib.fx;
+          fx = den.lib.fx;
           composed = den.lib.aspects.fx.pipeline.composeHandlers a b;
           comp = fx.send "test-effect" null;
           result = fx.handle {

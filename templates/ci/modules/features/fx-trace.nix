@@ -126,7 +126,8 @@
       }
     );
 
-    test-ctx-trace-handler = denTest({den, ...}:
+    test-ctx-trace-handler = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         comp = fx.send "ctx-traverse" {
@@ -162,7 +163,8 @@
       {
         expr = (builtins.head result.state.ctxTrace).key;
         expected = "host";
-      });
+      }
+    );
 
     test-mkPipeline-with-trace = denTest (
       { den, ... }:

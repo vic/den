@@ -266,7 +266,8 @@ in
     );
 
     # Dedup: same key second time gets isFirst=false (standalone test).
-    test-dedup = denTest({ den, ...}:
+    test-dedup = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         comp = fx.bind (fx.send "ctx-seen" "k") (
@@ -304,10 +305,12 @@ in
           first = true;
           second = false;
         };
-      });
+      }
+    );
 
     # Self-provider standalone: ctx-provider effect resolves provides.
-    test-self-provider = denTest({ den, ... }:
+    test-self-provider = denTest (
+      { den, ... }:
       let
         fx = den.lib.fx;
         provFn = ctx: { name = "provided"; };
@@ -343,7 +346,8 @@ in
       {
         expr = (result.value { }).name;
         expected = "provided";
-      });
+      }
+    );
 
   };
 }

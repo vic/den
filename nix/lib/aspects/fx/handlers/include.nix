@@ -18,12 +18,14 @@ let
   # Coupling note: this is the only handler-layer reference to den.lib.aspects.types.
   normalizeModuleFn =
     child:
-    den.lib.aspects.types.aspectType.merge [ (child.name or "<deferred>") ] [
-      {
-        file = "<deferred>";
-        value = child;
-      }
-    ];
+    den.lib.aspects.types.aspectType.merge
+      [ (child.name or "<deferred>") ]
+      [
+        {
+          file = "<deferred>";
+          value = child;
+        }
+      ];
 
   # Wrap bare function includes in an aspect envelope.
   wrapChild =
@@ -39,11 +41,7 @@ let
           let
             innerFn = child.__functor child;
             # innerFn may be a function (parametric) or a value (factory functor).
-            innerArgs =
-              if builtins.isFunction innerFn then
-                builtins.functionArgs innerFn
-              else
-                { };
+            innerArgs = if builtins.isFunction innerFn then builtins.functionArgs innerFn else { };
           in
           child
           // {

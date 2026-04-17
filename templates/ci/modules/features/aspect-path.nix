@@ -5,7 +5,7 @@
     test-aspectPath-named = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.foo.nixos = { };
         expr = den.lib.aspects.adapters.aspectPath den.aspects.foo;
         expected = [ "foo" ];
@@ -15,7 +15,7 @@
     test-aspectPath-with-provider = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.monitoring = {
           nixos = { };
           provides.node-exporter.nixos = { };
@@ -32,7 +32,7 @@
     test-excludeAspect-tombstone-in-trace = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz
@@ -56,7 +56,7 @@
     test-excludeAspect-no-modules = denTest (
       { den, igloo, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
         den.aspects.igloo.includes = [
           den.aspects.bar
@@ -77,7 +77,7 @@
     test-excludeAspect-propagates-to-subtree = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.role ];
         den.aspects.root.meta.adapter =
           inherited: den.lib.aspects.adapters.excludeAspect den.aspects.baz inherited;
@@ -105,7 +105,7 @@
     test-excludeAspect-by-provider = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.monitoring = {
           nixos = { };
           provides.node-exporter.nixos = { };
@@ -117,7 +117,8 @@
           monitoring.provides.alerting
         ];
         den.aspects.server.meta.adapter =
-          inherited: den.lib.aspects.adapters.excludeAspect den.aspects.monitoring.provides.node-exporter inherited;
+          inherited:
+          den.lib.aspects.adapters.excludeAspect den.aspects.monitoring.provides.node-exporter inherited;
 
         expr = trace "nixos" den.aspects.server;
         # node-exporter tombstone visible, alerting kept
@@ -134,7 +135,7 @@
     test-excludeAspect-cascades-to-providers = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.monitoring = {
           nixos = { };
           provides.node-exporter.nixos = { };
@@ -163,7 +164,7 @@
     test-substituteAspect-replaces = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.foo.includes = [
           den.aspects.bar
           den.aspects.baz
@@ -189,7 +190,7 @@
     test-substituteAspect-build-uses-replacement = denTest (
       { den, igloo, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo = { };
         den.aspects.igloo.includes = [ den.aspects.bar ];
         den.aspects.igloo.meta.adapter =
@@ -207,7 +208,7 @@
     test-substituteAspect-propagates = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.root.includes = [ den.aspects.role ];
         den.aspects.root.meta.adapter =
           inherited: den.lib.aspects.adapters.substituteAspect den.aspects.baz den.aspects.qux inherited;
@@ -237,7 +238,7 @@
     test-perHost-visible-in-trace = denTest (
       { den, trace, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.aspects.role.includes = with den.aspects; [
           leaf
           param

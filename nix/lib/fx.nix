@@ -1,4 +1,4 @@
-{ inputs, lib, ... }: 
+{ inputs, lib, ... }:
 let
   lock = builtins.fromJSON (builtins.readFile ../../templates/ci/flake.lock);
   locked = lock.nodes.nix-effects.locked;
@@ -7,5 +7,5 @@ let
     sha256 = locked.narHash;
   };
   nfx = import nix-effects { inherit lib; };
-in inputs.nix-effects.lib or nfx
-
+in
+inputs.nix-effects.lib or nfx

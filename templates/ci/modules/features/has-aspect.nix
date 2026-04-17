@@ -16,7 +16,7 @@
     test-host-hasAspect-present-static = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.feature ];
@@ -32,7 +32,7 @@
     test-host-hasAspect-absent = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.nixos = { };
@@ -46,7 +46,7 @@
     test-user-hasAspect-present = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # denTest's default is classes = ["homeManager"] for users.
@@ -61,7 +61,7 @@
     test-hasAspect-forClass-explicit = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.feature ];
@@ -75,7 +75,7 @@
     test-hasAspect-forAnyClass = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.feature ];
@@ -89,7 +89,7 @@
     test-hasAspect-respects-tombstone = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [
@@ -115,7 +115,7 @@
     test-hasAspect-angle-bracket-equivalent = denTest (
       { den, __findFile, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         _module.args.__findFile = den.lib.__findFile;
 
         den.hosts.x86_64-linux.igloo.users.tux = { };
@@ -140,7 +140,7 @@
     test-A-hosts-hasAspect-self = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.aspects.igloo.nixos = { };
 
@@ -153,7 +153,7 @@
     test-A-hosts-hasAspect-chained-transitively = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.level1 ];
@@ -172,7 +172,7 @@
     test-B-present-via-parametric-parent = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.parent ];
@@ -193,7 +193,7 @@
     test-B-present-via-static-sub-aspect-in-parametric-parent = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         imports = [
@@ -223,7 +223,7 @@
     test-B-present-via-bare-function-sub-aspect = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         imports = [
@@ -254,7 +254,7 @@
     test-B-absent-when-parametric-parent-omits = denTest (
       { den, lib, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.gated ];
@@ -280,7 +280,7 @@
     test-C-factory-fn-aspect-present = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.facter = reportPath: {
@@ -297,7 +297,7 @@
     test-C-factory-fn-merged-with-static-sibling = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         imports = [
@@ -326,7 +326,7 @@
     test-D-static-provider-sub-present = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.foo.provides.sub ];
@@ -342,7 +342,7 @@
     test-D-parametric-provider-sub-present = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.foo.provides.sub ];
@@ -360,7 +360,7 @@
     test-D-provider-sub-identity-distinct-from-homonym = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.bar.provides.foo ];
@@ -384,7 +384,7 @@
     test-E-present-via-provides-to-users = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.ctx.user.includes = [ den.provides.mutual-provider ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
@@ -401,7 +401,7 @@
     test-E-present-via-provides-specific-user = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.ctx.user.includes = [ den.provides.mutual-provider ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
         den.hosts.x86_64-linux.igloo.users.alice = { };
@@ -425,7 +425,7 @@
     test-E-present-via-user-to-hosts = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.ctx.user.includes = [ den.provides.mutual-provider ];
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
@@ -444,7 +444,7 @@
     test-F-respects-substituteAspect = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.original ];
@@ -474,7 +474,7 @@
     test-F-composes-at-different-levels = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # igloo's adapter tombstones root-sibling at its own level.
@@ -515,7 +515,7 @@
     test-F-respects-oneOfAspects = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.igloo.includes = [ den.aspects.bundle ];
@@ -546,7 +546,7 @@
     test-G-user-hasAspect-primary-class = denTest (
       { den, lib, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.schema.user.classes = lib.mkForce [
           "user"
           "homeManager"
@@ -566,7 +566,7 @@
     test-G-user-hasAspect-forClass-explicit = denTest (
       { den, lib, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.schema.user.classes = lib.mkForce [
           "user"
           "homeManager"
@@ -591,7 +591,7 @@
     test-G-user-hasAspect-forAnyClass-matches-any = denTest (
       { den, lib, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.schema.user.classes = lib.mkForce [
           "user"
           "homeManager"
@@ -609,7 +609,7 @@
     test-G-user-hasAspect-forClass-unknown-class = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         den.aspects.tux.includes = [ den.aspects.target ];
@@ -629,7 +629,7 @@
     test-H-conf-option-exists = denTest (
       { den, ... }:
       {
-  den.fxPipeline = false;
+        den.fxPipeline = false;
         den.hosts.x86_64-linux.igloo.users.tux = { };
 
         # If conf owns the option, host imports conf, and therefore
