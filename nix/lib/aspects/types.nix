@@ -28,16 +28,7 @@ let
     in
     eth
     // {
-      merge =
-        loc: defs:
-        (aspectType cnf).merge loc [
-          {
-            file = (lib.last defs).file;
-            value = {
-              __functor = _: eth.merge loc defs;
-            };
-          }
-        ];
+      merge = loc: defs: eth.merge loc defs;
     };
 
   providerType =
@@ -205,14 +196,6 @@ let
             };
           };
 
-          __functor = lib.mkOption {
-            internal = true;
-            visible = false;
-            description = "Functor to default provider";
-            type = lastFunctionTo (providerType cnf);
-            defaultText = lib.literalExpression "lib.const";
-            default = cnf.defaultFunctor or lib.const;
-          };
         };
       }
     );
@@ -228,8 +211,7 @@ let
   # into a full aspect whose default functor ignores the user's
   # argument, so `(facter ./facter.json)` no longer materializes the
   # config. Such functions stay typed as `providerFnType`, whose merge
-  # wraps the underlying function via `__functor = _: eth.merge loc
-  # defs` so `(aspect arg)` correctly invokes the user function.
+  # directly delegates to the either type's merge.
   coercedProviderType =
     cnf:
     let
