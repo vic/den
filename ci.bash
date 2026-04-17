@@ -5,8 +5,11 @@
 #
 set -euo pipefail
 
-system="${1:-"x86_64-linux"}"
-shift
+system="x86_64-linux"
+if test -n "${1:-}"; then
+  system="${1}"
+  shift
+fi
 
 suite=""
 preSuite=""
