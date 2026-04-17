@@ -54,8 +54,7 @@ All examples from this guide can be run on a Nix REPL.
 For now you have to use our experimental branch until that lands on Den main:
 
 ```shell
-nix repl "github:sini/den/feat/fx-resolution?dir=templates/ci" \
-  --override-input den "github:sini/den/feat/fx-resolution"
+nix repl "github:vic/den?dir=templates/ci"
 ```
 
 Once at the REPL, you can access the `nix-effects` API via `den.lib.fx`.
