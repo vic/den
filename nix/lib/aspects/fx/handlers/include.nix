@@ -131,12 +131,32 @@ let
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
   keepChild = child: fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ]);
 
-  # The handler.
+  # Derive a stable name for anonymous aspects from parent chain + index.
+  nameAnon =
+    state: idx:
+    let
+      chain = state.includesChain or [ ];
+      parent = if chain == [ ] then "<root>" else lib.last chain;
+    in
+    "${parent}/<anon>:${toString idx}";
+
+  isMeaningfulName =
+    name: name != "<anon>" && name != "<function body>" && !(lib.hasPrefix "[definition " name);
+
+  # The handler. param is { child, idx } from emitIncludes.
   includeHandler = {
     "emit-include" =
       { param, state }:
       let
-        child = wrapChild param;
+        rawChild = param.child or param;
+        idx = param.idx or null;
+        wrapped = wrapChild rawChild;
+        # Replace anonymous names with parent+index derived identity.
+        child =
+          if idx != null && !(isMeaningfulName (wrapped.name or "<anon>")) then
+            wrapped // { name = nameAnon state idx; }
+          else
+            wrapped;
         childIdentity = identity.pathKey (identity.aspectPath child);
         isConditional = builtins.isAttrs child && child ? meta && child.meta ? guard;
       in

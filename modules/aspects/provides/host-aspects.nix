@@ -4,7 +4,7 @@ let
 
   description = ''
     Projects all homeManager-class configs from the host's aspect tree
-    onto users who opt in.
+    onto users who opt in. Requires the fx pipeline.
 
     ## Usage
 
@@ -12,11 +12,17 @@ let
 
     Any host aspect that defines a `homeManager` key will have that
     config forwarded to the user's homeManager evaluation. Other class
-    keys (nixos, darwin) are ignored — the pipeline resolves with
-    class = "homeManager" so only homeManager modules are collected.
+    keys (nixos, darwin) are ignored — host.aspect is resolved
+    specifically for class "homeManager".
   '';
 
-  from-host = { host, user }: parametric.fixedTo { inherit host user; } host.aspect;
+  from-host =
+    { host, user }:
+    {
+      homeManager = den.lib.aspects.resolve "homeManager" (
+        parametric.fixedTo { inherit host user; } host.aspect
+      );
+    };
 
 in
 {
