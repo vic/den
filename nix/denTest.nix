@@ -115,11 +115,6 @@ let
       sort = lib.sort (a: b: a < b);
       show = items: builtins.trace (lib.concatStringsSep " / " (lib.flatten [ items ]));
 
-      trace = with den.lib.aspects; {
-        __functor = _: resolve.withAdapter adapters.trace;
-        over = outer: resolve.withAdapter (outer adapters.trace);
-      };
-
       funnyNames =
         aspect:
         let

@@ -7,7 +7,7 @@
       { den, __findFile, ... }:
       {
         _module.args.__findFile = den.lib.__findFile;
-        expr = <den.lib.statics> ? owned;
+        expr = <den.lib.parametric> ? atLeast;
         expected = true;
       }
     );
