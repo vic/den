@@ -51,6 +51,7 @@ export default defineConfig({
 						{ label: 'Parametric Aspects', slug: 'explanation/parametric' },
 						{ label: 'NixOS Context Pipeline', slug: 'explanation/context-pipeline' },
 						{ label: 'Library vs Framework', slug: 'explanation/library-vs-framework' },
+						{ label: 'ABC on Den Effects', slug: 'explanation/effects' },
 					],
 				},
 				{
