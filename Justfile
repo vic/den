@@ -16,10 +16,10 @@ docs:
   cd docs && pnpm run dev
 
 ci test="" *args:
-  just nix-unit ci "{{test}}" {{args}}
+  bash ./ci.bash "{{system}}" "{{test}}" {{args}}
 
-ci-fast test="" *args:
-  bash ./ci-fast.bash "{{system}}" "{{test}}" {{args}}
+ci-deep test="" *args:
+  just nix-unit ci "{{test}}" {{args}}
 
 bogus *args:
   just nix-unit bogus "bogus" {{args}}

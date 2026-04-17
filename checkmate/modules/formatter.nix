@@ -5,7 +5,7 @@
     "Justfile"
     "AGENT*.md"
     "*.txt"
-    "ci-fast.bash"
+    "ci.bash"
   ];
   perSystem.treefmt.programs.deadnix.enable = false;
   perSystem.treefmt.programs.nixf-diagnose.enable = false;

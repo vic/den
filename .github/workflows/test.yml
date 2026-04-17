@@ -34,7 +34,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
       - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: actions/checkout@v6
-      - run: nix-shell --run 'just ci'
+      - run: nix-shell --run 'just ci-deep'
   flake-check:
     needs: [non-draft]
     name: nix flake check
