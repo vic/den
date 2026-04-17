@@ -20,7 +20,8 @@ let
       { param, state }:
       {
         # For these tests, just return the child as-is (no recursive resolution).
-        resume = [ param ];
+        # emitIncludes sends { child, idx } — extract the child.
+        resume = [ (param.child or param) ];
         inherit state;
       };
     "register-constraint" =

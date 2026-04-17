@@ -56,15 +56,29 @@ let
     in
     fx.seq (map (c: fx.send "register-constraint" (c // { inherit owner; })) allConstraints);
 
-  # Fold includes through emit-include effects.
+  # Fold includes through emit-include effects, tagging each with its
+  # positional index so the handler can derive stable identities for
+  # anonymous includes (parentIdentity/<anon>:index).
   emitIncludes =
     incs:
-    builtins.foldl' (
-      acc: child:
-      fx.bind acc (
-        results: fx.bind (fx.send "emit-include" child) (childResults: fx.pure (results ++ childResults))
-      )
-    ) (fx.pure [ ]) incs;
+    let
+      len = builtins.length incs;
+      go =
+        idx: acc:
+        if idx >= len then
+          acc
+        else
+          go (idx + 1) (
+            fx.bind acc (
+              results:
+              fx.bind (fx.send "emit-include" {
+                child = builtins.elemAt incs idx;
+                inherit idx;
+              }) (childResults: fx.pure (results ++ childResults))
+            )
+          );
+    in
+    go 0 (fx.pure [ ]);
 
   # Emit into-transition effects for each key in aspect.into.
   # into is a function ctx → attrset. We pass the unevaluated function

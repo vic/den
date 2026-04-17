@@ -145,7 +145,27 @@ let
         else
           let
             identity = param.identity or "<anon>";
-            mod = lib.setDefaultModuleLocation "${param.class}@${identity}" param.module;
+            loc = "${param.class}@${identity}";
+            # Named aspects get a key for NixOS module-level dedup: two
+            # resolve calls emitting the same aspect:class produce the
+            # same key, so the module system keeps only the first.
+            # Anonymous/synthetic names must not be keyed — multiple
+            # anonymous includes with the same identity are distinct.
+            isAnon =
+              identity == "<anon>"
+              || identity == "<function body>"
+              || lib.hasPrefix "[definition " identity
+              || lib.hasPrefix "<root>/" identity
+              || lib.hasInfix "/<anon>:" identity;
+            mod =
+              if isAnon then
+                lib.setDefaultModuleLocation loc param.module
+              else
+                {
+                  key = loc;
+                  _file = loc;
+                  imports = [ param.module ];
+                };
           in
           {
             resume = null;
