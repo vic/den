@@ -37,10 +37,10 @@ let
           }
         else
           tree;
+      ctx = tree.__ctx or { };
       result = den.lib.aspects.fx.pipeline.fxFullResolve {
-        inherit class;
+        inherit class ctx;
         self = normalized;
-        ctx = { };
       };
     in
     result.state.pathSet or { };
