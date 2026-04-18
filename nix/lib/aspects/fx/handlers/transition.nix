@@ -12,7 +12,7 @@
 }:
 let
   fx = den.lib.fx;
-  inherit (den.lib.aspects.fx.handlers) constantHandler;
+  inherit (den.lib.aspects.fx.handlers) constantHandler includeHandler;
   inherit (den.lib.aspects.fx.aspect) aspectToEffect;
 
   # Flatten a nested into attrset into a flat list of { path, contexts }.
@@ -66,13 +66,10 @@ let
     in
     _t (
       fx.bind (fx.effects.scope.run {
-        # Deep handler semantics (nix-effects): effects from outer handler
-        # resumes re-enter this scope. So constantHandler here catches
-        # bind.fn arg effects even when they originate from includeHandler's
-        # keepChild resume at the outer level.
-        # Note: class/aspect-chain shadow the root handlers so pipeline-provided
-        # args remain available through scoped resolution (forward fns need aspect-chain).
-        handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx;
+        # includeHandler must be in scope so emit-include is handled where
+        # constantHandler has the right context. Without this, emit-include
+        # rotates to the outer handler where scoped context args are missing.
+        handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx // includeHandler;
       } (aspectToEffect targetAspect)) (childResult: fx.pure (results ++ [ childResult ]))
     );
 
@@ -114,7 +111,7 @@ let
           in
           _tc (
             fx.bind (fx.effects.scope.run {
-              handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx;
+              handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx // includeHandler;
             } (aspectToEffect wrapped)) (crossResolved: fx.pure (prevResults ++ [ crossResolved ]))
           )
         else
