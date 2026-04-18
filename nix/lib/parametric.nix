@@ -44,29 +44,41 @@ let
   # Keys that are structural (not class/capability emissions).
   structuralKeys = [
     "name"
+    "description"
     "meta"
     "includes"
     "provides"
     "into"
     "__functor"
     "__functionArgs"
-    "__ctx"
+    "_module"
   ];
 
   # Bind context values to an aspect for the fx pipeline.
-  # Class keys stay inline on the result — compileStatic emits them directly.
-  # Tagged with __ctx so the pipeline installs scoped constantHandler for
-  # nested parametric includes that need host/user/etc.
+  # Class keys stay inline — compileStatic emits them directly.
+  # Recursively applies context to sub-includes so nested parametric
+  # functions at every depth get resolved.
   bindCtx =
     takeFn: attrs: aspect:
     let
       classKeys = builtins.removeAttrs aspect structuralKeys;
+      resolveIncludes =
+        includes:
+        map (
+          i:
+          let
+            applied = if canTake.upTo attrs i then carryMeta i (takeFn i attrs) else i;
+          in
+          if builtins.isAttrs applied && applied ? includes then
+            applied // { includes = resolveIncludes (applied.includes or [ ]); }
+          else
+            applied
+        ) (builtins.filter (x: x != { }) includes);
     in
     withIdentity aspect (
       classKeys
       // {
-        __ctx = attrs;
-        includes = applyCtxToIncludes takeFn attrs (aspect.includes or [ ]);
+        includes = resolveIncludes (aspect.includes or [ ]);
       }
     );
 
