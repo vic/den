@@ -23,7 +23,10 @@ let
   # Emit emit-class for each non-structural attr on the aspect.
   emitClasses =
     aspect: classKeys: nodeIdentity:
-    fx.seq (
+    let
+      _t = builtins.trace "emitClasses: ${nodeIdentity} keys=${toString classKeys}";
+    in
+    _t (fx.seq (
       map (
         k:
         fx.send "emit-class" {
@@ -32,7 +35,7 @@ let
           module = aspect.${k};
         }
       ) classKeys
-    );
+    ));
 
   # Register constraints from meta.handleWith and meta.excludes.
   registerConstraints =
