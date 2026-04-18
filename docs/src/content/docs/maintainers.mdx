@@ -1,0 +1,118 @@
+---
+title: "Maintainers Guide"
+description: "How to Maintain Den"
+---
+
+This guide is for people who are currently maintaining Den. It covers topics on how to merge pull-requests, how to release Den.
+
+Maintaining an opensource project can be overwelming for a single person, this is why we try to share the duties over many committed individuals.
+
+> **Motivate others to contribute to Den**
+
+Maintainers are all volunteers and there's no hard-expectations from them. We ask people to treat maintainers with respect, do not ask as if they had any responsability to you. We all contribute our time and effort with good-will for the sake of helping Den and its users.
+
+Here's the list of Den current maintainers:
+
+- [`@vic`](https://github.com/vic)
+- [`@sini`](https://github.com/sini)
+- [`@HeitorAugustoLN`](https://github.com/HeitorAugustoLN)
+- [`@Gwenodai`](https://github.com/Gwenodai)
+- [`@theutz`](https://github.com/theutz)
+- [`@DylanRJohnston`](https://github.com/DylanRJohnston)
+
+## Communication Channels
+
+We don't have a maintainers-only communication channel. But many maintainers hangout at Den's Matrix channel.
+
+We prefer open communication whenever possible. And private messages only for sensitive or personal matters.
+
+Everything related to Den issues or planning/designing new features should ideally be communicated openly. So other people can know how Den is being evolved and can also participate.
+
+All communication must be respectful and mindful of others. Specially when coming from maintainers. We do not have a social contract, but kindness and respect for each other is our only rule.
+
+## Asking For `denTest`s
+
+At times people will only complain about things not working. Practice patience, and ask them to send an small `denTest` snippet so we can properly reproduce or identify any problem.
+
+Direct people to our [bogus guide](/tutorials/bogus). Showing how easy it is to write a `denTest` is part of educating our users, and an easy way to inspire them to contribute tests to Den.
+
+## Issues/PR Assignment
+
+There's currently no workflow on how to assign work. Simply work on things you want to improve on Den.
+
+Even issues/PR without assignee are helpful, just mark them with the `any-takers` tag, so any other volunteer can take it.
+
+Feel free to assign any issue/PR to yourself just as a hint that you are currently working on it.
+
+## Reviewing Contributions
+
+Contributions must follow our [Contributing Guide](/contributing), direct people to it.
+
+Also feel free to ping or mention other maintainers if you think you need help.
+
+As someone commited to Den, feel free to take decisions on it, just communicate anything you consider important for others to know.
+
+Make use of `Draft` PRs to communicate work is still pending and makes no sense to review right now. Once marked as ready, review and leave pertinent comments / change-requests.
+
+Communication on PR comments or request changes must be purely technical, objective and clear. Always being respectful of people.
+
+## Merging Pull-Requests
+
+PRs automatically run our `just ci-deep` tests.
+
+Review the design and code changes, try to think how these changes will impact Den. Make sure there's nothing suspicious and that code is understandable for you and other maintainers, ask for help if needed.
+
+Communicate with contributors to have a satisfying and best possible solution. Working does not equal good, specially when it comes to unsupervised code.
+
+When code is OK. Send a GitHub PR Approval.
+
+Use the `allow-ci` so all integration tests are run on the branch.
+
+If you think the branch might have some performance impact on Den, use `allow-bench` tag to run benchmarking.
+
+If you trust the contributor and they have commit-bit, add `merge-approved` tag to indicate they can merge whenever they feel ready.
+
+Tag the PR with `future` to mark changes that might require a release before being safe to land on main.
+
+
+## Releasing Den
+
+_Release early, release often_, but **keep quality in mind**.
+
+Den releases are currently not tied to time nor have any complicated planning.
+
+We just try to release whenever we feel like Den is stable enough.
+
+Large or experimental refactors need to be maintained as separate `future/*` branches. `main` branch is expected to be stable (CI green) at all times.
+
+### Create a Draft
+
+We use GitHub Releases, create a Draft for next release as soon as we have published a new release.
+
+### Document Breaking Changes
+
+The draft serves so we can keep adding _Release Notes_
+before we forget about things that **need** to be
+communicated to users.
+
+### Publish Release
+
+Communicate the intent of making a release with one or two days of anticipation.
+
+This helps other people willing to have shipped features decide if they can make it to the next release.
+
+Any Den Maintainer can volunteer to publish a release, just communicate on who will do it.
+
+### Update Docs
+
+We try that all code changes also have corresponding Docs when pertinent.
+
+There's a few manual steps regarding docs after publishing a release:
+
+- Run `versioned-docs` action on `latest` after it has been updated.
+- Run `versioned-docs` action on old tags with expired docs archive we want to keep around.
+- Run `GH Pages` action on main for [`/versions.json`](https://den.oeiuwq.com/versions.json) to be regenerated.
+
+## Thanks!
+
+You are awesome, thanks for dedicating time and effort into Den.
