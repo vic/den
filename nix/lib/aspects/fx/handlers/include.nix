@@ -131,11 +131,8 @@ let
   handlers = den.lib.aspects.fx.handlers;
 
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
-  # If the child carries __ctx (from parametric.bindCtx), install a scoped
-  # constantHandler via scope.run so nested parametric includes get context
-  # values (host, user, etc.). Uses scope.run (not scope.stateful) because
-  # constantHandler only provides values — outer state from rotated effects
-  # (emit-class, chain-push, etc.) is preserved.
+  # scope.run provides context for direct bind.fn resolution. Context is also
+  # at the fx.handle level (defaultHandlers) for re-handled effect cases.
   keepChild =
     child:
     let

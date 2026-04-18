@@ -48,7 +48,7 @@ let
     };
 in
 {
-  den.provides.define-user = den.lib.parametric.exactly {
+  den.provides.define-user = {
     inherit description;
     includes = [
       userContext

@@ -12,25 +12,17 @@ let
   fxResolveTree =
     class: resolved:
     let
-      # builtins.isFunction is false for functor attrsets (sets with __functor).
-      # Handle both raw lambdas and functors — forward.nix's fromAspect returns
-      # fixedTo-wrapped aspects which are functor attrsets needing parametric resolution.
-      # Only wrap functors whose inner function has named args (e.g. deepRecurse's
-      # { class, aspect-chain }) — the default functor takes bare `ctx` (args={})
-      # and should go through compileStatic to preserve class keys.
-      isRawFn = builtins.isFunction resolved;
       isFunctor = builtins.isAttrs resolved && resolved ? __functor;
       functorArgs = if isFunctor then builtins.functionArgs (resolved.__functor resolved) else { };
-      needsWrap = isRawFn || (isFunctor && functorArgs != { });
+      # Only wrap functors whose inner function has named args (e.g. deepRecurse's
+      # { class, aspect-chain }). Plain aspects with default functor (lib.const,
+      # bare args) go through compileStatic directly.
+      needsWrap = isFunctor && functorArgs != { };
       wrapped =
         if needsWrap then
-          let
-            innerFn = if isFunctor then resolved.__functor resolved else resolved;
-            innerArgs = if isFunctor then functorArgs else builtins.functionArgs innerFn;
-          in
           {
-            __functor = _: innerFn;
-            __functionArgs = innerArgs;
+            __functor = _: resolved.__functor resolved;
+            __functionArgs = functorArgs;
             name = resolved.name or "<function body>";
             meta = resolved.meta or { };
             includes = resolved.includes or [ ];

@@ -1,143 +1,18 @@
 { lib, den, ... }:
 let
-  inherit (den.lib) take canTake;
+  warn = msg: v: lib.warn "den.lib.parametric: ${msg}" v;
 
-  # Preserve aspect identity through functor evaluation.
-  # Carries name and typed meta options so adapters and provenance
-  # survive, without leaking freeform user meta to child results.
-  withIdentity =
-    self: extra:
-    let
-      meta = self.meta or { };
-    in
-    {
-      name = self.name or "<anon>";
-      meta = {
-        adapter = meta.adapter or null;
-        handleWith = meta.handleWith or null;
-        excludes = meta.excludes or [ ];
-        provider = meta.provider or [ ];
-      };
-    }
-    // extra;
+  parametric.fixedTo.__functor =
+    _: _ctx: aspect:
+    warn "fixedTo is deprecated — the fx pipeline provides context via effects" aspect;
+  parametric.fixedTo.exactly = _ctx: aspect: warn "fixedTo.exactly is deprecated" aspect;
+  parametric.fixedTo.atLeast = _ctx: aspect: warn "fixedTo.atLeast is deprecated" aspect;
+  parametric.fixedTo.upTo = _ctx: aspect: warn "fixedTo.upTo is deprecated" aspect;
 
-  # Copy fn's meta onto a materialized functor result. Preserves
-  # meta.provider so provider sub-aspects keep their full aspectPath
-  # (e.g. ["foo","sub"]) after the user fn is invoked and returns a
-  # raw attrset that would otherwise drop it.
-  carryMeta =
-    fn: result:
-    if builtins.isAttrs result && fn ? meta && !(result ? meta) then
-      result // { inherit (fn) meta; }
-    else
-      result;
+  parametric.atLeast = aspect: _ctx: warn "atLeast is deprecated — use plain attrsets" aspect;
+  parametric.exactly = aspect: _ctx: warn "exactly is deprecated — use plain attrsets" aspect;
+  parametric.expands = _attrs: aspect: warn "expands is deprecated" aspect;
 
-  # Eagerly apply context to includes that accept it.
-  # Includes whose required args aren't satisfied pass through unchanged
-  # for the fx pipeline to handle later.
-  applyCtxToIncludes =
-    takeFn: attrs: includes:
-    builtins.filter (x: x != { }) (
-      map (i: if canTake.upTo attrs i then carryMeta i (takeFn i attrs) else i) (includes)
-    );
-
-  # Keys that are structural (not class/capability emissions).
-  structuralKeys = [
-    "name"
-    "description"
-    "meta"
-    "includes"
-    "provides"
-    "into"
-    "__functor"
-    "__functionArgs"
-    "__ctx"
-    "_module"
-  ];
-
-  # Bind context values to an aspect for the fx pipeline.
-  # Class keys stay inline — compileStatic emits them directly.
-  # Recursively applies context to sub-includes so nested parametric
-  # functions at every depth get resolved.
-  # Args always available from the pipeline's constantHandler.
-  pipelineArgs = {
-    class = true;
-    "aspect-chain" = true;
-  };
-
-  bindCtx =
-    takeFn: attrs: aspect:
-    let
-      classKeys = builtins.removeAttrs aspect structuralKeys;
-      # Context args + pipeline-provided args for checking resolvability.
-      allAvailable = attrs // pipelineArgs;
-      resolveIncludes =
-        includes:
-        map (
-          i:
-          let
-            resolvable = canTake.upTo attrs i;
-            # Bare-arg functions (like parametric.exactly/atLeast results)
-            # have empty functionArgs so canTake.upTo is always false.
-            # Try calling them directly — takeFn handles canTake internally.
-            isBareArgFn = !resolvable && lib.isFunction i && lib.functionArgs i == { };
-            applied =
-              if resolvable then
-                carryMeta i (takeFn i attrs)
-              else if isBareArgFn then
-                let
-                  result = takeFn i attrs;
-                in
-                if result == { } then i else carryMeta i result
-              else
-                i;
-          in
-          if lib.isFunction i && !isBareArgFn && !canTake.atLeast allAvailable i then
-            # Drop parametric functions whose required args can't be
-            # satisfied by context OR pipeline-provided values.
-            # ctxApply processes all transition levels, so this function
-            # will be resolved at a deeper level with more context.
-            { }
-          else if builtins.isAttrs applied && applied ? includes then
-            applied // { includes = resolveIncludes (applied.includes or [ ]); }
-          else
-            applied
-        ) (builtins.filter (x: x != { }) includes);
-      resolvedIncludes = resolveIncludes (aspect.includes or [ ]);
-      # Only tag with __ctx when there are remaining callable attrsets
-      # that need context. Prevents scope.run from wrapping purely static
-      # subtrees which can force evaluation of lazy provider defaults.
-      hasUnresolved = builtins.any (
-        i: builtins.isAttrs i && (i ? __functor || i ? __functionArgs)
-      ) resolvedIncludes;
-    in
-    withIdentity aspect (
-      classKeys
-      // {
-        includes = resolvedIncludes;
-      }
-      // lib.optionalAttrs hasUnresolved {
-        __ctx = attrs;
-      }
-    );
-
-  parametric.fixedTo.__functor = _: attrs: bindCtx take.atLeast attrs;
-  parametric.fixedTo.exactly = attrs: bindCtx take.exactly attrs;
-  parametric.fixedTo.atLeast = attrs: bindCtx take.atLeast attrs;
-  parametric.fixedTo.upTo = attrs: bindCtx take.upTo attrs;
-
-  parametric.atLeast = aspect: ctx: bindCtx take.atLeast ctx aspect;
-
-  parametric.exactly = aspect: ctx: bindCtx take.exactly ctx aspect;
-
-  parametric.expands = attrs: aspect: bindCtx take.atLeast attrs aspect;
-
-  parametric.withIdentity = withIdentity;
-
-  # Make parametric callable: den.lib.parametric aspect is sugar for
-  # wrapping an aspect so it can be called with context later.
-  # Returns a partially applied function: (parametric aspect) ctx → result
   parametric.__functor = _: parametric.atLeast;
-
 in
 parametric

@@ -1,8 +1,5 @@
 { den, lib, ... }:
 let
-  inherit (den.lib) take;
-  inherit (den.lib.parametric) fixedTo atLeast;
-
   ctx.user.description = ''
     ## Context: den.ctx.user{host,user}
 
@@ -26,9 +23,9 @@ let
   '';
 
   ctx.user.into.default = lib.singleton;
-  ctx.user.provides.user = take.exactly from-user;
+  ctx.user.provides.user = from-user;
 
-  from-user = { host, user }: fixedTo { inherit host user; } user.aspect;
+  from-user = { host, user }: user.aspect;
 
 in
 {

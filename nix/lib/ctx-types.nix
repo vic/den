@@ -2,39 +2,29 @@
 ctxApply:
 let
 
-  fanoutType = lib.types.listOf lib.types.raw;
-  targetType = lib.types.either fanoutType (lib.types.lazyAttrsOf targetType);
-  fnType = lib.types.functionTo (lib.types.lazyAttrsOf targetType);
-  attrsType = lib.types.lazyAttrsOf (lib.types.functionTo targetType);
-  eitherType = lib.types.either fnType attrsType;
-
+  # into values are functions: ctx → { targetName = [ctxValues]; ... }
+  # Non-function defs are normalized to functions during merge.
   intoCtxType = lib.types.mkOptionType {
     name = "into";
-    description = "context transformations";
-    check = eitherType.check;
+    description = "context transition function (ctx → targets attrset)";
+    check = v: lib.isFunction v || builtins.isAttrs v;
     merge =
-      loc: defs:
-      (fnType).merge loc (
-        map (
-          d:
-          d
-          // {
-            value = normalize d.value;
-          }
-        ) defs
-      );
+      _loc: defs:
+      let
+        normalized = map (d: d // { value = normalize d.value; }) defs;
+      in
+      ctx: lib.foldl' (acc: d: lib.recursiveUpdate acc (d.value ctx)) { } normalized;
   };
 
-  normalize = def: if lib.isFunction def then def else ctx: builtins.mapAttrs (_: apply ctx) def;
-
-  apply =
-    ctx: v:
-    if lib.isFunction v then
-      (den.lib.take.atLeast v) ctx
-    else if builtins.isAttrs v then
-      lib.mapAttrs (_: apply ctx) v
+  # Normalize into defs: function defs pass through. Attrset defs become
+  # functions that call each value with ctx (into values are functions
+  # like { system }: [...] that need ctx to produce fanout lists).
+  normalize =
+    def:
+    if lib.isFunction def then
+      def
     else
-      v;
+      ctx: builtins.mapAttrs (_: v: if lib.isFunction v then v ctx else v) def;
 
   ctxSubmodule = lib.types.submodule {
     imports = den.lib.aspects.types.aspectType.getSubModules;
@@ -43,7 +33,6 @@ let
       type = intoCtxType;
       defaultText = lib.literalExpression "_: { }";
       default = _: { };
-      apply = normalize;
     };
     config.__functor = lib.mkForce ctxApply;
   };

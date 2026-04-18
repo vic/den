@@ -1,9 +1,5 @@
 { den, lib, ... }:
 let
-  inherit (den.lib)
-    parametric
-    ;
-
   description = ''
     This is a private aspect always included in den.default.
 
@@ -49,7 +45,7 @@ let
       ${home.class}.imports = [ insecureModule ];
     };
 
-  aspect = parametric.exactly {
+  aspect = {
     inherit description;
     includes = [
       osAspect

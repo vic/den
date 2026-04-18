@@ -5,8 +5,6 @@
   ...
 }:
 let
-  inherit (den.lib) parametric;
-
   description = ''
     Provides the `flake-parts` `self'` (the flake's `self` with system pre-selected)
     as a top-level module argument.
@@ -55,7 +53,7 @@ let
   homeAspect = { home }: mkAspect home.class home.system;
 in
 {
-  den.provides.self' = parametric.exactly {
+  den.provides.self' = {
     inherit description;
     includes = [
       osAspect

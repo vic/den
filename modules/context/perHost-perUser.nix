@@ -1,15 +1,9 @@
-{
-  lib,
-  inputs,
-  config,
-  ...
-}:
+{ lib, ... }:
 let
-  inherit (config.den.lib) take parametric;
-  fixed = ctx: aspect: parametric.fixedTo ctx { includes = [ aspect ]; };
-  perHost = aspect: { includes = [ (take.exactly ({ host }@ctx: fixed ctx aspect)) ]; };
-  perUser = aspect: { includes = [ (take.exactly ({ host, user }@ctx: fixed ctx aspect)) ]; };
-  perHome = aspect: { includes = [ (take.exactly ({ home }@ctx: fixed ctx aspect)) ]; };
+  perHost =
+    fn: lib.warn "den.lib.perHost is deprecated — use { host, ... }: ... directly as an include" fn;
+  perUser = fn: lib.warn "den.lib.perUser is deprecated — use { host, user, ... }: ... directly" fn;
+  perHome = fn: lib.warn "den.lib.perHome is deprecated — use { home, ... }: ... directly" fn;
 in
 {
   den.lib = { inherit perHome perUser perHost; };

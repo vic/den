@@ -5,8 +5,6 @@
   ...
 }:
 let
-  inherit (den.lib) parametric;
-
   description = ''
     Provides the `flake-parts` `inputs'` (the flake's `inputs` with system pre-selected)
     as a top-level module argument.
@@ -56,7 +54,7 @@ let
 
 in
 {
-  den.provides.inputs' = parametric.exactly {
+  den.provides.inputs' = {
     inherit description;
     includes = [
       osAspect

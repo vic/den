@@ -8,75 +8,13 @@ let
     options = true;
   };
 
-  isProviderFn = canTake.upTo {
-    aspect-chain = true;
-    class = true;
-  };
-
-  isOtherCtxFn = f: builtins.isFunction f && !isSubmoduleFn f && !isProviderFn f;
-
-  # { class, aspect-chain } => provider
-  leafProviderFnType = cnf: lib.types.addCheck (lastFunctionTo (providerType cnf)) isProviderFn;
-
-  # { anything } => provider
-  curriedProviderFnType = cnf: lib.types.addCheck (lastFunctionTo (providerType cnf)) isOtherCtxFn;
-
-  providerFnType =
-    cnf:
-    let
-      eth = lib.types.either (leafProviderFnType cnf) (curriedProviderFnType cnf);
-    in
-    eth
-    // {
-      merge =
-        loc: defs:
-        (aspectType cnf).merge loc [
-          {
-            file = (lib.last defs).file;
-            value = {
-              __functor = _: eth.merge loc defs;
-            };
-          }
-        ];
-    };
-
-  providerType =
-    cnf:
-    let
-      pft = providerFnType cnf;
-      at = aspectType cnf;
-      eth = lib.types.either pft at;
-    in
-    eth
-    // {
-      merge =
-        loc: defs:
-        let
-          hasFns = builtins.any (d: lib.isFunction d.value) defs;
-          hasNonFns = builtins.any (d: !lib.isFunction d.value) defs;
-          isMixed = hasFns && hasNonFns;
-        in
-        if isMixed then
-          # Mixed function + attrset defs: coerce parametric functions to
-          # { includes = [fn]; } so they merge as aspects instead of being
-          # evaluated as NixOS modules (which would fail on missing host/user args).
-          at.merge loc (
-            map (
-              d:
-              if lib.isFunction d.value && !isSubmoduleFn d.value then
-                d
-                // {
-                  value = {
-                    includes = [ d.value ];
-                  };
-                }
-              else
-                d
-            ) defs
-          )
-        else
-          eth.merge loc defs;
-    };
+  # Aspects are submodules with freeform class keys (nixos, homeManager, etc.)
+  # plus structural options (name, meta, includes, provides, __functor).
+  #
+  # Functions with named args (like { host, ... }: { nixos = ...; }) are
+  # coerced to { includes = [fn]; } so the fx pipeline resolves them via
+  # bind.fn effects. NixOS module functions (taking lib/config/options) are
+  # NOT coerced — they're handled by wrapChild's normalizeModuleFn.
 
   aspectType =
     cnf:
@@ -110,6 +48,46 @@ let
       meta.loc = lib.mkForce loc;
     };
 
+  providerType =
+    cnf:
+    let
+      at = aspectType cnf;
+    in
+    lib.types.mkOptionType {
+      name = "provider";
+      description = "aspect or function returning aspect";
+      check = v: builtins.isAttrs v || lib.isFunction v;
+      merge =
+        loc: defs:
+        let
+          hasFns = builtins.any (d: lib.isFunction d.value) defs;
+          hasNonFns = builtins.any (d: !lib.isFunction d.value) defs;
+          isMixed = hasFns && hasNonFns;
+        in
+        if isMixed then
+          # Mixed function + attrset defs: coerce parametric functions to
+          # { includes = [fn]; } so they merge as aspects.
+          at.merge loc (
+            map (
+              d:
+              if lib.isFunction d.value && !isSubmoduleFn d.value then
+                d
+                // {
+                  value = {
+                    includes = [ d.value ];
+                  };
+                }
+              else
+                d
+            ) defs
+          )
+        else if hasFns then
+          # All functions: use lastFunctionTo merge (last def wins).
+          (lastFunctionTo (providerType cnf)).merge loc defs
+        else
+          at.merge loc defs;
+    };
+
   aspectSubmodule =
     cnf:
     lib.types.submodule (
@@ -141,18 +119,6 @@ let
             type = lib.types.submodule {
               freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
               config.self = config;
-              options.adapter = lib.mkOption {
-                description = "Legacy adapter function for resolution";
-                type = lib.types.nullOr (
-                  lib.types.mkOptionType {
-                    name = "adapterFunction";
-                    description = "function adapter";
-                    check = lib.isFunction;
-                    merge = _: defs: (lib.last defs).value;
-                  }
-                );
-                default = null;
-              };
               options.handleWith = lib.mkOption {
                 description = "Resolution handlers for this aspect's subtree";
                 type = lib.types.nullOr (
@@ -218,18 +184,9 @@ let
       }
     );
 
-  # Wrap non-module functions into { includes = [fn] } so they don't get
-  # treated as module functions by aspectType's submodule merge.
-  #
-  # Only coerce functions that destructure a context attrset
-  # (`{ host, ... }: ...`, `{ user, ... }: ...`, etc.) — those have a
-  # non-empty `functionArgs`. Bare-arg "factory" functions like
-  # `facter = reportPath: { nixos = ...; }` have empty `functionArgs`
-  # and must NOT be coerced — coercing them turns `den.aspects.facter`
-  # into a full aspect whose default functor ignores the user's
-  # argument, so `(facter ./facter.json)` no longer materializes the
-  # config. Such functions stay typed as `providerFnType`, whose merge
-  # directly delegates to the either type's merge.
+  # Coerce non-module functions to { includes = [fn]; } at the aspects level.
+  # This is how { host, ... }: { nixos = ...; } becomes a proper aspect
+  # with the function as a parametric include for the fx pipeline.
   coercedProviderType =
     cnf:
     let

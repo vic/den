@@ -97,23 +97,38 @@ let
       fx.pure [ ];
 
   # Self-provide: if aspect.provides.${aspect.name} exists, emit it as an include.
+  # The provider function's actual args are extracted so bind.fn can resolve
+  # them through effects (e.g. { host } is resolved via constantHandler).
   emitSelfProvide =
     aspect:
     let
       name = aspect.name or "<anon>";
       provides = aspect.provides or { };
+      providerVal = provides.${name};
+      # Extract real function args for bind.fn resolution.
+      innerFn =
+        if builtins.isAttrs providerVal && providerVal ? __functor then
+          providerVal.__functor providerVal
+        else
+          providerVal;
+      providerArgs = if lib.isFunction innerFn then lib.functionArgs innerFn else { };
     in
     if provides ? ${name} then
-      fx.send "emit-include" {
-        inherit name;
-        meta = {
-          provider = (aspect.meta.provider or [ ]) ++ [ name ];
-          selfProvide = true;
-        };
-        __functor = _: ctx: provides.${name} ctx;
-        __functionArgs = { };
-        includes = [ ];
-      }
+      let
+        _t = builtins.trace "emitSelfProvide: name=${name} providerArgs=${toString (builtins.attrNames providerArgs)} isFunction=${toString (lib.isFunction innerFn)}";
+      in
+      _t (
+        fx.send "emit-include" {
+          inherit name;
+          meta = {
+            provider = (aspect.meta.provider or [ ]) ++ [ name ];
+            selfProvide = true;
+          };
+          __functor = _: if lib.isFunction innerFn then innerFn else _: providerVal;
+          __functionArgs = providerArgs;
+          includes = [ ];
+        }
+      )
     else
       fx.pure [ ];
 
@@ -142,10 +157,9 @@ let
           )
         )
       );
-      # If parent has __ctx, install scoped constantHandler so ALL nested
-      # includes (including bare parametric functions) get context values.
-      # Uses scope.run — constantHandler only provides values, outer state
-      # from rotated effects (emit-class, etc.) is preserved.
+      # scope.run provides context for direct bind.fn resolution.
+      # Note: context is ALSO at the fx.handle level (defaultHandlers) for
+      # cases where scope.run context is lost through effect re-handling.
       scopedResolution =
         if parentCtx != { } then
           fx.effects.scope.run {
@@ -199,8 +213,9 @@ let
     let
       userArgs = aspect.__functionArgs or { };
       isParametric = userArgs != { } && aspect ? __functor;
+      _t = builtins.trace "aspectToEffect: name=${aspect.name or "?"} isParametric=${toString isParametric} args=${toString (builtins.attrNames userArgs)}";
     in
-    if isParametric then
+    if _t isParametric then
       let
         fn = aspect.__functor aspect;
       in

@@ -1,7 +1,5 @@
 { den, lib, ... }:
 let
-  inherit (den.lib.parametric) fixedTo;
-
   ctx.host.description = ''
     ## Context: den.ctx.host{host}
 
@@ -20,7 +18,7 @@ let
 
   ctx.host.into.user = { host }: map (user: { inherit host user; }) (lib.attrValues host.users);
   ctx.host.into.default = lib.singleton;
-  ctx.host.provides.host = { host }: fixedTo { inherit host; } host.aspect;
+  ctx.host.provides.host = { host }: host.aspect;
 
 in
 {

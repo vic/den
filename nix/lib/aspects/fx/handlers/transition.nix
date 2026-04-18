@@ -43,10 +43,13 @@ let
     parentCtx: targetAspect: results: newCtx:
     let
       scopedCtx = parentCtx // newCtx;
+      _t = builtins.trace "resolveContextValue: target=${targetAspect.name or "?"} scopedCtx=${toString (builtins.attrNames scopedCtx)}";
     in
-    fx.bind (fx.effects.scope.run { handlers = constantHandler scopedCtx; } (
-      aspectToEffect targetAspect
-    )) (childResult: fx.pure (results ++ [ childResult ]));
+    _t (
+      fx.bind (fx.effects.scope.run { handlers = constantHandler scopedCtx; } (
+        aspectToEffect targetAspect
+      )) (childResult: fx.pure (results ++ [ childResult ]))
+    );
 
   # Resolve a single transition: look up target aspect, check dedup, resolve each context value.
   resolveTransition =

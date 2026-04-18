@@ -30,5 +30,5 @@ let
 
 in
 {
-  den.provides.primary-user = den.lib.take.exactly userToHostContext;
+  den.provides.primary-user = userToHostContext;
 }

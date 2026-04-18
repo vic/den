@@ -1,8 +1,6 @@
 { lib, den, ... }:
 ctxNs:
 let
-  inherit (den.lib) parametric;
-
   noop = _: { };
 
   flattenInto =
@@ -77,19 +75,18 @@ let
     in
     [ args ] ++ lib.concatMap expandOne intoList;
 
+  # Tag an attrset with __ctx for the pipeline's constantHandler.
+  tagCtx = ctx: v: if builtins.isAttrs v && v != { } then v // { __ctx = ctx; } else v;
+
   buildIncludes =
     item:
     let
-      isFirst = !(item.seen ? ${item.key});
       selfProvider = item.self.provides.${item.self.name} or noop;
       crossProvider = getCrossProvider item;
-      # Strip into — ctxApply already processed it. Leaving it on would cause
-      # aspectToEffect to re-attach it after parametric resolution, attempting
-      # to call the function without the original context args.
       stripped = builtins.removeAttrs item.self [ "into" ];
     in
-    [
-      (if isFirst then parametric.fixedTo item.ctx stripped else parametric.atLeast stripped item.ctx)
+    map (tagCtx item.ctx) [
+      stripped
       (selfProvider item.ctx)
       (crossProvider item.ctx)
     ];
@@ -111,13 +108,23 @@ let
 
   ctxApply =
     self: ctx:
-    parametric.withIdentity self {
+    let
+      meta = self.meta or { };
+    in
+    {
+      name = self.name or "<anon>";
+      meta = {
+        handleWith = meta.handleWith or null;
+        excludes = meta.excludes or [ ];
+        provider = meta.provider or [ ];
+      };
       includes = assembleIncludes (traverse {
         prev = null;
         prevCtx = null;
         key = self.name;
         inherit self ctx;
       });
+      __ctx = ctx;
     };
 
 in

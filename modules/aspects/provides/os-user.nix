@@ -40,7 +40,7 @@ let
         "users"
         user.userName
       ];
-      fromAspect = _: den.lib.parametric.fixedTo { inherit host user; } user.aspect;
+      fromAspect = _: user.aspect;
       adaptArgs = args: args // { osConfig = args.config; };
     };
 

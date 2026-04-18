@@ -17,7 +17,7 @@ let
     };
 in
 {
-  den.provides.hostname = den.lib.parametric.atLeast {
+  den.provides.hostname = {
     inherit description;
     includes = [ setHostname ];
   };

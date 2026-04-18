@@ -1,7 +1,6 @@
 # See usage at: templates/example/modules/aspects/{defaults.nix,alice.nix,igloo.nix}
 { den, ... }:
 let
-  inherit (den.lib) take parametric;
 
   description = ''
     Allows hosts and users to contribute configuration **to each other** 
@@ -39,20 +38,17 @@ let
   to-users = from: from.aspect.provides.to-users or { };
 
   mutual-user-user = host: user: {
-    includes = map (
-      from:
-      parametric.fixedTo { inherit host user; } {
-        includes = [
-          (find-mutual from user)
-          (to-users from)
-        ];
-      }
-    ) (builtins.filter (u: u != user) (builtins.attrValues host.users));
+    includes = map (from: {
+      includes = [
+        (find-mutual from user)
+        (to-users from)
+      ];
+    }) (builtins.filter (u: u != user) (builtins.attrValues host.users));
   };
 
   mutual-host-user =
     { host, user }:
-    parametric.fixedTo { inherit host user; } {
+    {
       inherit description;
       includes = [
         (find-mutual host user)
@@ -64,14 +60,11 @@ let
     };
 
   mutual-standalone-home =
-    { home }:
-    parametric.fixedTo { inherit home; } (
-      if home.hostName == null then { } else home.aspect.provides.${home.hostName} or { }
-    );
+    { home }: if home.hostName == null then { } else home.aspect.provides.${home.hostName} or { };
 
 in
 {
-  den.provides.mutual-provider = parametric.exactly {
+  den.provides.mutual-provider = {
     includes = [
       mutual-host-user
       mutual-standalone-home
