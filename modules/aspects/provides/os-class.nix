@@ -30,4 +30,8 @@ let
 in
 {
   den.ctx.default.includes = [ os-class ];
+  den.schema.aspect.options.os = lib.mkOption {
+    type = lib.types.deferredModule;
+    default = { };
+  };
 }

@@ -47,4 +47,8 @@ let
 in
 {
   den.ctx.user.includes = [ fwd ];
+  den.schema.aspect.options.user = lib.mkOption {
+    type = lib.types.deferredModule;
+    default = { };
+  };
 }

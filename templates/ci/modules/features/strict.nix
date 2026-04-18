@@ -28,7 +28,7 @@
         expr = den.hosts.x86_64-linux.igloo.arbitrary;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo\"";
+          msg = "Attempted to set the option \"arbitrary\" on the host \"den.hosts.x86_64-linux.igloo\" but no definition exists.";
         };
       }
     );
@@ -43,7 +43,7 @@
         expr = den.hosts.x86_64-linux.igloo.users.tux.arbitrary;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo.users.tux\"";
+          msg = "Attempted to set the option \"arbitrary\" on the user \"den.hosts.x86_64-linux.igloo.users.tux\" but no definition exists.";
         };
       }
     );
@@ -59,7 +59,7 @@
         expr = den.aspects.igloo.arbitrary;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitrary\" in \"den.aspects.igloo\"";
+          msg = "Attempted to set the option \"arbitrary\" on the aspect \"den.aspects.igloo\" but no definition exists.";
         };
       }
     );
@@ -73,7 +73,7 @@
         expr = config.flake.arbitray;
         expectedError = {
           type = "ThrownError";
-          msg = "Attempted to set the option \"arbitray\" in \"flake\"";
+          msg = "Attempted to set the flake output option \"arbitray\" but no definition exists.";
         };
       }
     );
@@ -96,7 +96,128 @@
       }
     );
 
-    flakeModule.strict = {
+    flakeModule = {
+      test-aspect-nixos = denTest (
+        { inputs, igloo, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo = { };
+          den.aspects.igloo.nixos.networking.hostName = "igloo";
+
+          expr = igloo.networking.hostName;
+          expected = "igloo";
+        }
+      );
+
+      test-aspect-darwin = denTest (
+        { inputs, apple, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.aarch64-darwin.apple = { };
+          den.aspects.apple.darwin.networking.hostName = "apple";
+
+          expr = apple.networking.hostName;
+          expected = "apple";
+        }
+      );
+
+      test-aspect-os = denTest (
+        {
+          inputs,
+          igloo,
+          apple,
+          ...
+        }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo = { };
+          den.aspects.igloo.os.networking.hostName = "igloo";
+
+          den.hosts.aarch64-darwin.apple = { };
+          den.aspects.apple.os.networking.hostName = "apple";
+
+          expr = {
+            apple = apple.networking.hostName;
+            igloo = igloo.networking.hostName;
+          };
+          expected = {
+            apple = "apple";
+            igloo = "igloo";
+          };
+        }
+      );
+
+      test-aspect-homeManager = denTest (
+        { inputs, tuxHm, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.schema.user.classes = [ "homeManager" ];
+
+          den.hosts.x86_64-linux.igloo.users.tux = { };
+          den.aspects.tux.homeManager.programs.vim.enable = true;
+
+          expr = tuxHm.programs.vim.enable;
+          expected = true;
+        }
+      );
+
+      test-aspect-user = denTest (
+        { inputs, tux, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo.users.tux = { };
+
+          den.aspects.tux.user.extraGroups = [ "test" ];
+
+          expr = tux.extraGroups;
+          expected = [ "test" ];
+        }
+      );
+
+      test-aspect-wsl = denTest (
+        { inputs, igloo, ... }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            inputs.den.flakeOutputs.all
+          ];
+
+          den.hosts.x86_64-linux.igloo = {
+            wsl.enable = true;
+            users.tux = { };
+          };
+
+          den.aspects.igloo.wsl.defaultUser = "igloo";
+
+          expr =
+            if inputs ? nixos-wsl then
+              igloo.wsl.defaultUser
+            else
+              lib.warn "nixos-wsl not found in inputs, skipping test `strict-mode.flakeModule.test-aspect-wsl" "igloo";
+          expected = "igloo";
+        }
+      );
+
       test-host = denTest (
         { inputs, den, ... }:
         {
@@ -107,7 +228,7 @@
           expr = den.hosts.x86_64-linux.igloo.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo\"";
+            msg = "Attempted to set the option \"arbitrary\" on the host \"den.hosts.x86_64-linux.igloo\"";
           };
         }
       );
@@ -122,7 +243,7 @@
           expr = den.hosts.x86_64-linux.igloo.users.tux.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"den.hosts.x86_64-linux.igloo.users.tux\"";
+            msg = "Attempted to set the option \"arbitrary\" on the user \"den.hosts.x86_64-linux.igloo.users.tux\"";
           };
         }
       );
@@ -137,7 +258,7 @@
           expr = den.aspects.test.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"den.aspects.test\"";
+            msg = "Attempted to set the option \"arbitrary\" on the aspect \"den.aspects.test\"";
           };
         }
       );
@@ -152,8 +273,76 @@
           expr = config.flake.arbitrary;
           expectedError = {
             type = "ThrownError";
-            msg = "Attempted to set the option \"arbitrary\" in \"flake\"";
+            msg = "Attempted to set the flake output option \"arbitrary\" but no definition exists";
           };
+        }
+      );
+
+      test-namespace = denTest (
+        {
+          inputs,
+          test,
+          lib,
+          ...
+        }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            (inputs.den.namespace "test" true)
+          ];
+
+          test.lib.flatMap = f: arr: lib.concatMap f arr;
+
+          expr = test.lib.flatMap (x: [ x ]) [
+            1
+            2
+            3
+          ];
+          expectedError = {
+            type = "ThrownError";
+            msg = "Attempted to set the option \"lib.flatMap\" on the namespace \"test\"";
+          };
+        }
+      );
+
+      test-namespace-fix = denTest (
+        {
+          inputs,
+          test,
+          lib,
+          ...
+        }:
+        {
+          imports = [
+            inputs.den.flakeModules.strict
+            (inputs.den.namespace "test" true)
+          ];
+
+          den.schema.namespace.options.lib = lib.mkOption {
+            type = lib.types.lazyAttrsOf lib.types.unspecified;
+          };
+
+          test.lib.flatMap = f: arr: lib.concatMap f arr;
+
+          expr =
+            test.lib.flatMap
+              (x: [
+                x
+                x
+              ])
+              [
+                1
+                2
+                3
+              ];
+          expected = [
+            1
+            1
+            2
+            2
+            3
+            3
+          ];
         }
       );
     };

@@ -64,4 +64,8 @@ in
 {
   den.ctx = ctx;
   den.schema.host.imports = [ hostConf ];
+  den.schema.aspect.options.wsl = lib.mkOption {
+    type = lib.types.deferredModule;
+    default = { };
+  };
 }

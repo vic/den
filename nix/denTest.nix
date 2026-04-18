@@ -109,7 +109,9 @@ let
       iceberg = config.flake.nixosConfigurations.iceberg.config;
       apple = config.flake.darwinConfigurations.apple.config;
       igloo = config.flake.nixosConfigurations.igloo.config;
+      tux = igloo.users.users.tux;
       tuxHm = igloo.home-manager.users.tux;
+      pingu = igloo.users.users.pingu;
       pinguHm = igloo.home-manager.users.pingu;
 
       sort = lib.sort (a: b: a < b);
@@ -149,7 +151,9 @@ let
           apple
           igloo
           iceberg
+          tux
           tuxHm
+          pingu
           pinguHm
           trace
           ;

@@ -10,6 +10,8 @@ let
       inherit (den.lib.ctxTypes nsCtxApply) ctxTreeType;
     in
     {
+      imports = [ (den.schema.namespace or { }) ];
+
       options.ctx = lib.mkOption {
         description = "namespace context pipeline";
         defaultText = lib.literalExpression "{ }";
