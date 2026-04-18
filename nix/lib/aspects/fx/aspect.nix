@@ -58,8 +58,6 @@ let
     fx.seq (map (c: fx.send "register-constraint" (c // { inherit owner; })) allConstraints);
 
   # Fold includes through emit-include effects.
-  # If parent has __ctx, propagate it to children so nested parametric
-  # includes get context values via bind.fn's preProvided mechanism.
   emitIncludes =
     incs:
     builtins.foldl' (
@@ -117,41 +115,13 @@ let
   resolveChildren =
     aspect:
     { isMeaningful, nodeIdentity }:
-    let
-      parentCtx = aspect.__ctx or { };
-      # Tag each include with parent's __ctx so the handler can propagate
-      # context values to wrapped children (bare functions become attrsets
-      # after wrapChild, then __ctx enables bind.fn preProvided).
-      tagIncludes =
-        if parentCtx == { } then
-          (aspect.includes or [ ])
-        else
-          map (
-            child:
-            if builtins.isAttrs child && !(child ? __ctx) then
-              child // { __ctx = parentCtx; }
-            else if builtins.isFunction child && !(builtins.isAttrs child) then
-              # Bare functions can't carry attrs. Wrap in a minimal envelope
-              # so __ctx propagates through wrapChild.
-              {
-                __ctx = parentCtx;
-                __functor = _: child;
-                __functionArgs = lib.functionArgs child;
-                name = "<anon>";
-                meta = { };
-                includes = [ ];
-              }
-            else
-              child
-          ) (aspect.includes or [ ]);
-    in
     fx.bind
       (chainWrap nodeIdentity isMeaningful (
         fx.bind (emitSelfProvide aspect) (
           selfProvResults:
           fx.bind (emitTransitions aspect) (
             transitionResults:
-            fx.bind (emitIncludes tagIncludes) (
+            fx.bind (emitIncludes (aspect.includes or [ ])) (
               children: fx.pure (selfProvResults ++ transitionResults ++ children)
             )
           )
@@ -206,12 +176,8 @@ let
     if isParametric then
       let
         fn = aspect.__functor aspect;
-        # __ctx carries pre-provided context values from parametric.fixedTo/bindCtx.
-        # bind.fn uses these directly instead of sending effects — no scoped handler
-        # needed. Remaining args (class, etc.) go through effects as normal.
-        preProvided = aspect.__ctx or { };
       in
-      fx.bind (fx.bind.fn preProvided fn) (
+      fx.bind (fx.bind.fn { } fn) (
         resolved:
         aspectToEffect (
           {
