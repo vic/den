@@ -133,7 +133,34 @@ let
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
   # Context is provided by the pipeline's handler stack (defaultHandlers +
   # transitionHandler install constantHandler at appropriate scopes).
-  keepChild = child: fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ]);
+  #
+  # For parametric children, first check if all required args are available
+  # in the current scope via "available-args" effect. Skip children whose
+  # args can't be satisfied — they'll be resolved at a deeper context level.
+  keepChild =
+    child:
+    let
+      childArgs = child.__functionArgs or { };
+      isParametric = childArgs != { } && child ? __functor;
+    in
+    if isParametric then
+      fx.bind (fx.send "available-args" { }) (
+        available:
+        let
+          requiredKeys = builtins.attrNames childArgs;
+          allAvailable = builtins.all (k: available ? ${k}) requiredKeys;
+          _t = builtins.trace "keepChild: ${child.name or "?"} args=${toString requiredKeys} available=${toString (builtins.attrNames available)} ok=${toString allAvailable}";
+        in
+        _t (
+          if allAvailable then
+            fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ])
+          else
+            # Skip — this include will be resolved at a deeper context level.
+            fx.pure [ ]
+        )
+      )
+    else
+      fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ]);
 
   # Derive a stable name for anonymous aspects from parent chain + index.
   nameAnon =

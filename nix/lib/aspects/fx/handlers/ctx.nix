@@ -9,6 +9,8 @@
 let
   # Build handler set from context.
   # Each key in ctx becomes a handler that resumes with the value.
+  # Also installs "available-args" which returns the set of resolvable arg names.
+  # Used by keepChild to skip parametric includes whose args aren't in scope.
   constantHandler =
     ctx:
     builtins.mapAttrs (
@@ -18,7 +20,16 @@ let
         resume = value;
         inherit state;
       }
-    ) ctx;
+    ) ctx
+    // {
+      "available-args" =
+        { param, state }:
+        {
+          # Merge with any outer available-args (from parent scopes).
+          resume = (if param == { } then { } else param) // ctx;
+          inherit state;
+        };
+    };
 
   # Dedup handler. Tracks seen keys in state.seen.
   ctxSeenHandler = {

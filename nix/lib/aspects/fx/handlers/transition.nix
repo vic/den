@@ -61,10 +61,13 @@ let
     parentCtx: targetAspect: results: newCtx:
     let
       scopedCtx = parentCtx // newCtx;
+      _t = builtins.trace "resolveContextValue: target=${targetAspect.name or "?"} scopedCtx=${toString (builtins.attrNames scopedCtx)}";
     in
-    fx.bind (fx.effects.scope.run {
-      handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx;
-    } (aspectToEffect targetAspect)) (childResult: fx.pure (results ++ [ childResult ]));
+    _t (
+      fx.bind (fx.effects.scope.run {
+        handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx;
+      } (aspectToEffect targetAspect)) (childResult: fx.pure (results ++ [ childResult ]))
+    );
 
   # Resolve a single transition: look up target aspect, check dedup, resolve each context value.
   # Also emits cross-providers: if sourceAspect.provides.${targetKey} exists,
@@ -128,25 +131,30 @@ let
       else
         fx.bind (fx.send "ctx-seen" key) (
           { isFirst }:
-          if !isFirst then
-            fx.pure results
-          else
-            builtins.foldl' (
-              acc: newCtx:
-              fx.bind acc (
-                innerResults:
-                let
-                  scopedCtx = currentCtx // newCtx;
-                  # Resolve target ctx node if it exists.
-                  withTarget =
-                    if targetAspect != null then
-                      resolveContextValue currentCtx targetAspect innerResults newCtx
-                    else
-                      fx.pure innerResults;
-                in
-                fx.bind withTarget (targetResults: emitCrossProvider scopedCtx targetResults)
-              )
-            ) (fx.pure results) transition.contexts
+          let
+            _ts = builtins.trace "ctx-seen: ${key} isFirst=${toString isFirst}";
+          in
+          _ts (
+            if !isFirst then
+              fx.pure results
+            else
+              builtins.foldl' (
+                acc: newCtx:
+                fx.bind acc (
+                  innerResults:
+                  let
+                    scopedCtx = currentCtx // newCtx;
+                    # Resolve target ctx node if it exists.
+                    withTarget =
+                      if targetAspect != null then
+                        resolveContextValue currentCtx targetAspect innerResults newCtx
+                      else
+                        fx.pure innerResults;
+                  in
+                  fx.bind withTarget (targetResults: emitCrossProvider scopedCtx targetResults)
+                )
+              ) (fx.pure results) transition.contexts
+          )
         )
     );
 
@@ -160,7 +168,8 @@ let
         _t = builtins.trace "transitionHandler: source=${sourceAspect.name or "?"} currentCtx=${toString (builtins.attrNames currentCtx)} intoFn?=${toString (param ? intoFn)}";
         intoResult = _t (param.intoFn currentCtx);
         transitions = flattenInto intoResult [ ];
-        _t2 = builtins.trace "transitionHandler: ${toString (builtins.length transitions)} transitions";
+        transitionKeys = map (t: lib.concatStringsSep "/" t.path) transitions;
+        _t2 = builtins.trace "transitionHandler: ${toString (builtins.length transitions)} transitions: ${toString transitionKeys}";
       in
       _t2 {
         resume = builtins.foldl' (
