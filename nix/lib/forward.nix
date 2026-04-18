@@ -6,6 +6,7 @@ let
       guard ? null,
       adaptArgs ? null,
       adapterModule ? null,
+      evalConfig ? false,
       ...
     }@fwd:
     let
@@ -24,14 +25,31 @@ let
 
       forward =
         path:
-        let
-          value = lib.setAttrByPath path (_: {
-            imports = [ sourceModule ];
-          });
-        in
-        {
-          ${intoClass} = value;
-        };
+        if evalConfig then
+          # Evaluate source module in a freeform submodule and set the
+          # resulting config at the target path. Use for leaf option
+          # targets (e.g. environment.sessionVariables) that can't accept
+          # module functions as values.
+          let
+            evaluated = lib.evalModules {
+              modules = [
+                freeformMod
+                sourceModule
+              ];
+            };
+          in
+          {
+            ${intoClass} = lib.setAttrByPath path (builtins.removeAttrs evaluated.config [ "_module" ]);
+          }
+        else
+          let
+            value = lib.setAttrByPath path (_: {
+              imports = [ sourceModule ];
+            });
+          in
+          {
+            ${intoClass} = value;
+          };
 
       freeformMod = {
         config._module.freeformType = lib.types.lazyAttrsOf lib.types.unspecified;
