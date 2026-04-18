@@ -115,27 +115,38 @@ let
   resolveChildren =
     aspect:
     { isMeaningful, nodeIdentity }:
-    fx.bind
-      (chainWrap nodeIdentity isMeaningful (
-        fx.bind (emitSelfProvide aspect) (
-          selfProvResults:
-          fx.bind (emitTransitions aspect) (
-            transitionResults:
-            fx.bind (emitIncludes (aspect.includes or [ ])) (
-              children: fx.pure (selfProvResults ++ transitionResults ++ children)
-            )
+    let
+      parentCtx = aspect.__ctx or { };
+      childResolution = fx.bind (emitSelfProvide aspect) (
+        selfProvResults:
+        fx.bind (emitTransitions aspect) (
+          transitionResults:
+          fx.bind (emitIncludes (aspect.includes or [ ])) (
+            children: fx.pure (selfProvResults ++ transitionResults ++ children)
           )
         )
-      ))
-      (
-        allChildren:
-        let
-          resolved = aspect // {
-            includes = allChildren;
-          };
-        in
-        fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved)
       );
+      # If parent has __ctx, install scoped constantHandler so ALL nested
+      # includes (including bare parametric functions) get context values.
+      # Uses scope.run — constantHandler only provides values, outer state
+      # from rotated effects (emit-class, etc.) is preserved.
+      scopedResolution =
+        if parentCtx != { } then
+          fx.effects.scope.run {
+            handlers = den.lib.aspects.fx.handlers.constantHandler parentCtx;
+          } childResolution
+        else
+          childResolution;
+    in
+    fx.bind (chainWrap nodeIdentity isMeaningful scopedResolution) (
+      allChildren:
+      let
+        resolved = aspect // {
+          includes = allChildren;
+        };
+      in
+      fx.bind (fx.send "resolve-complete" resolved) (_: fx.pure resolved)
+    );
 
   # Compile a static (non-functor) aspect into an effectful computation.
   compileStatic =
