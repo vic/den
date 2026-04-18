@@ -103,7 +103,11 @@ let
     in
     fx.handle {
       handlers = composeHandlers rootHandlers extraHandlers;
-      state = defaultState // extraState // { currentCtx = ctx; };
+      # Wrap currentCtx in a thunk (function) so the trampoline's
+      # builtins.deepSeq on state doesn't force the NixOS config objects
+      # inside ctx (which would eagerly evaluate optional input defaults
+      # like hjem.module).
+      state = defaultState // extraState // { currentCtx = _: ctx; };
     } comp;
 
   # Full pipeline: aspect compilation → handler-driven resolution → module collection.

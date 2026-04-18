@@ -131,20 +131,9 @@ let
   handlers = den.lib.aspects.fx.handlers;
 
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
-  # scope.run provides context for direct bind.fn resolution. Context is also
-  # at the fx.handle level (defaultHandlers) for re-handled effect cases.
-  keepChild =
-    child:
-    let
-      comp = aspectToEffect child;
-      hasCtx = builtins.isAttrs child && child ? __ctx && child.__ctx != { };
-    in
-    if hasCtx then
-      fx.bind (fx.effects.scope.run { handlers = handlers.constantHandler child.__ctx; } comp) (
-        resolved: fx.pure [ resolved ]
-      )
-    else
-      fx.bind comp (resolved: fx.pure [ resolved ]);
+  # Context is provided by the pipeline's handler stack (defaultHandlers +
+  # transitionHandler install constantHandler at appropriate scopes).
+  keepChild = child: fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ]);
 
   # Derive a stable name for anonymous aspects from parent chain + index.
   nameAnon =

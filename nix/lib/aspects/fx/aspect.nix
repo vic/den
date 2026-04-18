@@ -143,11 +143,13 @@ let
       comp;
 
   # Resolve children, assemble the result, and emit resolve-complete.
+  # Context is provided by the pipeline's handler stack (defaultHandlers
+  # installs constantHandler at root, transitionHandler scopes it per
+  # transition). No __ctx or scope.run needed here.
   resolveChildren =
     aspect:
     { isMeaningful, nodeIdentity }:
     let
-      parentCtx = aspect.__ctx or { };
       childResolution = fx.bind (emitSelfProvide aspect) (
         selfProvResults:
         fx.bind (emitTransitions aspect) (
@@ -157,18 +159,8 @@ let
           )
         )
       );
-      # scope.run provides context for direct bind.fn resolution.
-      # Note: context is ALSO at the fx.handle level (defaultHandlers) for
-      # cases where scope.run context is lost through effect re-handling.
-      scopedResolution =
-        if parentCtx != { } then
-          fx.effects.scope.run {
-            handlers = den.lib.aspects.fx.handlers.constantHandler parentCtx;
-          } childResolution
-        else
-          childResolution;
     in
-    fx.bind (chainWrap nodeIdentity isMeaningful scopedResolution) (
+    fx.bind (chainWrap nodeIdentity isMeaningful childResolution) (
       allChildren:
       let
         resolved = aspect // {
@@ -221,15 +213,28 @@ let
       in
       fx.bind (fx.bind.fn { } fn) (
         resolved:
-        aspectToEffect (
-          {
+        let
+          base = {
             inherit (aspect) name;
-            meta = (aspect.meta or { }) // (resolved.meta or { });
+            meta = (aspect.meta or { }) // (if builtins.isAttrs resolved then resolved.meta or { } else { });
           }
           // lib.optionalAttrs (aspect ? into) { inherit (aspect) into; }
-          // lib.optionalAttrs (aspect ? provides) { inherit (aspect) provides; }
-          // builtins.removeAttrs (resolved) [ "meta" ]
-        )
+          // lib.optionalAttrs (aspect ? provides) { inherit (aspect) provides; };
+          # If resolved is still a function (curried provider like
+          # { system, output }: { class, aspect-chain }: ...), wrap it
+          # as another parametric level for the next bind.fn pass.
+          next =
+            if lib.isFunction resolved && !builtins.isAttrs resolved then
+              base
+              // {
+                __functor = _: resolved;
+                __functionArgs = lib.functionArgs resolved;
+                includes = [ ];
+              }
+            else
+              base // builtins.removeAttrs resolved [ "meta" ];
+        in
+        aspectToEffect next
       )
     else
       compileStatic (
