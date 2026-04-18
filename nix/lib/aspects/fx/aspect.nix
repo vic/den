@@ -9,6 +9,7 @@ let
 
   structuralKeys = [
     "name"
+    "description"
     "meta"
     "includes"
     "provides"
@@ -16,6 +17,7 @@ let
     "__functor"
     "__functionArgs"
     "__ctx"
+    "_module"
   ];
 
   # Emit emit-class for each non-structural attr on the aspect.
