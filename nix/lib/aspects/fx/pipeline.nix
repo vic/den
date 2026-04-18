@@ -48,16 +48,11 @@ let
   defaultHandlers =
     { class, ctx }:
     handlers.constantHandler (
-      ctx
-      // {
+      {
         inherit class;
-        # Provider functions from the type system (providerFnType.merge in types.nix)
-        # create { class, aspect-chain } functors. These reach bind.fn through
-        # aspectToEffect and send aspect-chain as an effect. Provide empty chain —
-        # the fx pipeline uses chain-push/chain-pop for provenance tracking instead.
-        # TODO(vic): Remove when type system no longer creates { class, aspect-chain } providers.
         "aspect-chain" = [ ];
       }
+      // ctx
     )
     // handlers.classCollectorHandler { targetClass = class; }
     // handlers.constraintRegistryHandler
@@ -65,7 +60,6 @@ let
     // handlers.includeHandler
     // handlers.transitionHandler
     // handlers.ctxSeenHandler
-    // handlers.scopeArgsHandler
     // identity.pathSetHandler
     // identity.collectPathsHandler
     // fx.effects.state.handler;
@@ -109,17 +103,11 @@ let
       # builtins.deepSeq on state doesn't force the NixOS config objects
       # inside ctx (which would eagerly evaluate optional input defaults
       # like hjem.module).
-      # availableArgs tracks which context arg names are resolvable at the
-      # current scope level — used by keepChild to skip unresolvable includes.
       state =
         defaultState
         // extraState
         // {
           currentCtx = _: ctx;
-          availableArgs = builtins.mapAttrs (_: _: true) ctx // {
-            ${class} = true;
-            "aspect-chain" = true;
-          };
         };
     } comp;
 

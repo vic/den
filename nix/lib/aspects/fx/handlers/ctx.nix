@@ -9,6 +9,10 @@
 let
   # Build handler set from context.
   # Each key in ctx becomes a handler that resumes with the value.
+  # Also installs probe-arg: checks if an arg name is in this handler's ctx.
+  # Used by keepChild to skip parametric includes whose args aren't resolvable.
+  # Note: with deep handlers, inner scope's probe-arg shadows outer. This is
+  # correct because inner scopes always have >= outer context (host ⊂ host+user).
   constantHandler =
     ctx:
     builtins.mapAttrs (
@@ -18,42 +22,23 @@ let
         resume = value;
         inherit state;
       }
-    ) ctx;
-
-  # Scope-args handlers: push/pop availableArgs in state.
-  # These effects rotate through scope.run to the pipeline root,
-  # maintaining a stack so nested scopes correctly track which
-  # context arg names are resolvable at each level.
-  scopeArgsHandler = {
-    "push-scope-args" =
-      { param, state }:
-      {
-        resume = null;
-        state = state // {
-          # Store just keys (true values) to avoid deepSeq forcing NixOS configs.
-          availableArgs = (state.availableArgs or { }) // builtins.mapAttrs (_: _: true) param;
-          _argsStack = (state._argsStack or [ ]) ++ [ (state.availableArgs or { }) ];
+    ) ctx
+    // {
+      # Check own ctx AND pipeline-provided args (class, aspect-chain).
+      # These are always available from root handlers but would be missed
+      # if only checking the scoped ctx keys.
+      "probe-arg" =
+        { param, state }:
+        {
+          resume =
+            ctx ? ${param}
+            || builtins.elem param [
+              "class"
+              "aspect-chain"
+            ];
+          inherit state;
         };
-      };
-    "pop-scope-args" =
-      { param, state }:
-      let
-        stack = state._argsStack or [ ];
-      in
-      {
-        resume = null;
-        state = state // {
-          availableArgs = if stack == [ ] then { } else lib.last stack;
-          _argsStack = if stack == [ ] then [ ] else lib.init stack;
-        };
-      };
-    "probe-arg" =
-      { param, state }:
-      {
-        resume = (state.availableArgs or { }) ? ${param};
-        inherit state;
-      };
-  };
+    };
 
   # Dedup handler. Tracks seen keys in state.seen.
   ctxSeenHandler = {
@@ -77,6 +62,5 @@ in
   inherit
     constantHandler
     ctxSeenHandler
-    scopeArgsHandler
     ;
 }

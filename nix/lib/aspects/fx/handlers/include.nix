@@ -133,21 +133,20 @@ let
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
   # Context is provided by the pipeline's handler stack (defaultHandlers +
   # transitionHandler install constantHandler at appropriate scopes).
+  # Deep handler semantics ensure scoped context is available for resume effects.
   #
-  # For parametric children, probe each required arg by sending it as an
-  # effect. If any arg is unhandled (no constantHandler in scope), skip the
-  # child — it'll be resolved at a deeper context level where the arg IS
-  # available.
+  # For parametric children, probe each required arg via probe-arg effect.
+  # constantHandler installs probe-arg that checks its own ctx keys.
+  # Unresolvable includes are skipped (resolved at deeper context level).
   keepChild =
     child:
     let
       childArgs = child.__functionArgs or { };
       isParametric = childArgs != { } && child ? __functor;
-      requiredKeys = builtins.attrNames childArgs;
     in
     if isParametric then
       let
-        # Probe each required arg via probe-arg effect (reads state.availableArgs).
+        requiredKeys = builtins.attrNames childArgs;
         probeArgs =
           keys:
           if keys == [ ] then
