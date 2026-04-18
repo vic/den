@@ -77,15 +77,26 @@ let
           i:
           let
             resolvable = canTake.upTo attrs i;
-            applied = if resolvable then carryMeta i (takeFn i attrs) else i;
+            # Bare-arg functions (like parametric.exactly/atLeast results)
+            # have empty functionArgs so canTake.upTo is always false.
+            # Try calling them directly — takeFn handles canTake internally.
+            isBareArgFn = !resolvable && lib.isFunction i && lib.functionArgs i == { };
+            applied =
+              if resolvable then
+                carryMeta i (takeFn i attrs)
+              else if isBareArgFn then
+                let
+                  result = takeFn i attrs;
+                in
+                if result == { } then i else carryMeta i result
+              else
+                i;
           in
-          if lib.isFunction i && !canTake.atLeast allAvailable i then
+          if lib.isFunction i && !isBareArgFn && !canTake.atLeast allAvailable i then
             # Drop parametric functions whose required args can't be
             # satisfied by context OR pipeline-provided values.
             # ctxApply processes all transition levels, so this function
             # will be resolved at a deeper level with more context.
-            # Functions with no required args (like lib.const) pass
-            # through — canTake.atLeast is true for them.
             { }
           else if builtins.isAttrs applied && applied ? includes then
             applied // { includes = resolveIncludes (applied.includes or [ ]); }
