@@ -36,14 +36,17 @@ let
     );
 
   # Resolve a single context value by running aspectToEffect in a scoped handler.
+  # Uses scope.run (not scope.stateful) because the scoped constantHandler only
+  # provides values — it doesn't need shared state. scope.run preserves outer
+  # state changes from rotated effects (emit-class, chain-push, etc.).
   resolveContextValue =
     parentCtx: targetAspect: results: newCtx:
     let
       scopedCtx = parentCtx // newCtx;
     in
-    fx.bind (fx.effects.scope.stateful (constantHandler scopedCtx) (aspectToEffect targetAspect)) (
-      childResult: fx.pure (results ++ [ childResult ])
-    );
+    fx.bind (fx.effects.scope.run { handlers = constantHandler scopedCtx; } (
+      aspectToEffect targetAspect
+    )) (childResult: fx.pure (results ++ [ childResult ]));
 
   # Resolve a single transition: look up target aspect, check dedup, resolve each context value.
   resolveTransition =
