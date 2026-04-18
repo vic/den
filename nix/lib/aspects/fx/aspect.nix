@@ -69,18 +69,6 @@ let
       )
     ) (fx.pure [ ]) incs;
 
-  emitIncludesWithCtx =
-    ctx: incs:
-    let
-      tagChild =
-        child:
-        if ctx != { } && builtins.isAttrs child && !(child ? __ctx) then
-          child // { __ctx = ctx; }
-        else
-          child;
-    in
-    emitIncludes (map tagChild incs);
-
   # Emit into-transition effects for each key in aspect.into.
   # into is a function ctx → attrset. We pass the unevaluated function
   # to the handler which evaluates it with the current context.
@@ -131,7 +119,31 @@ let
     { isMeaningful, nodeIdentity }:
     let
       parentCtx = aspect.__ctx or { };
-      emitIncs = if parentCtx != { } then emitIncludesWithCtx parentCtx else emitIncludes;
+      # Tag each include with parent's __ctx so the handler can propagate
+      # context values to wrapped children (bare functions become attrsets
+      # after wrapChild, then __ctx enables bind.fn preProvided).
+      tagIncludes =
+        if parentCtx == { } then
+          (aspect.includes or [ ])
+        else
+          map (
+            child:
+            if builtins.isAttrs child && !(child ? __ctx) then
+              child // { __ctx = parentCtx; }
+            else if builtins.isFunction child && !(builtins.isAttrs child) then
+              # Bare functions can't carry attrs. Wrap in a minimal envelope
+              # so __ctx propagates through wrapChild.
+              {
+                __ctx = parentCtx;
+                __functor = _: child;
+                __functionArgs = lib.functionArgs child;
+                name = "<anon>";
+                meta = { };
+                includes = [ ];
+              }
+            else
+              child
+          ) (aspect.includes or [ ]);
     in
     fx.bind
       (chainWrap nodeIdentity isMeaningful (
@@ -139,7 +151,7 @@ let
           selfProvResults:
           fx.bind (emitTransitions aspect) (
             transitionResults:
-            fx.bind (emitIncs (aspect.includes or [ ])) (
+            fx.bind (emitIncludes tagIncludes) (
               children: fx.pure (selfProvResults ++ transitionResults ++ children)
             )
           )
