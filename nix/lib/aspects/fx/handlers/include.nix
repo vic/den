@@ -134,28 +134,42 @@ let
   # Context is provided by the pipeline's handler stack (defaultHandlers +
   # transitionHandler install constantHandler at appropriate scopes).
   #
-  # For parametric children, first check if all required args are available
-  # in the current scope via "available-args" effect. Skip children whose
-  # args can't be satisfied — they'll be resolved at a deeper context level.
+  # For parametric children, probe each required arg by sending it as an
+  # effect. If any arg is unhandled (no constantHandler in scope), skip the
+  # child — it'll be resolved at a deeper context level where the arg IS
+  # available.
   keepChild =
     child:
     let
       childArgs = child.__functionArgs or { };
       isParametric = childArgs != { } && child ? __functor;
+      requiredKeys = builtins.attrNames childArgs;
     in
     if isParametric then
-      fx.bind (fx.send "available-args" { }) (
-        available:
+      let
+        # Probe each required arg via probe-arg effect (reads state.availableArgs).
+        probeArgs =
+          keys:
+          if keys == [ ] then
+            fx.pure true
+          else
+            let
+              key = builtins.head keys;
+              rest = builtins.tail keys;
+            in
+            fx.bind (fx.send "probe-arg" key) (
+              isAvailable: if isAvailable then probeArgs rest else fx.pure false
+            );
+      in
+      fx.bind (probeArgs requiredKeys) (
+        allAvailable:
         let
-          requiredKeys = builtins.attrNames childArgs;
-          allAvailable = builtins.all (k: available ? ${k}) requiredKeys;
-          _t = builtins.trace "keepChild: ${child.name or "?"} args=${toString requiredKeys} available=${toString (builtins.attrNames available)} ok=${toString allAvailable}";
+          _t = builtins.trace "keepChild: ${child.name or "?"} args=${toString requiredKeys} ok=${toString allAvailable}";
         in
         _t (
           if allAvailable then
             fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ])
           else
-            # Skip — this include will be resolved at a deeper context level.
             fx.pure [ ]
         )
       )

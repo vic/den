@@ -12,7 +12,7 @@
 }:
 let
   fx = den.lib.fx;
-  inherit (den.lib.aspects.fx.handlers) constantHandler;
+  inherit (den.lib.aspects.fx.handlers) constantHandler includeHandler;
   inherit (den.lib.aspects.fx.aspect) aspectToEffect;
 
   # Flatten a nested into attrset into a flat list of { path, contexts }.
@@ -64,9 +64,18 @@ let
       _t = builtins.trace "resolveContextValue: target=${targetAspect.name or "?"} scopedCtx=${toString (builtins.attrNames scopedCtx)}";
     in
     _t (
-      fx.bind (fx.effects.scope.run {
-        handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx;
-      } (aspectToEffect targetAspect)) (childResult: fx.pure (results ++ [ childResult ]))
+      # Push scoped args so keepChild knows what's available, then pop after.
+      fx.bind (fx.send "push-scope-args" scopedCtx) (
+        _:
+        fx.bind
+          (fx.effects.scope.run {
+            # Include includeHandler so emit-include is handled INSIDE the scope
+            # where constantHandler has the right context. Without this, emit-include
+            # rotates to the outer handler where context args are missing.
+            handlers = constantHandler scopedCtx // mkScopedTransitionHandler scopedCtx // includeHandler;
+          } (aspectToEffect targetAspect))
+          (childResult: fx.bind (fx.send "pop-scope-args" null) (_: fx.pure (results ++ [ childResult ])))
+      )
     );
 
   # Resolve a single transition: look up target aspect, check dedup, resolve each context value.

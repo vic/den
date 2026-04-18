@@ -65,6 +65,7 @@ let
     // handlers.includeHandler
     // handlers.transitionHandler
     // handlers.ctxSeenHandler
+    // handlers.scopeArgsHandler
     // identity.pathSetHandler
     // identity.collectPathsHandler
     // fx.effects.state.handler;
@@ -95,11 +96,12 @@ let
       comp = aspectToEffect self;
       # Override aspect-chain to include root aspect — consumed by type-system provider
       # functions (parametric.nix, home-env.nix) and legacy resolve pipeline.
-      rootHandlers =
-        defaultHandlers { inherit class ctx; }
-        // handlers.constantHandler {
+      rootHandlers = defaultHandlers {
+        inherit class;
+        ctx = ctx // {
           "aspect-chain" = [ self ];
         };
+      };
     in
     fx.handle {
       handlers = composeHandlers rootHandlers extraHandlers;
@@ -107,7 +109,18 @@ let
       # builtins.deepSeq on state doesn't force the NixOS config objects
       # inside ctx (which would eagerly evaluate optional input defaults
       # like hjem.module).
-      state = defaultState // extraState // { currentCtx = _: ctx; };
+      # availableArgs tracks which context arg names are resolvable at the
+      # current scope level — used by keepChild to skip unresolvable includes.
+      state =
+        defaultState
+        // extraState
+        // {
+          currentCtx = _: ctx;
+          availableArgs = builtins.mapAttrs (_: _: true) ctx // {
+            ${class} = true;
+            "aspect-chain" = true;
+          };
+        };
     } comp;
 
   # Full pipeline: aspect compilation → handler-driven resolution → module collection.
