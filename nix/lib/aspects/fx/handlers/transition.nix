@@ -43,7 +43,8 @@ let
       { param, state }:
       let
         sourceAspect = param.self;
-        intoResult = param.intoFn scopedCtx;
+        _ts = builtins.trace "scopedTransitionHandler: source=${sourceAspect.name or "?"} scopedCtx=${toString (builtins.attrNames scopedCtx)}";
+        intoResult = _ts (param.intoFn scopedCtx);
         transitions = flattenInto intoResult [ ];
       in
       {

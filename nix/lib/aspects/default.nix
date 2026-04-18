@@ -12,14 +12,21 @@ let
   fxResolveTree =
     class: resolved:
     let
-      isFunctor = builtins.isAttrs resolved && resolved ? __functor;
+      isBareFn = lib.isFunction resolved && !builtins.isAttrs resolved;
+      isFunctor = !isBareFn && builtins.isAttrs resolved && resolved ? __functor;
       functorArgs = if isFunctor then builtins.functionArgs (resolved.__functor resolved) else { };
-      # Only wrap functors whose inner function has named args (e.g. deepRecurse's
-      # { class, aspect-chain }). Plain aspects with default functor (lib.const,
-      # bare args) go through compileStatic directly.
       needsWrap = isFunctor && functorArgs != { };
       wrapped =
-        if needsWrap then
+        # Bare functions (e.g. { class, ... }: { ... }) → wrap as parametric aspect.
+        if isBareFn then
+          {
+            __functor = _: resolved;
+            __functionArgs = lib.functionArgs resolved;
+            name = "<bare-fn>";
+            meta = { };
+            includes = [ ];
+          }
+        else if needsWrap then
           {
             __functor = _: resolved.__functor resolved;
             __functionArgs = functorArgs;
