@@ -4,7 +4,7 @@ let
 
   description = ''
     Projects all homeManager-class configs from the host's aspect tree
-    onto users who opt in.
+    onto users who opt in. Requires the fx pipeline.
 
     ## Usage
 
@@ -13,15 +13,9 @@ let
     Any host aspect that defines a `homeManager` key will have that
     config forwarded to the user's homeManager evaluation. Other class
     keys (nixos, darwin) are ignored — host.aspect is resolved
-    specifically for class "homeManager", so only homeManager modules
-    are collected. This avoids duplicating nixos modules that are
-    already applied via the host's own resolution.
+    specifically for class "homeManager".
   '';
 
-  # Resolve host.aspect for homeManager class only, producing a single
-  # homeManager module. This prevents nixos/darwin class keys from
-  # being collected again when the user context contributes to the
-  # host's resolution.
   from-host =
     { host, user }:
     {
