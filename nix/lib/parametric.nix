@@ -51,6 +51,7 @@ let
     "into"
     "__functor"
     "__functionArgs"
+    "__ctx"
     "_module"
   ];
 
@@ -58,27 +59,54 @@ let
   # Class keys stay inline — compileStatic emits them directly.
   # Recursively applies context to sub-includes so nested parametric
   # functions at every depth get resolved.
+  # Args always available from the pipeline's constantHandler.
+  pipelineArgs = {
+    class = true;
+    "aspect-chain" = true;
+  };
+
   bindCtx =
     takeFn: attrs: aspect:
     let
       classKeys = builtins.removeAttrs aspect structuralKeys;
+      # Context args + pipeline-provided args for checking resolvability.
+      allAvailable = attrs // pipelineArgs;
       resolveIncludes =
         includes:
         map (
           i:
           let
-            applied = if canTake.upTo attrs i then carryMeta i (takeFn i attrs) else i;
+            resolvable = canTake.upTo attrs i;
+            applied = if resolvable then carryMeta i (takeFn i attrs) else i;
           in
-          if builtins.isAttrs applied && applied ? includes then
+          if lib.isFunction i && !canTake.atLeast allAvailable i then
+            # Drop parametric functions whose required args can't be
+            # satisfied by context OR pipeline-provided values.
+            # ctxApply processes all transition levels, so this function
+            # will be resolved at a deeper level with more context.
+            # Functions with no required args (like lib.const) pass
+            # through — canTake.atLeast is true for them.
+            { }
+          else if builtins.isAttrs applied && applied ? includes then
             applied // { includes = resolveIncludes (applied.includes or [ ]); }
           else
             applied
         ) (builtins.filter (x: x != { }) includes);
+      resolvedIncludes = resolveIncludes (aspect.includes or [ ]);
+      # Only tag with __ctx when there are remaining callable attrsets
+      # that need context. Prevents scope.run from wrapping purely static
+      # subtrees which can force evaluation of lazy provider defaults.
+      hasUnresolved = builtins.any (
+        i: builtins.isAttrs i && (i ? __functor || i ? __functionArgs)
+      ) resolvedIncludes;
     in
     withIdentity aspect (
       classKeys
       // {
-        includes = resolveIncludes (aspect.includes or [ ]);
+        includes = resolvedIncludes;
+      }
+      // lib.optionalAttrs hasUnresolved {
+        __ctx = attrs;
       }
     );
 

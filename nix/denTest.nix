@@ -13,12 +13,21 @@ let
     module:
     let
       config = (evalDen module).config;
+      expected = config.expected;
+      hasExpected = !(expected ? undefined);
+      # Partial matching: when both expr and expected are attrsets,
+      # only compare the keys present in expected.
+      expr =
+        if hasExpected && builtins.isAttrs expected && builtins.isAttrs config.expr then
+          builtins.intersectAttrs expected config.expr
+        else
+          config.expr;
     in
     {
-      expr = config.expr;
+      inherit expr;
     }
-    // lib.optionalAttrs (!(config.expected ? undefined)) {
-      expected = config.expected;
+    // lib.optionalAttrs hasExpected {
+      inherit expected;
     }
     // lib.optionalAttrs (!(config.expectedError ? undefined)) {
       expectedError = config.expectedError;
@@ -149,7 +158,7 @@ let
                     if e.isProvider then "${lib.concatStringsSep "/" e.provider}/${e.name}" else e.name
                   ) entries;
                 in
-                if subs == [ ] then displayName else [ displayName ] ++ subs;
+                if subs == [ ] then [ displayName ] else [ displayName ] ++ subs;
             in
             builtins.concatLists (map (e: [ (mkNode e) ]) children);
           roots = builtins.filter (e: e.parent == null) entries;
@@ -165,7 +174,7 @@ let
               [ root.name ] ++ buildTree rootName entries;
         in
         {
-          inherit (result.state) imports;
+          imports = result.state.imports null;
           trace = traceTree;
         };
 
