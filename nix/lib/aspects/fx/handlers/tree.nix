@@ -137,42 +137,49 @@ let
     {
       "emit-class" =
         { param, state }:
-        if param.class != targetClass then
-          {
-            resume = null;
-            inherit state;
-          }
-        else
-          let
-            identity = param.identity or "<anon>";
-            loc = "${param.class}@${identity}";
-            # Named aspects get a key for NixOS module-level dedup: two
-            # resolve calls emitting the same aspect:class produce the
-            # same key, so the module system keeps only the first.
-            # Anonymous/synthetic names must not be keyed — multiple
-            # anonymous includes with the same identity are distinct.
-            isAnon =
-              identity == "<anon>"
-              || identity == "<function body>"
-              || lib.hasPrefix "[definition " identity
-              || lib.hasPrefix "<root>/" identity
-              || lib.hasInfix "/<anon>:" identity;
-            mod =
-              if isAnon then
-                lib.setDefaultModuleLocation loc param.module
-              else
-                {
-                  key = loc;
-                  _file = loc;
-                  imports = [ param.module ];
-                };
-          in
-          {
-            resume = null;
-            state = state // {
-              imports = x: (state.imports x) ++ [ mod ];
-            };
-          };
+        let
+          _t = builtins.trace "classCollector: class=${param.class} target=${targetClass} identity=${param.identity or "?"} match=${
+            toString (param.class == targetClass)
+          }";
+        in
+        _t (
+          if param.class != targetClass then
+            {
+              resume = null;
+              inherit state;
+            }
+          else
+            let
+              identity = param.identity or "<anon>";
+              loc = "${param.class}@${identity}";
+              # Named aspects get a key for NixOS module-level dedup: two
+              # resolve calls emitting the same aspect:class produce the
+              # same key, so the module system keeps only the first.
+              # Anonymous/synthetic names must not be keyed — multiple
+              # anonymous includes with the same identity are distinct.
+              isAnon =
+                identity == "<anon>"
+                || identity == "<function body>"
+                || lib.hasPrefix "[definition " identity
+                || lib.hasPrefix "<root>/" identity
+                || lib.hasInfix "/<anon>:" identity;
+              mod =
+                if isAnon then
+                  lib.setDefaultModuleLocation loc param.module
+                else
+                  {
+                    key = loc;
+                    _file = loc;
+                    imports = [ param.module ];
+                  };
+            in
+            {
+              resume = null;
+              state = state // {
+                imports = x: (state.imports x) ++ [ mod ];
+              };
+            }
+        );
     };
 
 in

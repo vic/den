@@ -6,6 +6,7 @@
 let
   fx = den.lib.fx;
   identity = den.lib.aspects.fx.identity;
+  inherit (den.lib.aspects.fx.handlers) constantHandler;
 
   structuralKeys = [
     "name"
@@ -23,10 +24,7 @@ let
   # Emit emit-class for each non-structural attr on the aspect.
   emitClasses =
     aspect: classKeys: nodeIdentity:
-    let
-      _t = builtins.trace "emitClasses: ${nodeIdentity} keys=${toString classKeys}";
-    in
-    _t (fx.seq (
+    fx.seq (
       map (
         k:
         fx.send "emit-class" {
@@ -35,7 +33,7 @@ let
           module = aspect.${k};
         }
       ) classKeys
-    ));
+    );
 
   # Register constraints from meta.handleWith and meta.excludes.
   registerConstraints =
@@ -63,10 +61,10 @@ let
     fx.seq (map (c: fx.send "register-constraint" (c // { inherit owner; })) allConstraints);
 
   # Fold includes through emit-include effects, tagging each with its
-  # positional index so the handler can derive stable identities for
-  # anonymous includes (parentIdentity/<anon>:index).
+  # positional index and parent __ctx so the handler can derive stable
+  # identities and propagate context to children.
   emitIncludes =
-    incs:
+    parentCtx: incs:
     let
       len = builtins.length incs;
       go =
@@ -79,7 +77,7 @@ let
               results:
               fx.bind (fx.send "emit-include" {
                 child = builtins.elemAt incs idx;
-                inherit idx;
+                inherit idx parentCtx;
               }) (childResults: fx.pure (results ++ childResults))
             )
           );
@@ -102,12 +100,14 @@ let
   # Self-provide: if aspect.provides.${aspect.name} exists, emit it as an include.
   # The provider function's actual args are extracted so bind.fn can resolve
   # them through effects (e.g. { host } is resolved via constantHandler).
+  # Propagates __ctx so the provider can resolve in the right context.
   emitSelfProvide =
     aspect:
     let
       name = aspect.name or "<anon>";
       provides = aspect.provides or { };
       providerVal = provides.${name};
+      ctx = aspect.__ctx or { };
       # Extract real function args for bind.fn resolution.
       innerFn =
         if builtins.isAttrs providerVal && providerVal ? __functor then
@@ -118,11 +118,12 @@ let
     in
     if provides ? ${name} then
       let
-        _t = builtins.trace "emitSelfProvide: name=${name} providerArgs=${toString (builtins.attrNames providerArgs)} isFunction=${toString (lib.isFunction innerFn)}";
+        _t = builtins.trace "emitSelfProvide: ${name} parentCtx=${toString (builtins.attrNames ctx)} providerArgs=${toString (builtins.attrNames providerArgs)}";
       in
       _t (
         fx.send "emit-include" {
           inherit name;
+          parentCtx = ctx;
           meta = {
             provider = (aspect.meta.provider or [ ]) ++ [ name ];
             selfProvide = true;
@@ -146,18 +147,17 @@ let
       comp;
 
   # Resolve children, assemble the result, and emit resolve-complete.
-  # Context is provided by the pipeline's handler stack (defaultHandlers
-  # installs constantHandler at root, transitionHandler scopes it per
-  # transition). No __ctx or scope.run needed here.
+  # Propagates __ctx to children via emitIncludes parentCtx parameter.
   resolveChildren =
     aspect:
     { isMeaningful, nodeIdentity }:
     let
+      ctx = aspect.__ctx or { };
       childResolution = fx.bind (emitSelfProvide aspect) (
         selfProvResults:
         fx.bind (emitTransitions aspect) (
           transitionResults:
-          fx.bind (emitIncludes (aspect.includes or [ ])) (
+          fx.bind (emitIncludes ctx (aspect.includes or [ ])) (
             children: fx.pure (selfProvResults ++ transitionResults ++ children)
           )
         )
@@ -179,65 +179,88 @@ let
     let
       nodeIdentity = identity.pathKey (identity.aspectPath aspect);
       classKeys = builtins.filter (k: !(builtins.elem k structuralKeys)) (builtins.attrNames aspect);
+      _t = builtins.trace "compileStatic: name=${aspect.name or "?"} identity=${nodeIdentity} classKeys=${toString classKeys} allKeys=${toString (builtins.attrNames aspect)}";
       rawName = aspect.name or "<anon>";
       isMeaningful =
         rawName != "<anon>" && rawName != "<function body>" && !(lib.hasPrefix "[definition " rawName);
     in
-    fx.bind (fx.seq [
-      (emitClasses aspect classKeys nodeIdentity)
-      (registerConstraints aspect)
-    ]) (_: resolveChildren aspect { inherit isMeaningful nodeIdentity; });
+    _t (
+      fx.bind (fx.seq [
+        (emitClasses aspect classKeys nodeIdentity)
+        (registerConstraints aspect)
+      ]) (_: resolveChildren aspect { inherit isMeaningful nodeIdentity; })
+    );
 
   # The aspect compiler.
   #
-  # In the fx pipeline, __functor on aspects is NEVER the user's function.
-  # The type system always sets it to defaultFunctor (parametric.withOwn).
-  # User-defined parametric functions live in `includes` as bare children,
-  # wrapped by wrapChild with __functionArgs carrying the real arg names.
+  # When an aspect has __ctx (set by transition handler or propagated from
+  # parent), bind.fn is scoped with constantHandler __ctx so context args
+  # (host, user, etc.) resolve correctly. The scope is minimal — only around
+  # the bind.fn call — so emit-class, emit-include, constraints, and chain
+  # effects all reach root handlers with shared state.
   #
   # Two cases:
-  # 1. __functionArgs has named args → parametric child (from wrapChild).
-  #    Resolve args via bind.fn, compile the result.
-  # 2. Otherwise → static. Strip __functor/__functionArgs (legacy default),
+  # 1. __functionArgs has named args → parametric child.
+  #    Resolve args via bind.fn (scoped if __ctx present), compile the result.
+  # 2. Otherwise → static. Strip __functor/__functionArgs,
   #    compile the attrset directly.
-  #
-  # Factory aspects (ctx: { ... } with bare arg) are not supported in the
-  # fx pipeline. Use destructured args: { host, ... }: { ... }.
   aspectToEffect =
     aspect:
     let
       userArgs = aspect.__functionArgs or { };
       isParametric = userArgs != { } && aspect ? __functor;
-      _t = builtins.trace "aspectToEffect: name=${aspect.name or "?"} isParametric=${toString isParametric} args=${toString (builtins.attrNames userArgs)}";
+      ctx = aspect.__ctx or { };
     in
-    if _t isParametric then
+    if isParametric then
       let
         fn = aspect.__functor aspect;
+        _t = builtins.trace "aspectToEffect: name=${aspect.name or "?"} parametric args=${toString (builtins.attrNames userArgs)} __ctx=${toString (builtins.attrNames ctx)}";
+        # If __ctx is present, scope bind.fn with constantHandler so context
+        # args (host, user) resolve from __ctx. Other args (class, aspect-chain)
+        # rotate to root constantHandler. Scope is ONLY around bind.fn —
+        # the resume is a plain value, no state isolation.
+        resolveFn =
+          if ctx != { } then
+            fx.effects.scope.run {
+              handlers = constantHandler ctx;
+            } (fx.bind.fn { } fn)
+          else
+            fx.bind.fn { } fn;
       in
-      fx.bind (fx.bind.fn { } fn) (
-        resolved:
-        let
-          base = {
-            inherit (aspect) name;
-            meta = (aspect.meta or { }) // (if builtins.isAttrs resolved then resolved.meta or { } else { });
-          }
-          // lib.optionalAttrs (aspect ? into) { inherit (aspect) into; }
-          // lib.optionalAttrs (aspect ? provides) { inherit (aspect) provides; };
-          # If resolved is still a function (curried provider like
-          # { system, output }: { class, aspect-chain }: ...), wrap it
-          # as another parametric level for the next bind.fn pass.
-          next =
-            if lib.isFunction resolved && !builtins.isAttrs resolved then
-              base
-              // {
-                __functor = _: resolved;
-                __functionArgs = lib.functionArgs resolved;
-                includes = [ ];
+      _t (
+        fx.bind resolveFn (
+          resolved:
+          let
+            _t2 = builtins.trace "aspectToEffect: resolved name=${aspect.name or "?"} type=${builtins.typeOf resolved} isAttrs=${toString (builtins.isAttrs resolved)} keys=${
+              toString (if builtins.isAttrs resolved then builtins.attrNames resolved else [ ])
+            }";
+          in
+          _t2 (
+            let
+              base = {
+                inherit (aspect) name;
+                meta = (aspect.meta or { }) // (if builtins.isAttrs resolved then resolved.meta or { } else { });
               }
-            else
-              base // builtins.removeAttrs resolved [ "meta" ];
-        in
-        aspectToEffect next
+              // lib.optionalAttrs (aspect ? into) { inherit (aspect) into; }
+              // lib.optionalAttrs (aspect ? provides) { inherit (aspect) provides; };
+              # If resolved is still a function (curried provider), wrap it
+              # as another parametric level for the next bind.fn pass.
+              next =
+                if lib.isFunction resolved && !builtins.isAttrs resolved then
+                  base
+                  // {
+                    __functor = _: resolved;
+                    __functionArgs = lib.functionArgs resolved;
+                    includes = [ ];
+                  }
+                else
+                  base // builtins.removeAttrs resolved [ "meta" ];
+              # Propagate __ctx so children inherit context.
+              tagged = next // lib.optionalAttrs (ctx != { }) { __ctx = ctx; };
+            in
+            aspectToEffect tagged
+          )
+        )
       )
     else
       compileStatic (

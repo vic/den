@@ -9,12 +9,30 @@
 { lib, den, ... }:
 _ctxNs:
 let
+  # Structural keys that ctxApply always forwards.
+  structuralKeys = [
+    "name"
+    "description"
+    "meta"
+    "includes"
+    "provides"
+    "into"
+    "__functor"
+    "__functionArgs"
+    "__ctx"
+    "_module"
+  ];
+
   ctxApply =
     self: ctx:
     let
       meta = self.meta or { };
+      # Preserve class keys (nixos, homeManager, funny, etc.) from the
+      # ctx node definition — these are emitted by compileStatic.
+      classAttrs = builtins.removeAttrs self structuralKeys;
     in
-    {
+    classAttrs
+    // {
       name = self.name or "<anon>";
       meta = {
         handleWith = meta.handleWith or null;

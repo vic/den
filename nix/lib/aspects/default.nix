@@ -16,12 +16,31 @@ let
       isFunctor = !isBareFn && builtins.isAttrs resolved && resolved ? __functor;
       functorArgs = if isFunctor then builtins.functionArgs (resolved.__functor resolved) else { };
       needsWrap = isFunctor && functorArgs != { };
+      bareFnArgs = if isBareFn then lib.functionArgs resolved else { };
+      # NixOS module functions ({ config, lib, ... }: ...) should be normalized
+      # through the type system, not wrapped as parametric aspects.
+      isModuleFn =
+        isBareFn
+        && den.lib.canTake.upTo {
+          lib = true;
+          config = true;
+          options = true;
+        } resolved;
       wrapped =
+        if isModuleFn then
+          den.lib.aspects.types.aspectType.merge
+            [ "<bare-module>" ]
+            [
+              {
+                file = "<bare-module>";
+                value = resolved;
+              }
+            ]
         # Bare functions (e.g. { class, ... }: { ... }) → wrap as parametric aspect.
-        if isBareFn then
+        else if isBareFn then
           {
             __functor = _: resolved;
-            __functionArgs = lib.functionArgs resolved;
+            __functionArgs = bareFnArgs;
             name = "<bare-fn>";
             meta = { };
             includes = [ ];

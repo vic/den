@@ -66,6 +66,8 @@ let
 
   defaultState = {
     seen = { };
+    # Thunk chain (not a list) so trampoline's deepSeq on state doesn't
+    # force NixOS config objects. Unwrap with `state.imports null`.
     imports = _: [ ];
     constraintRegistry = { };
     constraintFilters = [ ];
@@ -88,8 +90,8 @@ let
     }:
     let
       comp = aspectToEffect self;
-      # Override aspect-chain to include root aspect — consumed by type-system provider
-      # functions (parametric.nix, home-env.nix) and legacy resolve pipeline.
+      # Override aspect-chain to include root aspect — consumed by provider
+      # functions (home-env.nix) via bind.fn.
       rootHandlers = defaultHandlers {
         inherit class;
         ctx = ctx // {

@@ -35,8 +35,7 @@ let
         # For attrset-with-functor children, extract the actual inner function
         # to get the real args for bind.fn resolution. This bypasses stale
         # __functionArgs on the attrset and gives aspectToEffect the correct
-        # isParametric decision — whether it's a deepRecurse wrapper needing
-        # { class, aspect-chain } or a raw parametric aspect needing { host }.
+        # isParametric decision.
         if builtins.isAttrs child then
           let
             innerFn = child.__functor child;
@@ -97,7 +96,7 @@ let
         };
         pass = condNode.meta.guard guardCtx;
       in
-      if pass then emitIncludes condNode.meta.aspects else tombstoneAll condNode.meta.aspects
+      if pass then emitIncludes { } condNode.meta.aspects else tombstoneAll condNode.meta.aspects
     );
 
   # Exclude: create tombstone and emit resolve-complete.
@@ -131,22 +130,24 @@ let
   handlers = den.lib.aspects.fx.handlers;
 
   # Keep: resolve via aspectToEffect (which emits resolve-complete internally).
-  # Context is provided by the pipeline's handler stack (defaultHandlers +
-  # transitionHandler install constantHandler at appropriate scopes).
-  # Deep handler semantics ensure scoped context is available for resume effects.
+  # Context is provided either by __ctx on the child (data-driven, from
+  # transitions or parent propagation) or by the root constantHandler.
   #
   # For parametric children, probe each required arg via probe-arg effect.
-  # constantHandler installs probe-arg that checks its own ctx keys.
+  # Args already in child.__ctx are known-available and skip probing.
   # Unresolvable includes are skipped (resolved at deeper context level).
   keepChild =
     child:
     let
       childArgs = child.__functionArgs or { };
+      childCtx = child.__ctx or { };
       isParametric = childArgs != { } && child ? __functor;
     in
     if isParametric then
       let
-        requiredKeys = builtins.attrNames childArgs;
+        # Only probe args not already provided by __ctx.
+        unresolvedKeys = builtins.filter (k: !(builtins.hasAttr k childCtx)) (builtins.attrNames childArgs);
+        _t = builtins.trace "keepChild: ${child.name or "?"} args=${toString (builtins.attrNames childArgs)} __ctx=${toString (builtins.attrNames childCtx)} hasZ=${toString (childCtx ? z)} unresolved=${toString unresolvedKeys}";
         probeArgs =
           keys:
           if keys == [ ] then
@@ -160,16 +161,18 @@ let
               isAvailable: if isAvailable then probeArgs rest else fx.pure false
             );
       in
-      fx.bind (probeArgs requiredKeys) (
-        allAvailable:
-        let
-          _t = builtins.trace "keepChild: ${child.name or "?"} args=${toString requiredKeys} ok=${toString allAvailable}";
-        in
-        _t (
-          if allAvailable then
-            fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ])
-          else
-            fx.pure [ ]
+      _t (
+        fx.bind (probeArgs unresolvedKeys) (
+          allAvailable:
+          let
+            _t2 = builtins.trace "keepChild: ${child.name or "?"} allAvailable=${toString allAvailable}";
+          in
+          _t2 (
+            if allAvailable then
+              fx.bind (aspectToEffect child) (resolved: fx.pure [ resolved ])
+            else
+              fx.pure [ ]
+          )
         )
       )
     else
@@ -187,24 +190,31 @@ let
   isMeaningfulName =
     name: name != "<anon>" && name != "<function body>" && !(lib.hasPrefix "[definition " name);
 
-  # The handler. param is { child, idx } from emitIncludes.
+  # The handler. param is { child, idx, parentCtx? } from emitIncludes.
   includeHandler = {
     "emit-include" =
       { param, state }:
       let
         rawChild = param.child or param;
         idx = param.idx or null;
+        parentCtx = param.parentCtx or { };
         wrapped = wrapChild rawChild;
+        # Propagate parent's __ctx to child (child's own __ctx takes precedence).
+        withCtx =
+          if parentCtx != { } then wrapped // { __ctx = parentCtx // (wrapped.__ctx or { }); } else wrapped;
         # Replace anonymous names with parent+index derived identity.
         child =
-          if idx != null && !(isMeaningfulName (wrapped.name or "<anon>")) then
-            wrapped // { name = nameAnon state idx; }
+          if idx != null && !(isMeaningfulName (withCtx.name or "<anon>")) then
+            withCtx // { name = nameAnon state idx; }
           else
-            wrapped;
+            withCtx;
+        _ti = builtins.trace "includeHandler: name=${child.name or "?"} parentCtx=${toString (builtins.attrNames parentCtx)} __ctx=${
+          toString (builtins.attrNames (child.__ctx or { }))
+        } isParametric=${toString ((child.__functionArgs or { }) != { } && child ? __functor)}";
         childIdentity = identity.pathKey (identity.aspectPath child);
         isConditional = builtins.isAttrs child && child ? meta && child.meta ? guard;
       in
-      {
+      _ti {
         resume =
           if isConditional then
             resolveConditional child
