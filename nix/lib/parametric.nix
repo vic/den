@@ -9,8 +9,8 @@ let
   parametric.fixedTo.atLeast = _ctx: aspect: warn "fixedTo.atLeast is deprecated" aspect;
   parametric.fixedTo.upTo = _ctx: aspect: warn "fixedTo.upTo is deprecated" aspect;
 
-  parametric.atLeast = aspect: _ctx: warn "atLeast is deprecated — use plain attrsets" aspect;
-  parametric.exactly = aspect: _ctx: warn "exactly is deprecated — use plain attrsets" aspect;
+  parametric.atLeast = aspect: warn "atLeast is deprecated — use plain attrsets" aspect;
+  parametric.exactly = aspect: warn "exactly is deprecated — use plain attrsets" aspect;
   parametric.expands = _attrs: aspect: warn "expands is deprecated" aspect;
 
   parametric.__functor = _: parametric.atLeast;

@@ -151,10 +151,10 @@ let
           __functor = lib.mkOption {
             internal = true;
             visible = false;
-            description = "Functor — default is lib.const (ignores context)";
+            description = "Functor — default tags aspect with __ctx for pipeline context propagation";
             type = lastFunctionTo (providerType cnf);
-            defaultText = lib.literalExpression "lib.const";
-            default = lib.const;
+            defaultText = lib.literalExpression "self: ctx: self // { __ctx = ctx; }";
+            default = self: ctx: self // { __ctx = ctx; };
           };
 
           includes = lib.mkOption {
